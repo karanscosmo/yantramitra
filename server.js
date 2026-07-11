@@ -360,6 +360,18 @@ app.get('/api/alarms', authApi, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+async function createAudit(actorId, action, entity, entityId, detail) {
+  try {
+    await prisma.auditLog.create({ data: { actorId, action, entity, entityId, detail } });
+  } catch {}
+}
+
+async function createNotification({ userId, title, message, type = 'info', priority = 'medium', link }) {
+  try {
+    await prisma.notification.create({ data: { userId, title, message, type, priority, link } });
+  } catch {}
+}
+
 app.patch('/api/alarms/:id/resolve', authApi, async (req, res) => {
   try {
     const alarm = await prisma.alarm.update({
@@ -367,6 +379,116 @@ app.patch('/api/alarms/:id/resolve', authApi, async (req, res) => {
       data: { status: 'resolved', resolvedAt: new Date() }
     });
     res.json(alarm);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/incidents', authApi, async (req, res) => {
+  try {
+    const incidents = await prisma.operationalIncident.findMany({
+      include: {
+        machine: { include: { plant: true, productionLine: { include: { building: true } }, alarms: { take: 3, orderBy: { createdAt: 'desc' } }, workOrders: { take: 3, orderBy: { createdAt: 'desc' } }, inventoryParts: true } }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+    res.json(incidents);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/incidents/:id', authApi, async (req, res) => {
+  try {
+    const incident = await prisma.operationalIncident.findUnique({
+      where: { id: req.params.id },
+      include: {
+        machine: {
+          include: {
+            plant: true,
+            productionLine: { include: { building: true } },
+            readings: { orderBy: { timestamp: 'desc' }, take: 120 },
+            alarms: { orderBy: { createdAt: 'desc' } },
+            workOrders: { orderBy: { createdAt: 'desc' } },
+            inventoryParts: true,
+            maintenanceEvents: { orderBy: { performedAt: 'desc' } }
+          }
+        }
+      }
+    });
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+    res.json(incident);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/incidents/:id/actions', authApi, async (req, res) => {
+  try {
+    const { action } = req.body;
+    const incident = await prisma.operationalIncident.findUnique({
+      where: { id: req.params.id },
+      include: { machine: { include: { plant: true, inventoryParts: true } } }
+    });
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+    const timeline = Array.isArray(incident.timeline) ? incident.timeline : [];
+    const addTimeline = (stage, label) => [...timeline, { t: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), stage, label }];
+
+    if (action === 'generate_plan') {
+      const plan = await prisma.plan.create({
+        data: {
+          title: `AI plan: ${incident.machine.name}`,
+          description: `Planner Agent generated plan for ${incident.title}. Root cause: ${incident.rootCause || 'under investigation'}.`,
+          type: 'maintenance',
+          status: 'pending',
+          priority: incident.severity === 'critical' ? 'critical' : 'high',
+          createdBy: req.user.id,
+          plantId: incident.machine.plantId
+        }
+      });
+      const updated = await prisma.operationalIncident.update({ where: { id: incident.id }, data: { planId: plan.id, stage: 'plan_created', timeline: addTimeline('plan_created', 'Planner Agent generated a maintenance plan') } });
+      await createAudit(req.user.id, 'incident.plan_generated', 'OperationalIncident', incident.id, { planId: plan.id });
+      return res.json({ incident: updated, plan });
+    }
+
+    if (action === 'approve_plan') {
+      if (incident.planId) await prisma.plan.update({ where: { id: incident.planId }, data: { status: 'approved', approvedBy: req.user.id, approvedAt: new Date() } });
+      const updated = await prisma.operationalIncident.update({ where: { id: incident.id }, data: { stage: 'approved', timeline: addTimeline('approved', 'Maintenance plan approved') } });
+      await createAudit(req.user.id, 'incident.plan_approved', 'OperationalIncident', incident.id, { planId: incident.planId });
+      return res.json({ incident: updated });
+    }
+
+    if (action === 'create_work_order') {
+      const order = await prisma.workOrder.create({
+        data: {
+          title: `Repair ${incident.machine.name}`,
+          description: `Created from incident ${incident.title}. Reserve parts and execute controlled maintenance window.`,
+          status: 'open',
+          priority: incident.severity === 'critical' ? 'critical' : 'high',
+          machineId: incident.machineId,
+          assignedTo: req.body.assignedTo || 'Farhan Shaikh',
+          createdBy: req.user.id,
+          dueDate: new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+        }
+      });
+      const updated = await prisma.operationalIncident.update({ where: { id: incident.id }, data: { workOrderId: order.id, stage: 'work_order_created', timeline: addTimeline('work_order_created', `Work order assigned to ${order.assignedTo}`) } });
+      await createNotification({ title: 'Work order created', message: `${order.title} assigned to ${order.assignedTo}`, type: 'assignment', priority: order.priority, link: '/work-orders' });
+      await createAudit(req.user.id, 'incident.work_order_created', 'OperationalIncident', incident.id, { workOrderId: order.id });
+      return res.json({ incident: updated, workOrder: order });
+    }
+
+    if (action === 'reserve_inventory') {
+      const part = incident.machine.inventoryParts[0];
+      if (part) await prisma.inventoryPart.update({ where: { id: part.id }, data: { quantity: Math.max(0, part.quantity - 1) } });
+      const updated = await prisma.operationalIncident.update({ where: { id: incident.id }, data: { stage: 'inventory_reserved', timeline: addTimeline('inventory_reserved', `${part?.name || 'Critical spare'} reserved for maintenance`) } });
+      await createAudit(req.user.id, 'incident.inventory_reserved', 'OperationalIncident', incident.id, { part: part?.sku });
+      return res.json({ incident: updated, reservedPart: part });
+    }
+
+    if (action === 'mark_repaired') {
+      if (incident.workOrderId) await prisma.workOrder.update({ where: { id: incident.workOrderId }, data: { status: 'completed' } });
+      await prisma.machine.update({ where: { id: incident.machineId }, data: { status: 'running', health: Math.min(96, incident.machine.health + 18), failureProbability: 8, remainingUsefulLife: 1400 } });
+      const updated = await prisma.operationalIncident.update({ where: { id: incident.id }, data: { status: 'recovered', stage: 'recovered', recoveredAt: new Date(), timeline: addTimeline('recovered', 'Machine repaired and KPIs recovered') } });
+      await createNotification({ title: 'Incident recovered', message: `${incident.machine.name} returned to running state.`, type: 'incident', priority: 'medium', link: '/dashboard' });
+      await createAudit(req.user.id, 'incident.recovered', 'OperationalIncident', incident.id, { machineId: incident.machineId });
+      return res.json({ incident: updated });
+    }
+
+    res.status(400).json({ error: 'Unsupported incident action' });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -492,6 +614,91 @@ app.get('/api/dashboard/summary', authApi, async (req, res) => {
       prisma.alarm.count({ where: { status: 'active', severity: 'critical' } }),
     ]);
     res.json({ totalMachines, activeAlarms, totalWorkOrders, plants, machinesByStatus, recentAlarms, criticalAlarms });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/executive/summary', authApi, async (req, res) => {
+  try {
+    const [plants, incidents, workOrders, alarms] = await Promise.all([
+      prisma.plant.findMany({ include: { machines: true } }),
+      prisma.operationalIncident.findMany({ include: { machine: { include: { plant: true } } }, orderBy: { updatedAt: 'desc' } }),
+      prisma.workOrder.findMany({ include: { machine: true } }),
+      prisma.alarm.findMany({ where: { status: 'active' } })
+    ]);
+    const downtimeCost = incidents.reduce((sum, i) => sum + (i.impactCost || 0), 0);
+    const plantRanking = plants.map(p => ({
+      id: p.id,
+      name: p.name,
+      oee: p.oee || 0,
+      energyUsage: p.energyUsage || 0,
+      co2Tonnes: p.co2Tonnes || 0,
+      avgHealth: Math.round((p.machines.reduce((s, m) => s + m.health, 0) / (p.machines.length || 1)) * 10) / 10
+    })).sort((a, b) => b.oee - a.oee);
+    res.json({
+      company: 'Yantra Manufacturing Technologies Pvt. Ltd.',
+      headOffice: 'Bengaluru',
+      downtimeCost,
+      openIncidents: incidents.filter(i => i.status !== 'recovered').length,
+      activeAlarms: alarms.length,
+      openWorkOrders: workOrders.filter(w => w.status !== 'completed').length,
+      plantRanking,
+      recommendations: [
+        'Approve Pune spindle intervention before Line 1 throughput degrades further.',
+        'Reserve Ahmedabad chemical mixer bearing kit due to low stock exposure.',
+        'Shift Chennai SMT preventive calibration into next low-load window.'
+      ]
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/notifications', authApi, async (req, res) => {
+  try {
+    const notifications = await prisma.notification.findMany({
+      where: { OR: [{ userId: req.user.id }, { userId: null }] },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+    res.json(notifications);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/notifications/:id', authApi, async (req, res) => {
+  try {
+    const data = pickAllowed(req.body, ['status']);
+    if (data.status === 'archived') data.archivedAt = new Date();
+    const note = await prisma.notification.update({ where: { id: req.params.id }, data });
+    res.json(note);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/audit-log', authApi, async (req, res) => {
+  try {
+    const logs = await prisma.auditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+    res.json(logs);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/command-palette', authApi, async (req, res) => {
+  try {
+    const q = String(req.query.q || '').toLowerCase();
+    const [plants, machines, workOrders, agents, incidents] = await Promise.all([
+      prisma.plant.findMany({ take: 20 }),
+      prisma.machine.findMany({ take: 30, include: { plant: true } }),
+      prisma.workOrder.findMany({ take: 20 }),
+      prisma.agent.findMany({ take: 20 }),
+      prisma.operationalIncident.findMany({ take: 20 })
+    ]);
+    const items = [
+      ...plants.map(p => ({ type: 'Plant', label: p.name, detail: p.location, href: `/plant/${p.id}` })),
+      ...machines.map(m => ({ type: 'Machine', label: m.name, detail: `${m.plant.name} · ${Math.round(m.health)}% health`, href: `/digital-twin?machine=${encodeURIComponent(m.name)}` })),
+      ...workOrders.map(w => ({ type: 'Work Order', label: w.title, detail: `${w.status} · ${w.priority}`, href: '/work-orders' })),
+      ...agents.map(a => ({ type: 'Agent', label: a.name, detail: `${a.type} · ${a.status}`, href: '/agents' })),
+      ...incidents.map(i => ({ type: 'Incident', label: i.title, detail: `${i.stage} · ${i.severity}`, href: '/anomaly' })),
+      { type: 'Action', label: 'Run Demo', detail: 'Start guided operational story', action: 'runDemo' },
+      { type: 'Action', label: 'Open Incident Replay', detail: 'Replay the active incident lifecycle', action: 'incidentReplay' },
+      { type: 'Page', label: 'Executive Summary', detail: 'Business KPIs and recommendations', href: '/dashboard' },
+    ];
+    res.json(items.filter(item => !q || `${item.type} ${item.label} ${item.detail}`.toLowerCase().includes(q)).slice(0, 25));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -629,22 +836,50 @@ app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyP
     if (!message) return res.status(400).json({ error: 'Message is required' });
 
     // Pull relevant context from the database
-    const [machines, alarms, plants, agents, workOrders, plans] = await Promise.all([
-      require('./lib/prisma').machine.findMany({ include: { plant: { select: { name: true } } } }),
+    const [machines, alarms, plants, agents, workOrders, plans, incidents] = await Promise.all([
+      require('./lib/prisma').machine.findMany({
+        include: {
+          plant: { select: { name: true, location: true, oee: true, energyUsage: true, co2Tonnes: true } },
+          productionLine: { include: { building: true } },
+          sensors: { take: 6 },
+          components: { take: 3 },
+          inventoryParts: { take: 3 },
+          maintenanceEvents: { orderBy: { performedAt: 'desc' }, take: 2 },
+        }
+      }),
       require('./lib/prisma').alarm.findMany({ where: { status: 'active' }, include: { machine: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 20 }),
       require('./lib/prisma').plant.findMany(),
       require('./lib/prisma').agent.findMany({ orderBy: { createdAt: 'desc' } }),
       require('./lib/prisma').workOrder.findMany({ include: { machine: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 20 }),
       require('./lib/prisma').plan.findMany({ orderBy: { createdAt: 'desc' }, take: 10 }),
+      require('./lib/prisma').operationalIncident.findMany({ include: { machine: { select: { name: true } } }, orderBy: { updatedAt: 'desc' }, take: 10 }),
     ]);
 
     const contextSummary = {
-      plants: plants.map(p => ({ id: p.id, name: p.name, location: p.location, status: p.status })),
-      machines: machines.map(m => ({ id: m.id, name: m.name, type: m.type, status: m.status, health: m.health, plant: m.plant?.name })),
+      plants: plants.map(p => ({ id: p.id, name: p.name, location: p.location, status: p.status, oee: p.oee, energyUsage: p.energyUsage, co2Tonnes: p.co2Tonnes, utilization: p.utilization })),
+      machines: machines.map(m => ({
+        id: m.id,
+        name: m.name,
+        serial: m.serial,
+        type: m.type,
+        status: m.status,
+        health: m.health,
+        oee: m.oee,
+        failureProbability: m.failureProbability,
+        remainingUsefulLife: m.remainingUsefulLife,
+        hierarchy: [m.plant?.name, m.productionLine?.building?.name, m.productionLine?.name].filter(Boolean).join(' / '),
+        plant: m.plant?.name,
+        sensors: m.sensors.map(s => ({ tag: s.tag, metric: s.metric, status: s.status })),
+        components: m.components.map(c => ({ name: c.name, health: c.health })),
+        inventoryParts: m.inventoryParts.map(p => ({ sku: p.sku, name: p.name, quantity: p.quantity, reorderAt: p.reorderAt })),
+        maintenanceHistory: m.maintenanceEvents.map(e => ({ title: e.title, performedBy: e.performedBy, performedAt: e.performedAt })),
+        aiSummary: m.aiSummary
+      })),
       activeAlarms: alarms.map(a => ({ id: a.id, severity: a.severity, title: a.title, message: a.message, machine: a.machine?.name, status: a.status })),
-      agents: agents.map(a => ({ id: a.id, name: a.name, type: a.type, status: a.status, mission: a.mission, progress: a.progress })),
+      agents: agents.map(a => ({ id: a.id, name: a.name, type: a.type, status: a.status, mission: a.mission, progress: a.progress, successRate: a.successRate, memory: a.memory, recentActions: a.recentActions })),
       workOrders: workOrders.map(w => ({ id: w.id, title: w.title, status: w.status, priority: w.priority, machine: w.machine?.name, assignedTo: w.assignedTo })),
       plans: plans.map(p => ({ id: p.id, title: p.title, type: p.type, status: p.status, priority: p.priority })),
+      incidents: incidents.map(i => ({ id: i.id, title: i.title, severity: i.severity, stage: i.stage, status: i.status, rootCause: i.rootCause, impactCost: i.impactCost, machine: i.machine?.name, timeline: i.timeline })),
     };
 
     const apiKey = process.env.OPENAI_API_KEY;

@@ -67,7 +67,7 @@ model ProductionLine {
 }
 
 model Machine {
-  id                  String             @id @default(uuid())
+  id                  String                @id @default(uuid())
   name                String
   serial              String?
   manufacturer        String?
@@ -80,16 +80,16 @@ model Machine {
   lubrication         String?
   aiSummary           String?
   type                String
-  status              String             @default("running")
-  health              Float              @default(100.0)
+  status              String                @default("running")
+  health              Float                 @default(100.0)
   location            String?
   posX                Float?
   posZ                Float?
   rotation            Float?
   plantId             String
-  plant               Plant              @relation(fields: [plantId], references: [id])
+  plant               Plant                 @relation(fields: [plantId], references: [id])
   productionLineId    String?
-  productionLine      ProductionLine?    @relation(fields: [productionLineId], references: [id])
+  productionLine      ProductionLine?       @relation(fields: [productionLineId], references: [id])
   readings            SensorReading[]
   sensors             MachineSensor[]
   components          Component[]
@@ -97,8 +97,9 @@ model Machine {
   maintenanceEvents   MaintenanceEvent[]
   alarms              Alarm[]
   workOrders          WorkOrder[]
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  incidents           OperationalIncident[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 }
 
 model Component {
@@ -172,15 +173,19 @@ model Alarm {
 }
 
 model Agent {
-  id        String   @id @default(uuid())
-  name      String
-  type      String
-  status    String   @default("idle")
-  model     String
-  mission   String?
-  progress  Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  name           String
+  type           String
+  status         String   @default("idle")
+  model          String
+  mission        String?
+  progress       Int      @default(0)
+  memory         Json?
+  missionHistory Json?
+  recentActions  Json?
+  successRate    Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Plan {
@@ -211,4 +216,48 @@ model WorkOrder {
   dueDate     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model OperationalIncident {
+  id              String    @id @default(uuid())
+  title           String
+  severity        String
+  status          String    @default("active")
+  stage           String    @default("detected")
+  rootCause       String?
+  impactCost      Float?
+  downtimeMinutes Int?
+  assignedAgent   String?
+  machineId       String
+  machine         Machine   @relation(fields: [machineId], references: [id])
+  alarmId         String?
+  planId          String?
+  workOrderId     String?
+  timeline        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  recoveredAt     DateTime?
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String?
+  title      String
+  message    String
+  type       String    @default("info")
+  priority   String    @default("medium")
+  status     String    @default("unread")
+  link       String?
+  createdAt  DateTime  @default(now())
+  archivedAt DateTime?
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  detail    Json?
+  createdAt DateTime @default(now())
 }

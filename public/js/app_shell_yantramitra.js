@@ -172,6 +172,83 @@
         font-weight: 800;
         cursor: pointer;
       }
+      .ym-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 130;
+        background: rgba(25, 26, 40, .36);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+      }
+      .ym-modal-card {
+        width: min(760px, 100%);
+        max-height: min(760px, 90vh);
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(199,196,215,.72);
+        background: rgba(255,255,255,.96);
+        box-shadow: 0 30px 90px rgba(25,26,40,.28);
+        padding: 20px;
+      }
+      .ym-command-card {
+        width: min(720px, calc(100vw - 28px));
+        align-self: flex-start;
+        margin-top: 8vh;
+      }
+      .ym-command-input {
+        width: 100%;
+        border: 1px solid rgba(199,196,215,.8);
+        border-radius: 14px;
+        padding: 13px 16px;
+        font: 700 16px/1.2 Inter, system-ui, sans-serif;
+        outline: none;
+      }
+      .ym-command-row {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .ym-command-row:hover { background: #eeecff; }
+      .ym-notification-fab {
+        position: fixed;
+        right: 108px;
+        top: 92px;
+        z-index: 63;
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        border: 1px solid rgba(199,196,215,.7);
+        background: rgba(255,255,255,.9);
+        color: #413fd6;
+        box-shadow: 0 14px 34px rgba(65,63,214,.16);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ym-notification-fab .ym-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #ba1a1a;
+        color: #fff;
+        font-size: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+      }
       .ym-ask-yantranklan img {
         width: 34px;
         height: 34px;
@@ -301,11 +378,189 @@
     document.querySelectorAll('button').forEach(button => {
       if (button.dataset.ymWired === 'true' || button.closest('form')) return;
       const text = button.textContent.trim();
+      const lower = text.toLowerCase();
+      if (/export|download/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', exportCurrentPageCsv);
+        return;
+      }
+      if (/share/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', shareCurrentPage);
+        return;
+      }
+      if (/history|timeline/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', openHistoryModal);
+        return;
+      }
+      if (/replay/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', openIncidentReplay);
+        return;
+      }
+      if (/compare/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', openCompareModal);
+        return;
+      }
+      if (/details|open/i.test(text) && !/open\s+maintenance/i.test(lower)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', openDetailsModal);
+        return;
+      }
+      if (/approve/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', () => incidentAction('approve_plan'));
+        return;
+      }
+      if (/reject/i.test(text)) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', () => showModal('Decision Logged', '<p class="text-on-surface-variant">Rejection recorded in the review workflow. A revised plan can be generated from the incident replay.</p>'));
+        return;
+      }
       const match = routeByText.find(([pattern]) => pattern.test(text));
       if (!match) return;
       button.dataset.ymWired = 'true';
       button.addEventListener('click', () => { window.location.href = match[1]; });
     });
+  }
+
+  async function api(path, options) {
+    const r = await fetch(path, options);
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  function showModal(title, body) {
+    document.querySelector('.ym-modal-backdrop')?.remove();
+    const wrap = document.createElement('div');
+    wrap.className = 'ym-modal-backdrop';
+    wrap.innerHTML = `<section class="ym-modal-card" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:14px">
+        <h2 style="font:900 24px/1.2 Inter,system-ui,sans-serif;color:#191a28">${title}</h2>
+        <button class="ym-close-modal" style="border:0;background:#eeecff;border-radius:999px;width:36px;height:36px;cursor:pointer"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div>${body}</div>
+    </section>`;
+    wrap.addEventListener('click', e => { if (e.target === wrap || e.target.closest('.ym-close-modal')) wrap.remove(); });
+    document.body.appendChild(wrap);
+  }
+
+  async function exportCurrentPageCsv() {
+    const rows = [['page', 'timestamp', 'url'], [document.title, new Date().toISOString(), location.href]];
+    const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `yantramitra-${currentPath.replace(/\W+/g, '-') || 'home'}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function shareCurrentPage() {
+    const payload = { title: document.title, text: 'YantraMitra operational view', url: location.href };
+    if (navigator.share) await navigator.share(payload).catch(() => {});
+    else {
+      await navigator.clipboard?.writeText(location.href).catch(() => {});
+      showModal('Share Link Copied', '<p class="text-on-surface-variant">The current YantraMitra view link was copied to clipboard.</p>');
+    }
+  }
+
+  async function openHistoryModal() {
+    const incidents = await api('/api/incidents').catch(() => []);
+    const incident = incidents[0];
+    showModal('Operational Timeline', incident ? `<ol style="display:grid;gap:10px">${(incident.timeline || []).map(item => `<li style="padding:10px;border:1px solid #c7c4d7;border-radius:12px"><strong>${item.t} · ${item.stage}</strong><br><span>${item.label}</span></li>`).join('')}</ol>` : '<p>No incident timeline available.</p>');
+  }
+
+  async function openCompareModal() {
+    const summary = await api('/api/executive/summary').catch(() => null);
+    showModal('Plant Comparison', summary ? `<div style="display:grid;gap:10px">${summary.plantRanking.map(p => `<div style="display:flex;justify-content:space-between;padding:10px;border:1px solid #c7c4d7;border-radius:12px"><strong>${p.name}</strong><span>OEE ${p.oee}% · Health ${p.avgHealth}%</span></div>`).join('')}</div>` : '<p>Comparison data unavailable.</p>');
+  }
+
+  async function openDetailsModal() {
+    const incidents = await api('/api/incidents').catch(() => []);
+    const i = incidents[0];
+    showModal('Connected Operational Detail', i ? `<p><strong>${i.title}</strong></p><p>Stage: ${i.stage}</p><p>Machine: ${i.machine?.name}</p><p>Root cause: ${i.rootCause || 'Under investigation'}</p>` : '<p>No active operational detail found.</p>');
+  }
+
+  async function incidentAction(action) {
+    const incidents = await api('/api/incidents').catch(() => []);
+    if (!incidents[0]) return showModal('No Active Incident', '<p>No incident available for this action.</p>');
+    const result = await api(`/api/incidents/${incidents[0].id}/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    }).catch(e => ({ error: e.message }));
+    showModal('Workflow Updated', result.error ? `<p>${result.error}</p>` : `<p>Incident moved to <strong>${result.incident.stage}</strong>.</p>`);
+  }
+
+  async function openIncidentReplay() {
+    const incidents = await api('/api/incidents').catch(() => []);
+    const incident = incidents[0];
+    if (!incident) return showModal('Incident Replay', '<p>No incident available to replay.</p>');
+    const steps = incident.timeline || [];
+    showModal('Incident Replay', `
+      <p style="margin-bottom:12px;color:#464555">${incident.title} · ${incident.machine?.name || ''}</p>
+      <input id="ym-replay-range" type="range" min="0" max="${Math.max(0, steps.length - 1)}" value="0" style="width:100%">
+      <div id="ym-replay-step" style="margin-top:14px;padding:14px;border:1px solid #c7c4d7;border-radius:14px"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="ym-replay-play" class="ym-demo-button"><span class="material-symbols-outlined">play_arrow</span>Play</button>
+        <button id="ym-replay-repair" class="ym-demo-button"><span class="material-symbols-outlined">healing</span>Mark Repaired</button>
+      </div>`);
+    const range = document.getElementById('ym-replay-range');
+    const stepEl = document.getElementById('ym-replay-step');
+    const render = () => {
+      const item = steps[Number(range.value)] || {};
+      stepEl.innerHTML = `<strong>${item.t || ''} · ${item.stage || incident.stage}</strong><p>${item.label || incident.rootCause || 'Incident active'}</p>`;
+    };
+    render();
+    range.addEventListener('input', render);
+    document.getElementById('ym-replay-play')?.addEventListener('click', () => {
+      let i = 0;
+      const timer = setInterval(() => {
+        range.value = String(i++);
+        render();
+        if (i > steps.length) clearInterval(timer);
+      }, 900);
+    });
+    document.getElementById('ym-replay-repair')?.addEventListener('click', () => incidentAction('mark_repaired'));
+  }
+
+  async function addNotificationCenter() {
+    if (shellExcludedPaths.includes(currentPath) || document.querySelector('.ym-notification-fab')) return;
+    const notes = await api('/api/notifications').catch(() => []);
+    const unread = notes.filter(n => n.status === 'unread').length;
+    const btn = document.createElement('button');
+    btn.className = 'ym-notification-fab';
+    btn.innerHTML = `<span class="material-symbols-outlined">notifications</span>${unread ? `<span class="ym-badge">${unread}</span>` : ''}`;
+    btn.addEventListener('click', () => {
+      showModal('Notification Center', notes.length ? `<div style="display:grid;gap:10px">${notes.map(n => `<a href="${n.link || '#'}" style="display:block;text-decoration:none;color:#191a28;padding:12px;border:1px solid #c7c4d7;border-radius:12px"><strong>${n.title}</strong><p style="color:#464555;margin:4px 0 0">${n.message}</p><small>${n.priority} · ${n.status}</small></a>`).join('')}</div>` : '<p>No notifications.</p>');
+    });
+    document.body.appendChild(btn);
+  }
+
+  function openCommandPalette() {
+    showModal('Command Palette', `<div class="ym-command-card-inner">
+      <input class="ym-command-input" id="ym-command-input" placeholder="Search plants, machines, work orders, agents, pages, actions..." autofocus>
+      <div id="ym-command-results" style="margin-top:12px;display:grid;gap:4px"></div>
+    </div>`);
+    const card = document.querySelector('.ym-modal-card');
+    if (card) card.classList.add('ym-command-card');
+    const input = document.getElementById('ym-command-input');
+    const results = document.getElementById('ym-command-results');
+    const render = async () => {
+      const items = await api('/api/command-palette?q=' + encodeURIComponent(input.value)).catch(() => []);
+      results.innerHTML = items.map((item, idx) => `<button class="ym-command-row" data-idx="${idx}"><span><strong>${item.label}</strong><br><small>${item.type} · ${item.detail || ''}</small></span><span class="material-symbols-outlined">arrow_forward</span></button>`).join('');
+      results.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+        const item = items[Number(btn.dataset.idx)];
+        if (item.action === 'runDemo') return startDemo();
+        if (item.action === 'incidentReplay') return openIncidentReplay();
+        if (item.href) window.location.href = item.href;
+      }));
+    };
+    input.addEventListener('input', render);
+    input.focus();
+    render();
   }
 
   function addRunDemoButtons() {
@@ -389,6 +644,14 @@
     addHomeAuthActions();
     wireKnownButtons();
     addRunDemoButtons();
+    addNotificationCenter();
     runDemoIfActive();
+    document.addEventListener('keydown', e => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+      if (e.key === 'Escape') document.querySelector('.ym-modal-backdrop')?.remove();
+    });
   });
 })();

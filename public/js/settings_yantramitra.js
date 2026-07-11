@@ -149,6 +149,47 @@
     });
   }
 
+  function renderAppearance() {
+    activateTab('Appearance');
+    const prefs = settings.prefs || {};
+    contentHost().innerHTML = `<div class="md:col-span-12 glass-card rounded-xl p-md lg:p-xl">
+      <h3 class="font-section-header text-section-header mb-md">Appearance</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+        ${[['compactMode','Compact command density'],['highContrast','High contrast alerts'],['motionReduced','Reduce motion']].map(([key,label]) => `
+          <label class="rounded-xl border border-outline-variant/40 bg-white/70 p-md flex justify-between gap-md"><span class="font-bold">${label}</span><input type="checkbox" data-appearance="${key}" ${prefs[key] ? 'checked' : ''}></label>`).join('')}
+      </div>
+    </div>`;
+    document.querySelectorAll('[data-appearance]').forEach(input => input.addEventListener('change', async () => {
+      settings = await patch('/api/user/preferences', { prefs: { [input.dataset.appearance]: input.checked } });
+      toast('Appearance preference saved');
+    }));
+  }
+
+  function renderApiKeys() {
+    activateTab('API Keys');
+    const integrations = settings.integrations || {};
+    contentHost().innerHTML = `<div class="md:col-span-12 glass-card rounded-xl p-md lg:p-xl">
+      <h3 class="font-section-header text-section-header mb-md">API Keys (Demo)</h3>
+      <p class="text-on-surface-variant mb-md">Demo key states are persisted as integration preferences. Real production secrets should live only in environment variables or a vault.</p>
+      <div class="space-y-sm">${['OpenAI', 'SCADA Read Token', 'CMMS Service Account'].map(key => `<div class="rounded-xl border border-outline-variant/40 bg-white/70 p-md flex justify-between items-center"><div><p class="font-bold">${key}</p><p class="text-sm text-on-surface-variant">${integrations[key] ? 'Configured for demo' : 'Not configured'}</p></div><button data-api-key="${key}" class="rounded-full px-4 py-2 font-bold bg-primary text-white">${integrations[key] ? 'Rotate' : 'Create demo key'}</button></div>`).join('')}</div>
+    </div>`;
+    document.querySelectorAll('[data-api-key]').forEach(btn => btn.addEventListener('click', async () => {
+      const key = btn.dataset.apiKey;
+      settings = await patch('/api/user/preferences', { integrations: { [key]: true } });
+      renderApiKeys();
+      toast(`${key} demo key updated`);
+    }));
+  }
+
+  async function renderAuditLog() {
+    activateTab('Audit');
+    const logs = await get('/api/audit-log');
+    contentHost().innerHTML = `<div class="md:col-span-12 glass-card rounded-xl p-md lg:p-xl">
+      <h3 class="font-section-header text-section-header mb-md">Audit Log</h3>
+      <div class="space-y-sm">${logs.map(log => `<article class="rounded-xl border border-outline-variant/40 bg-white/70 p-md"><p class="font-bold">${log.action}</p><p class="text-sm text-on-surface-variant">${log.entity} ${log.entityId || ''}</p><p class="text-xs text-on-surface-variant mt-1">${new Date(log.createdAt).toLocaleString()}</p></article>`).join('')}</div>
+    </div>`;
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     const user = await checkAuth();
     if (!user) return;
@@ -158,8 +199,22 @@
       Notifications: renderNotifications,
       'Team & Roles': renderTeam,
       Integrations: renderIntegrations,
-      Security: renderSecurity
+      Security: renderSecurity,
+      Appearance: renderAppearance,
+      'API Keys': renderApiKeys,
+      'Audit Log': renderAuditLog
     };
+    const tabBar = document.querySelector('main .flex.gap-gutter');
+    if (tabBar) {
+      ['Appearance', 'API Keys', 'Audit Log'].forEach(label => {
+        if (!Array.from(tabBar.querySelectorAll('button')).some(btn => btn.textContent.trim() === label)) {
+          const btn = document.createElement('button');
+          btn.className = 'px-md py-3 rounded-full glass-card hover:bg-white transition-colors text-on-surface-variant font-medium whitespace-nowrap';
+          btn.textContent = label;
+          tabBar.appendChild(btn);
+        }
+      });
+    }
     document.querySelectorAll('main .flex.gap-gutter button').forEach(btn => {
       const text = btn.textContent.trim();
       btn.addEventListener('click', () => (tabActions[text] || renderProfile)());

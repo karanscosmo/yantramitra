@@ -170,6 +170,9 @@ async function main() {
   await prisma.component.deleteMany();
   await prisma.inventoryPart.deleteMany();
   await prisma.maintenanceEvent.deleteMany();
+  await prisma.operationalIncident.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.sensorReading.deleteMany();
   await prisma.alarm.deleteMany();
   await prisma.workOrder.deleteMany();
@@ -327,12 +330,15 @@ async function main() {
 
   await prisma.agent.createMany({
     data: [
-      { name: 'Sentinel Pune', type: 'monitoring', status: 'active', model: 'Sentinel-X1', mission: 'Watch CNC spindle drift and robotic weld cycle anomalies in Pune.', progress: 82 },
-      { name: 'Rang AI', type: 'analysis', status: 'active', model: 'Diagnostic-D2', mission: 'Investigate Ahmedabad dye-bath temperature oscillation and dosing cavitation.', progress: 58 },
-      { name: 'SMT Guardian', type: 'inspection', status: 'active', model: 'Inspector-I1', mission: 'Track Chennai placement rejects and AOI false positives.', progress: 76 },
-      { name: 'MicroFab Planner', type: 'planning', status: 'paused', model: 'Planner-P3', mission: 'Build a controlled intervention plan for Bengaluru additive printer humidity drift.', progress: 44 },
-      { name: 'Spares Optimizer', type: 'optimization', status: 'idle', model: 'Optimizer-O2', mission: 'Rebalance Nagpur spares inventory for critical maintenance kits.', progress: 18 },
-      { name: 'Approval Sentinel', type: 'approval', status: 'done', model: 'Sentinel-X1', mission: 'Validate last approved maintenance plan against open alarms.', progress: 100 },
+      { name: 'Planner Agent', type: 'planning', status: 'active', model: 'Planner-P3', mission: 'Generate maintenance plans from active incidents.', progress: 76, successRate: 91.2, memory: { plantFocus: 'all', queue: 4 }, recentActions: ['Created Pune spindle intervention plan', 'Queued Ahmedabad dosing flush'] },
+      { name: 'Reliability Agent', type: 'reliability', status: 'active', model: 'Diagnostic-D2', mission: 'Rank machines by failure probability and RUL.', progress: 82, successRate: 88.6, memory: { topRisk: 'CNC Turning PN-102' }, recentActions: ['Raised CNC spindle thermal drift risk'] },
+      { name: 'Maintenance Agent', type: 'maintenance', status: 'active', model: 'Maint-M2', mission: 'Assign technicians and reserve maintenance windows.', progress: 64, successRate: 86.4, memory: { nextCrew: 'Farhan Shaikh' }, recentActions: ['Assigned Farhan to Pune spindle pack'] },
+      { name: 'Inventory Agent', type: 'inventory', status: 'active', model: 'Inventory-I2', mission: 'Reserve spares for approved work orders.', progress: 58, successRate: 93.1, memory: { lowStock: ['CHEMICAL_DOSING-BRG-01'] }, recentActions: ['Flagged one Ahmedabad bearing kit below reorder'] },
+      { name: 'Safety Agent', type: 'safety', status: 'idle', model: 'Safety-S1', mission: 'Watch boiler and chemical safety thresholds.', progress: 22, successRate: 97.4, memory: { permitsOpen: 2 }, recentActions: ['Verified steam boiler permit checklist'] },
+      { name: 'Quality Agent', type: 'quality', status: 'active', model: 'Quality-Q1', mission: 'Reduce SMT rejects and inspection false positives.', progress: 71, successRate: 89.8, memory: { defectFocus: 'nozzle bank B' }, recentActions: ['Linked placement rejects to nozzle drift'] },
+      { name: 'Energy Agent', type: 'energy', status: 'paused', model: 'Energy-E1', mission: 'Optimize energy and CO2 across plants.', progress: 41, successRate: 84.2, memory: { highestLoad: 'Ahmedabad Process Textiles' }, recentActions: ['Proposed boiler load staggering'] },
+      { name: 'Executive Agent', type: 'executive', status: 'done', model: 'Exec-X1', mission: 'Prepare board-ready risk and cost summary.', progress: 100, successRate: 95.6, memory: { lastSummary: 'Pune and Ahmedabad drive current risk exposure' }, recentActions: ['Published monthly downtime exposure'] },
+      { name: 'Production Agent', type: 'production', status: 'active', model: 'Prod-P1', mission: 'Protect output commitments while maintenance executes.', progress: 67, successRate: 87.5, memory: { constrainedLine: 'Pune Building A / Line 1' }, recentActions: ['Suggested turning-cell reroute'] },
     ]
   });
 
@@ -357,6 +363,50 @@ async function main() {
     ]
   });
 
+  const incidentAlarm = await prisma.alarm.findFirst({ where: { machineId: byName['CNC Turning PN-102'].id, status: 'active' } });
+  const incidentPlan = await prisma.plan.findFirst({ where: { title: 'Pune CNC-PN-102 spindle intervention' } });
+  const incidentOrder = await prisma.workOrder.findFirst({ where: { title: 'Inspect CNC Turning spindle pack' } });
+  await prisma.operationalIncident.create({
+    data: {
+      title: 'Pune spindle thermal drift lifecycle',
+      severity: 'critical',
+      status: 'active',
+      stage: 'work_order_created',
+      rootCause: 'Spindle bearing heat rise with vibration sideband growth after sustained high-RPM turning cycle.',
+      impactCost: 1840000,
+      downtimeMinutes: 96,
+      assignedAgent: 'Reliability Agent',
+      machineId: byName['CNC Turning PN-102'].id,
+      alarmId: incidentAlarm?.id,
+      planId: incidentPlan?.id,
+      workOrderId: incidentOrder?.id,
+      timeline: [
+        { t: '08:10', stage: 'sensor_anomaly', label: 'Temperature and vibration crossed learned baseline' },
+        { t: '08:14', stage: 'alarm_generated', label: 'Critical spindle thermal drift alarm generated' },
+        { t: '08:20', stage: 'ai_reasoning', label: 'Reliability Agent linked bearing heat to tool-load profile' },
+        { t: '08:31', stage: 'plan_created', label: 'Planner Agent created maintenance intervention plan' },
+        { t: '08:45', stage: 'work_order_created', label: 'Work order assigned to Farhan Shaikh' }
+      ]
+    }
+  });
+
+  await prisma.notification.createMany({
+    data: [
+      { userId: users[0].id, title: 'Critical incident active', message: 'Pune CNC Turning PN-102 requires spindle intervention approval.', type: 'incident', priority: 'critical', link: '/anomaly' },
+      { userId: users[3].id, title: 'Work order assigned', message: 'Inspect CNC Turning spindle pack is assigned to you.', type: 'assignment', priority: 'high', link: '/work-orders' },
+      { userId: users[0].id, title: 'Inventory reservation needed', message: 'Bearing kit stock is at reorder threshold for Ahmedabad chemical mixer.', type: 'inventory', priority: 'medium', link: '/maintenance' },
+      { title: 'Executive summary updated', message: 'Top downtime exposure moved to Pune Line 1 and Ahmedabad Chemical Skid.', type: 'executive', priority: 'medium', link: '/dashboard' }
+    ]
+  });
+
+  await prisma.auditLog.createMany({
+    data: [
+      { actorId: users[0].id, action: 'seed.lifecycle.created', entity: 'OperationalIncident', entityId: byName['CNC Turning PN-102'].id, detail: { stage: 'work_order_created' } },
+      { actorId: users[3].id, action: 'workorder.assigned', entity: 'WorkOrder', entityId: incidentOrder?.id, detail: { technician: 'Farhan Shaikh' } },
+      { actorId: users[0].id, action: 'plan.generated', entity: 'Plan', entityId: incidentPlan?.id, detail: { source: 'Planner Agent' } }
+    ]
+  });
+
   console.log('Seeding complete!');
   console.log(`  ${await prisma.user.count()} users`);
   console.log(`  ${await prisma.plant.count()} Indian facilities`);
@@ -372,6 +422,9 @@ async function main() {
   console.log(`  ${await prisma.agent.count()} agents`);
   console.log(`  ${await prisma.plan.count()} plans`);
   console.log(`  ${await prisma.workOrder.count()} work orders`);
+  console.log(`  ${await prisma.operationalIncident.count()} operational incidents`);
+  console.log(`  ${await prisma.notification.count()} notifications`);
+  console.log(`  ${await prisma.auditLog.count()} audit logs`);
 }
 
 main()

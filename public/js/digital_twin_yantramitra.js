@@ -269,7 +269,15 @@
     select.addEventListener('change', () => loadPlant(select.value));
     window.addEventListener('resize', resize);
     resize();
-    loadPlant(plants[0]?.id);
+    const requestedMachine = new URLSearchParams(window.location.search).get('machine');
+    const requested = requestedMachine ? machines.find(m => m.name.toLowerCase() === requestedMachine.toLowerCase()) : null;
+    if (requested) {
+      select.value = requested.plantId;
+      loadPlant(requested.plantId);
+      renderInspector(requested);
+    } else {
+      loadPlant(plants[0]?.id);
+    }
 
     function animate() {
       requestAnimationFrame(animate);

@@ -29,8 +29,28 @@ The seeded demo is now an India-first industrial scenario: Pune automotive compo
 - 16,704 sensor readings across temperature, vibration, pressure, RPM, power, and flow
 - Active alarm history, maintenance plans, persisted agent missions, and work orders
 - 7 named team members with distinct roles and avatars
+- 1 seeded operational incident that connects anomaly, alarm, AI reasoning, plan, work order, inventory reservation, and recovery timeline
 
 The Digital Twin page uses Three.js to render clickable machine geometry. Faulted machines are shown in red with a visible warning glow. The inspector panel shows hierarchy, live seeded readings, OEE, RUL, sensors, components, spare parts, maintenance timeline, and can create a real work order or deep-link to YantraNklan with machine context.
+
+## Connected Operating Workflow
+
+Phase 2 adds a persisted lifecycle backbone:
+
+```mermaid
+flowchart LR
+  A[Sensor anomaly] --> B[Alarm]
+  B --> C[Operational Incident]
+  C --> D[AI root-cause explanation]
+  D --> E[Planner Agent plan]
+  E --> F[Approval]
+  F --> G[Work Order]
+  G --> H[Inventory reservation]
+  H --> I[Maintenance execution]
+  I --> J[Recovered machine + improved KPIs]
+```
+
+The shared app shell now adds a command palette (`Ctrl/Cmd + K`), notification center, incident replay modal, export/share/history/details/compare handlers, and workflow actions that call real APIs.
 
 ## Setup
 
@@ -153,6 +173,14 @@ Operations:
 | `POST` | `/api/work-orders` |
 | `PATCH` | `/api/work-orders/:id` |
 | `GET` | `/api/analytics/reliability` |
+| `GET` | `/api/executive/summary` |
+| `GET` | `/api/incidents` |
+| `GET` | `/api/incidents/:id` |
+| `POST` | `/api/incidents/:id/actions` |
+| `GET` | `/api/notifications` |
+| `PATCH` | `/api/notifications/:id` |
+| `GET` | `/api/audit-log` |
+| `GET` | `/api/command-palette` |
 | `GET` | `/api/user/profile` |
 | `PATCH` | `/api/user/profile` |
 | `GET` | `/api/team` |
