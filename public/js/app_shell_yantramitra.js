@@ -41,6 +41,7 @@
         backdrop-filter: blur(18px);
         box-shadow: 0 18px 48px rgba(65, 63, 214, .18);
         overflow-y: auto;
+        pointer-events: auto;
         scrollbar-width: none;
       }
       .ym-shell-rail::-webkit-scrollbar { display: none; }
@@ -97,6 +98,8 @@
         align-items: center;
         gap: 10px;
         margin-left: 10px;
+        flex-shrink: 0;
+        white-space: nowrap;
       }
       .ym-home-auth a {
         border-radius: 9999px;
@@ -109,6 +112,22 @@
       @media (max-width: 900px) {
         .ym-shell-rail { right: 8px; top: auto; left: 8px; bottom: 8px; width: auto; height: 64px; flex-direction: row; border-radius: 9999px; overflow-x: auto; overflow-y: hidden; }
         .ym-ask-yantranklan { right: 14px; bottom: 86px; }
+      }
+      @media (max-width: 1100px) {
+        .ym-home-search,
+        .ym-home-secondary-actions {
+          display: none !important;
+        }
+      }
+      @media (max-width: 640px) {
+        .ym-home-auth {
+          gap: 6px;
+          margin-left: 4px;
+        }
+        .ym-home-auth a {
+          padding: 8px 10px;
+          font-size: 12px;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -148,11 +167,18 @@
   function addHomeAuthActions() {
     if (currentPath !== '/') return;
     const headerInner = document.querySelector('header .max-w-7xl, header > div, header');
-    if (!headerInner || headerInner.querySelector('.ym-home-auth')) return;
-    const auth = document.createElement('div');
-    auth.className = 'ym-home-auth';
-    auth.innerHTML = '<a class="ym-login" href="/login">Login</a><a class="ym-signup" href="/signup">Sign Up</a>';
-    headerInner.appendChild(auth);
+    const searchInput = document.querySelector('header input[placeholder*="Search"]');
+    const searchWrap = searchInput ? searchInput.closest('div') : null;
+    if (searchWrap) searchWrap.classList.add('ym-home-search');
+    const secondaryActions = searchWrap && searchWrap.nextElementSibling;
+    if (secondaryActions) secondaryActions.classList.add('ym-home-secondary-actions');
+
+    if (headerInner && !headerInner.querySelector('.ym-home-auth')) {
+      const auth = document.createElement('div');
+      auth.className = 'ym-home-auth';
+      auth.innerHTML = '<a class="ym-login" href="/login">Login</a><a class="ym-signup" href="/signup">Sign Up</a>';
+      headerInner.appendChild(auth);
+    }
 
     const heroActions = document.querySelector('main section .flex.flex-wrap');
     if (heroActions && !heroActions.querySelector('a[href="/login"]')) {

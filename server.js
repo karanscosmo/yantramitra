@@ -462,10 +462,12 @@ app.get('/api/user/profile', authApi, async (req, res) => {
 
 app.patch('/api/user/profile', authApi, async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, role } = req.body;
+    const allowedProfileRoles = ['operator', 'maintenance', 'plant_manager', 'executive'];
     const data = {};
     if (name) data.name = name;
     if (email) data.email = email;
+    if (role && allowedProfileRoles.includes(role)) data.role = role;
     const user = await prisma.user.update({ where: { id: req.user.id }, data, select: { id: true, email: true, name: true, role: true } });
     const newToken = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     setAuthCookie(res, newToken);
@@ -484,19 +486,41 @@ app.get('/api/onboarding/status', authApi, async (req, res) => {
 // ──────────────────────────────────────────────
 // YantraNklan AI Chat — powered by OpenAI
 // ──────────────────────────────────────────────
+function buildYantraNklanFallback(message, contextSummary) {
+  const text = String(message || '').toLowerCase();
+  const alarms = contextSummary.activeAlarms || [];
+  const machines = contextSummary.machines || [];
+  const workOrders = contextSummary.workOrders || [];
+  const agents = contextSummary.agents || [];
+
+  const namedMachine = machines.find(m => text.includes(String(m.name || '').toLowerCase()) || text.includes(String(m.id || '').toLowerCase()));
+  if (namedMachine) {
+    const relatedAlarms = alarms.filter(a => a.machine === namedMachine.name);
+    const relatedOrders = workOrders.filter(w => w.machine === namedMachine.name);
+    return [
+      `YantraNklan fallback mode: ${namedMachine.name} is currently ${namedMachine.status} with a ${namedMachine.health}% health score at ${namedMachine.plant}.`,
+      relatedAlarms.length ? `Active alarm: ${relatedAlarms[0].severity} - ${relatedAlarms[0].title}.` : 'No active alarm is attached to this machine in the current database snapshot.',
+      relatedOrders.length ? `Latest work order: ${relatedOrders[0].title} (${relatedOrders[0].status}, ${relatedOrders[0].priority}).` : 'No open work order is linked in the latest work order list.'
+    ].join(' ');
+  }
+
+  if (text.includes('alarm') || text.includes('alert') || text.includes('incident') || text.includes('anomaly')) {
+    if (!alarms.length) return 'YantraNklan fallback mode: there are no active alarms in the current database snapshot.';
+    return `YantraNklan fallback mode: ${alarms.length} active alarms are in the current snapshot. Highest priority item: ${alarms[0].severity} - ${alarms[0].title} on ${alarms[0].machine}.`;
+  }
+
+  if (text.includes('work order') || text.includes('maintenance')) {
+    if (!workOrders.length) return 'YantraNklan fallback mode: there are no recent work orders in the current database snapshot.';
+    return `YantraNklan fallback mode: ${workOrders.length} recent work orders are available. Latest: ${workOrders[0].title}, status ${workOrders[0].status}, priority ${workOrders[0].priority}, assigned to ${workOrders[0].assignedTo || 'unassigned'}.`;
+  }
+
+  return `YantraNklan fallback mode: I can see ${contextSummary.plants.length} plants, ${machines.length} machines, ${alarms.length} active alarms, ${workOrders.length} recent work orders, and ${agents.length} agents in the current operations database. Ask about a machine, alarm, or work order for a more specific lookup.`;
+}
+
 app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyPrefix: 'ai-chat' }), async (req, res) => {
   try {
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message is required' });
-
-    // Check for API key
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return res.status(503).json({ 
-        error: 'api_key_missing',
-        message: 'AI assistant is not configured yet. Please ask your administrator to set the OPENAI_API_KEY environment variable.'
-      });
-    }
 
     // Pull relevant context from the database
     const [machines, alarms, plants, agents, workOrders, plans] = await Promise.all([
@@ -517,6 +541,16 @@ app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyP
       plans: plans.map(p => ({ id: p.id, title: p.title, type: p.type, status: p.status, priority: p.priority })),
     };
 
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.json({
+        reply: buildYantraNklanFallback(message, contextSummary),
+        model: 'fallback-data-lookup',
+        fallback: true,
+        warning: 'OPENAI_API_KEY is not configured, so YantraNklan answered from database context only.'
+      });
+    }
+
     const systemPrompt = `You are YantraNklan, YantraMitra's operations AI assistant. You have access to real-time operational data.
 
 Current operational context:
@@ -534,32 +568,41 @@ Guidelines:
     const OpenAI = require('openai');
     const openai = new OpenAI({ apiKey });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      max_tokens: 500,
-      temperature: 0.7,
-    });
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
+        ],
+        max_tokens: 500,
+        temperature: 0.7,
+      });
 
-    const reply = completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
-    res.json({ reply, model: 'gpt-4o-mini' });
+      const reply = completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
+      res.json({ reply, model: 'gpt-4o-mini' });
+    } catch (e) {
+      console.error('AI provider error:', e.message);
+      if (e.code === 'insufficient_quota' || (e.error && e.error.code === 'insufficient_quota') || e.status === 429) {
+        return res.json({
+          reply: buildYantraNklanFallback(message, contextSummary),
+          model: 'fallback-data-lookup',
+          fallback: true,
+          warning: 'OpenAI quota or rate limit blocked the LLM call, so YantraNklan answered from database context only.'
+        });
+      }
+      if (e.code === 'invalid_api_key' || e.status === 401) {
+        return res.json({
+          reply: buildYantraNklanFallback(message, contextSummary),
+          model: 'fallback-data-lookup',
+          fallback: true,
+          warning: 'OPENAI_API_KEY is invalid, so YantraNklan answered from database context only.'
+        });
+      }
+      throw e;
+    }
   } catch (e) {
     console.error('AI Chat error:', e.message);
-    if (e.code === 'insufficient_quota' || (e.error && e.error.code === 'insufficient_quota')) {
-      return res.status(503).json({
-        error: 'api_quota_exceeded',
-        message: 'The AI assistant API key has exceeded its usage quota. Please ask your administrator to add billing to the OpenAI account or provide a new API key.'
-      });
-    }
-    if (e.code === 'invalid_api_key' || e.status === 401) {
-      return res.status(503).json({
-        error: 'api_key_invalid',
-        message: 'The AI assistant API key is invalid. Please ask your administrator to update the OPENAI_API_KEY environment variable.'
-      });
-    }
     res.status(500).json({ error: 'ai_error', message: 'Failed to process AI chat request: ' + e.message });
   }
 });

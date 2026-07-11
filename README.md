@@ -1,279 +1,151 @@
-# YantraMitra — Ops Intel & Machine Agency
+# YantraMitra
 
-**Ask your machines anything — and act on the answer.**
+Industrial operations intelligence for plant teams, maintenance teams, and AI-assisted command centers.
 
-YantraMitra is an industrial intelligence platform that unifies operational data, predictive analytics, and generative AI agents into a conversational command center for heavy industry. Monitor, diagnose, and optimize your entire factory floor through a single interface.
+YantraMitra is built from the original 20 Google Stitch HTML screens and keeps that standalone frontend structure intact. The backend is a real Express + Prisma + PostgreSQL service with JWT auth, bcryptjs password hashing, database-backed plant/machine/alarm/work-order data, and the YantraNklan AI operations assistant.
 
----
+## Current Stack
 
-## Features
-
-- **Global Command Center** — Real-time dashboard with plant-level KPIs, machine health, active alarms, and work order tracking across all facilities
-- **Asset Fleet Management** — Per-machine telemetry, health scores, alarm history, and maintenance scheduling
-- **Digital Twin** — Live factory visualization with machine status overlays
-- **Anomaly Detection** — AI-driven investigation of sensor anomalies across production lines
-- **Reliability Forecasting** — Plant-level health trends and predictive degradation analysis
-- **Scenario Simulator** — What-if modeling for production changes and maintenance planning
-- **AI Operations Console (YantraNklan)** — Conversational AI assistant with real-time access to your operational data
-- **Agent Mission Control** — Deploy and monitor autonomous AI agents across maintenance, logistics, and quality control
-- **Plan Review & Approval** — Maintenance plan workflow with approval/rejection
-- **Work Order Management** — Full work order lifecycle tracking
-- **Global Plant Map** — Geographic overview of all facilities with status indicators
-- **Multi-Agent Workflows** — Autonomous agents that collaborate to solve complex disruptions
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Layer | Implementation |
 |---|---|
-| **Runtime** | Node.js, Express |
-| **Database** | PostgreSQL (Neon) |
-| **ORM** | Prisma |
-| **Auth** | JWT (httpOnly cookies) |
-| **Frontend** | 20 standalone HTML pages, Tailwind CSS, Material Symbols |
-| **AI** | OpenAI GPT-4o-mini (YantraNklan) |
-| **Deployment** | Vercel (serverless) |
+| Frontend | 20 standalone HTML pages in `frontend/*/code.html`, Tailwind CDN, Material Symbols |
+| Shared UI | `public/js/app_shell_yantramitra.js` adds the shared right nav rail, home auth safety, and YantraNklan entry |
+| Backend | Node.js, Express |
+| Database | PostgreSQL, Prisma ORM |
+| Auth | JWT in httpOnly cookies, bcryptjs password hashing |
+| AI | OpenAI `gpt-4o-mini` when `OPENAI_API_KEY` is set; database lookup fallback when the key is missing, invalid, or quota-limited |
+| Deployment | Vercel serverless through `api/index.js` and `vercel.json` |
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- A PostgreSQL database (Neon free tier works great)
-- An OpenAI API key (optional, for YantraNklan AI chat)
-
-### Installation
+## Setup
 
 ```bash
-git clone https://github.com/karanscosmo/yantramitra.git
-cd yantramitra
 npm install
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```bash
 cp .env.example .env
 ```
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | Pooled Postgres connection string (used at runtime) |
-| `DIRECT_URL` | Direct (non-pooled) Postgres connection string (used for migrations/seed) |
-| `JWT_SECRET` | Random 64-char hex string for signing auth tokens |
-| `OPENAI_API_KEY` | OpenAI API key for YantraNklan AI assistant (optional) |
-| `ENABLE_DEMO_PASSWORD_RESET` | Demo-only password reset toggle. Keep `false` for production. |
+Required environment variables:
 
-> **Important**: `DATABASE_URL` must use the `-pooler` hostname for Neon. `DIRECT_URL` uses the direct hostname (no `-pooler`).
+| Variable | Required | Notes |
+|---|---:|---|
+| `DATABASE_URL` | Yes | Runtime Postgres URL. For Neon on Vercel, use the pooled `-pooler` URL. |
+| `DIRECT_URL` | Yes | Direct Postgres URL for Prisma migrations and seed. |
+| `JWT_SECRET` | Yes | Long random secret for JWT signing. |
+| `OPENAI_API_KEY` | No | Enables full YantraNklan LLM responses. Without it, the chat uses database lookup fallback. |
+| `ENABLE_DEMO_PASSWORD_RESET` | No | Set `true` only for demo/dev reset-password testing. Keep false in production. |
 
-### Database Setup
+Create/update the database and seed demo data:
 
 ```bash
-# Push the schema to your database
 npx prisma db push
-
-# Seed with demo data (2 users, 5 plants, 16 machines, 16k+ sensor readings, alarms, agents, plans, work orders)
 node seed.js
 ```
 
-### Run Locally
+Run locally:
 
 ```bash
 npm start
 ```
 
-The server starts at [http://localhost:3000](http://localhost:3000).
+Local URL: `http://localhost:3000`
 
-### Demo Login
+## Demo Login
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@yantramitra.com` | `password123` |
 | Operator | `operator@yantramitra.com` | `password123` |
 
----
+Signup supports these persisted roles: `operator`, `maintenance`, `plant_manager`, and `executive`. The onboarding role cards map into those roles and update the user profile.
+
+## Route Map
+
+| Route | Page |
+|---|---|
+| `/` | Landing page |
+| `/login` | Login |
+| `/signup` | Signup |
+| `/reset-password` | Reset password |
+| `/onboarding` | Role onboarding |
+| `/dashboard` | Global command center |
+| `/map` | Global operations map |
+| `/plant/detroit` | Detroit plant overview |
+| `/digital-twin` | Digital twin |
+| `/assets` | Asset fleet |
+| `/assets/pump-p-102` | Asset detail |
+| `/anomaly` | Anomaly investigation |
+| `/reliability` | Reliability forecast |
+| `/simulator` | Scenario simulator |
+| `/ai-console` | YantraNklan AI operations console |
+| `/agents` | Agent mission control |
+| `/plans` | Plan review |
+| `/maintenance` | Maintenance planner |
+| `/work-orders` | Work orders |
+| `/settings` | Settings and profile |
+
+Static info routes: `/privacy`, `/terms`, `/sitemap`, `/api-status`.
 
 ## Project Structure
 
-```
-yantramitra/
-├── api/                          # Vercel serverless entry point
-│   └── index.js                  # Express app export
-├── frontend/                     # 20 standalone HTML pages
-│   ├── yantramitra_home/         # Landing page
-│   ├── login_yantramitra_polished/
-│   ├── join_yantramitra_polished/
-│   ├── reset_password_yantramitra_polished/
-│   ├── onboarding_yantramitra_polished/
-│   ├── command_center_yantramitra/       # Dashboard
-│   ├── global_operations_map_yantramitra_polished/  # Map view
-│   ├── detroit_plant_overview_yantramitra/  # Plant detail
-│   ├── digital_twin_yantramitra/
-│   ├── asset_fleet_yantramitra/
-│   ├── asset_detail_pump_p_102_yantramitra/
-│   ├── anomaly_investigation_yantramitra/
-│   ├── reliability_forecast_yantramitra/
-│   ├── scenario_simulator_yantramitra/
-│   ├── ai_operations_console_yantramitra/   # YantraNklan chat
-│   ├── agent_mission_control_yantramitra/
-│   ├── plan_review_yantramitra/
-│   ├── maintenance_planner_yantramitra/
-│   ├── work_orders_yantramitra/
-│   └── settings_yantramitra/
-├── public/                      # Static assets
-│   ├── logo.svg                 # YantraMitra brand logo
-│   ├── images/
-│   │   ├── avatar.svg
-│   │   ├── dashboard.svg
-│   │   ├── factory.svg
-│   │   ├── machine.svg
-│   │   ├── robot.svg
-│   │   ├── yantranklan-avatar.svg
-│   │   ├── yantranklan-avatar-ai.jpg
-│   │   ├── ym-digital-twin-factory.jpg
-│   │   ├── ym-hero-control-room.jpg
-│   │   └── ym-operator-avatar.jpg
-│   └── js/                      # Per-page JavaScript
-│       ├── command_center_yantramitra.js
-│       ├── ai_operations_console_yantramitra.js
-│       └── ... (18 more)
-├── prisma/
-│   └── schema.prisma            # Database schema (7 models)
-├── lib/
-│   └── prisma.js                # PrismaClient singleton
-├── server.js                    # Express app + all API routes
-├── seed.js                      # Database seeder
-├── vercel.json                  # Vercel deployment config
-└── .env.example                 # Environment variable template
+```text
+api/
+  index.js                         Vercel serverless Express entry
+frontend/
+  */code.html                      20 original standalone UI screens
+lib/
+  prisma.js                        PrismaClient singleton for serverless
+prisma/
+  schema.prisma                    User, plant, machine, reading, alarm, agent, plan, work order models
+public/
+  images/                          Brand, operator, plant, AI, and industrial visuals
+  js/                              Page controllers and shared app shell
+server.js                          Express app, routes, auth, APIs, AI chat
+seed.js                            Demo industrial data seed
+vercel.json                        Build and routing config
 ```
 
----
+## API Summary
 
-## API Endpoints
+Authentication:
 
-### Authentication
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/auth/signup` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT |
-| POST | `/api/auth/logout` | Clear auth cookie |
-| POST | `/api/auth/reset-password` | Demo-only reset password endpoint; requires `ENABLE_DEMO_PASSWORD_RESET=true` |
-| GET | `/api/auth/me` | Get current user |
+| Method | Route |
+|---|---|
+| `POST` | `/api/auth/signup` |
+| `POST` | `/api/auth/login` |
+| `POST` | `/api/auth/logout` |
+| `POST` | `/api/auth/reset-password` |
+| `GET` | `/api/auth/me` |
 
-### Dashboard
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/dashboard/summary` | Aggregated KPIs across all plants |
+Operations:
 
-### Plants
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/plants` | List all plants |
-| GET | `/api/plants/:id` | Plant detail with machines |
+| Method | Route |
+|---|---|
+| `GET` | `/api/dashboard/summary` |
+| `GET` | `/api/plants` |
+| `GET` | `/api/plants/:id` |
+| `GET` | `/api/machines` |
+| `GET` | `/api/machines/:id` |
+| `GET` | `/api/readings` |
+| `GET` | `/api/alarms` |
+| `PATCH` | `/api/alarms/:id/resolve` |
+| `GET` | `/api/agents` |
+| `PATCH` | `/api/agents/:id` |
+| `GET` | `/api/plans` |
+| `PATCH` | `/api/plans/:id` |
+| `GET` | `/api/work-orders` |
+| `PATCH` | `/api/work-orders/:id` |
+| `GET` | `/api/analytics/reliability` |
+| `GET` | `/api/user/profile` |
+| `PATCH` | `/api/user/profile` |
+| `POST` | `/api/ai-chat` |
 
-### Machines
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/machines` | List all machines |
-| GET | `/api/machines/:id` | Machine detail with readings, alarms, work orders |
+## YantraNklan
 
-### Sensors
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/readings` | Sensor readings (filterable by machineId, metric, hours) |
+YantraNklan is the in-app AI operations assistant. It receives live database context for plants, machines, active alarms, agents, plans, and work orders. With `OPENAI_API_KEY`, it uses OpenAI `gpt-4o-mini`. If the key is missing, invalid, or quota-limited, `/api/ai-chat` returns a clear `fallback-data-lookup` response using the same database context, so the console remains useful during demos.
 
-### Alarms
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/alarms` | List all alarms |
-| PATCH | `/api/alarms/:id/resolve` | Resolve an alarm |
+## Production Notes
 
-### Agents
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/agents` | List all AI agents |
-| PATCH | `/api/agents/:id` | Update agent status/config |
-
-### Plans
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/plans` | List all maintenance plans |
-| PATCH | `/api/plans/:id` | Approve/reject a plan |
-
-### Work Orders
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/work-orders` | List all work orders |
-| PATCH | `/api/work-orders/:id` | Update work order status |
-
-### Analytics
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/analytics/reliability` | Plant-level reliability metrics |
-
-### User Profile
-| Method | Route | Description |
-|---|---|---|
-| GET | `/api/user/profile` | Get user profile |
-| PATCH | `/api/user/profile` | Update profile (name, email) |
-
-### AI Chat
-| Method | Route | Description |
-|---|---|---|
-| POST | `/api/ai-chat` | Send message to YantraNklan (requires auth + API key) |
-
----
-
-## YantraNklan AI Assistant
-
-YantraNklan is a data-aware AI operations assistant built into the platform. It:
-
-- Has real-time access to your plant, machine, alarm, agent, work order, and plan data
-- Answers questions like *"Why is Pump P-102 flagged?"* using actual telemetry
-- Provides maintenance recommendations based on current machine health
-- Tracks work order status and plan approvals
-
-### Setup
-
-Set `OPENAI_API_KEY` in your environment. If no key is configured, the chat interface will display a clear setup prompt — it will not silently fall back to fake responses.
-
-The endpoint supports both billing-quota and invalid-key scenarios with user-friendly error messages.
-
----
-
-## Deployment (Vercel)
-
-The project is pre-configured for Vercel deployment:
-
-1. Push to GitHub
-2. Import the repo in Vercel
-3. Add environment variables (`DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `OPENAI_API_KEY`)
-4. Deploy — `vercel.json` handles the build command (`npx prisma generate`) and routing
-
-> `DATABASE_URL` in Vercel should use the **pooled** connection string (with `-pooler` in the hostname) for serverless compatibility.
-
----
-
-## Seed Data
-
-Running `node seed.js` creates:
-
-- **2 users** — admin + operator
-- **5 plants** — Detroit, Mumbai, Berlin, Singapore, Sao Paulo
-- **16 machines** — CNCs, pumps, conveyors, robotic arms across all plants
-- **16,128 sensor readings** — 6 metrics per machine × 168 hours
-- **8 alarms** — mix of critical/warning across machines
-- **6 AI agents** — Sentinel, Diagnostic, Planner variations
-- **6 maintenance plans** — pending/approved/rejected
-- **8 work orders** — open/in-progress/completed
-
----
-
-## License
-
-Private — YantraMitra Platform
+- Vercel needs `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, and optionally `OPENAI_API_KEY`.
+- Neon serverless deployments should use pooled `DATABASE_URL` and direct `DIRECT_URL`.
+- Password reset is demo-only unless `ENABLE_DEMO_PASSWORD_RESET=true`; production should connect a real email/token workflow.
+- The seeded operations data is realistic demo data, not a replacement for a real historian, SCADA, CMMS, ERP, or IoT integration.
+- Admin-only mutations require an admin user role; demo operator users can read and use core flows.

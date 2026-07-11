@@ -1,6 +1,22 @@
 (function() {
   async function get(path) { const r = await fetch(path); return r.json(); }
   async function patch(path, body) { const r = await fetch(path, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); return r.json(); }
+  const roleMap = {
+    'plant-manager': 'plant_manager',
+    'reliability-engineer': 'maintenance',
+    'maintenance-supervisor': 'maintenance',
+    technician: 'operator',
+    operator: 'operator',
+    maintenance: 'maintenance',
+    plant_manager: 'plant_manager',
+    executive: 'executive'
+  };
+
+  function selectedRole() {
+    const selected = document.querySelector('[data-role].selected');
+    const raw = selected ? selected.dataset.role : 'operator';
+    return roleMap[raw] || 'operator';
+  }
 
   document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -14,7 +30,8 @@
         e.preventDefault();
         try {
           await patch('/api/user/profile', {
-            name: (form.querySelector('input[type="text"]') || {}).value || undefined
+            name: (form.querySelector('input[type="text"]') || {}).value || undefined,
+            role: selectedRole()
           });
         } catch {}
         window.location.href = '/dashboard';
@@ -23,8 +40,12 @@
 
     const buttons = document.querySelectorAll('button');
     buttons.forEach(btn => {
-      if (btn.type !== 'submit') {
-        btn.addEventListener('click', () => {
+      if (btn.dataset.role) return;
+      if (btn.id !== 'continue-btn') {
+        btn.addEventListener('click', async () => {
+          try {
+            await patch('/api/user/profile', { role: selectedRole() });
+          } catch {}
           window.location.href = '/dashboard';
         });
       }
@@ -46,5 +67,16 @@
         if (nextBtn) nextBtn.disabled = !filled;
       });
     });
+
+    const continueBtn = document.getElementById('continue-btn');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', async () => {
+        if (continueBtn.disabled) return;
+        try {
+          await patch('/api/user/profile', { role: selectedRole() });
+        } catch {}
+        window.location.href = '/dashboard';
+      });
+    }
   });
 })();
