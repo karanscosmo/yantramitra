@@ -1,17 +1,100 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#413fd6;stop-opacity:0.3"/>
-      <stop offset="100%" style="stop-color:#36ddc8;stop-opacity:0.1"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#413fd6" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#5efae4" stop-opacity="0.03"/>
     </linearGradient>
+    <linearGradient id="roof1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#413fd6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#413fd6" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="wall1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#413fd6" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#413fd6" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="roof2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5efae4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#5efae4" stop-opacity="0.15"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowSmall">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
-  <rect width="800" height="400" fill="url(#g)"/>
-  <rect x="50" y="200" width="150" height="200" fill="rgba(65,63,214,0.15)" rx="4"/>
-  <rect x="220" y="150" width="150" height="250" fill="rgba(65,63,214,0.1)" rx="4"/>
-  <rect x="390" y="180" width="150" height="220" fill="rgba(65,63,214,0.12)" rx="4"/>
-  <rect x="560" y="120" width="150" height="280" fill="rgba(65,63,214,0.08)" rx="4"/>
-  <circle cx="125" cy="180" r="20" fill="rgba(54,221,200,0.3)"/>
-  <circle cx="295" cy="130" r="20" fill="rgba(54,221,200,0.3)"/>
-  <circle cx="465" cy="160" r="20" fill="rgba(54,221,200,0.3)"/>
-  <circle cx="635" cy="100" r="20" fill="rgba(54,221,200,0.3)"/>
+  <rect width="800" height="400" fill="url(#sky)"/>
+  <line x1="0" y1="340" x2="800" y2="340" stroke="#413fd6" stroke-width="1" opacity="0.15"/>
+  <rect x="30" y="180" width="160" height="160" rx="2" fill="#413fd6" opacity="0.08" stroke="#413fd6" stroke-width="0.5" opacity="0.15"/>
+  <polygon points="30,180 110,130 190,180" fill="url(#roof1)" stroke="#413fd6" stroke-width="0.5" stroke-opacity="0.2"/>
+  <rect x="60" y="240" width="30" height="40" fill="#5efae4" opacity="0.2"/>
+  <rect x="130" y="240" width="30" height="40" fill="#5efae4" opacity="0.2"/>
+  <rect x="60" y="210" width="30" height="20" fill="#5efae4" opacity="0.15"/>
+  <rect x="130" y="210" width="30" height="20" fill="#5efae4" opacity="0.15"/>
+  <circle cx="110" cy="150" r="8" fill="#5efae4" opacity="0.6" filter="url(#glowSmall)"/>
+  <rect x="210" y="140" width="180" height="200" rx="2" fill="#413fd6" opacity="0.06" stroke="#413fd6" stroke-width="0.5" stroke-opacity="0.12"/>
+  <polygon points="210,140 300,90 390,140" fill="url(#roof2)" stroke="#5efae4" stroke-width="0.5" stroke-opacity="0.2"/>
+  <rect x="230" y="180" width="40" height="50" fill="#5efae4" opacity="0.12"/>
+  <rect x="290" y="180" width="40" height="50" fill="#5efae4" opacity="0.12"/>
+  <rect x="350" y="180" width="30" height="50" fill="#5efae4" opacity="0.12"/>
+  <rect x="230" y="250" width="30" height="20" fill="#413fd6" opacity="0.2"/>
+  <rect x="340" y="250" width="30" height="20" fill="#413fd6" opacity="0.2"/>
+  <circle cx="250" cy="155" r="3" fill="#5efae4" opacity="0.7" filter="url(#glowSmall)"/>
+  <circle cx="350" cy="155" r="3" fill="#5efae4" opacity="0.7" filter="url(#glowSmall)"/>
+  <rect x="410" y="200" width="140" height="140" rx="2" fill="#413fd6" opacity="0.07" stroke="#5efae4" stroke-width="0.5" stroke-opacity="0.15"/>
+  <polygon points="410,200 480,155 550,200" fill="url(#roof1)" stroke="#413fd6" stroke-width="0.5" stroke-opacity="0.2"/>
+  <rect x="430" y="250" width="25" height="30" fill="#5efae4" opacity="0.15"/>
+  <rect x="470" y="250" width="25" height="30" fill="#5efae4" opacity="0.15"/>
+  <rect x="510" y="250" width="25" height="30" fill="#5efae4" opacity="0.15"/>
+  <circle cx="480" cy="178" r="5" fill="#5efae4" opacity="0.8" filter="url(#glow)"/>
+  <rect x="570" y="160" width="200" height="180" rx="2" fill="#413fd6" opacity="0.05" stroke="#413fd6" stroke-width="0.5" stroke-opacity="0.1"/>
+  <polygon points="570,160 670,110 770,160" fill="url(#roof2)" stroke="#5efae4" stroke-width="0.5" stroke-opacity="0.2"/>
+  <rect x="590" y="200" width="25" height="30" fill="#5efae4" opacity="0.12"/>
+  <rect x="630" y="200" width="25" height="30" fill="#5efae4" opacity="0.12"/>
+  <rect x="670" y="200" width="25" height="30" fill="#5efae4" opacity="0.12"/>
+  <rect x="710" y="200" width="25" height="30" fill="#5efae4" opacity="0.12"/>
+  <rect x="590" y="250" width="160" height="12" fill="#413fd6" opacity="0.15"/>
+  <rect x="590" y="270" width="160" height="12" fill="#413fd6" opacity="0.12"/>
+  <rect x="590" y="290" width="160" height="12" fill="#413fd6" opacity="0.1"/>
+  <circle cx="670" cy="138" r="7" fill="#5efae4" opacity="0.7" filter="url(#glow)"/>
+  <circle cx="620" cy="145" r="3" fill="#5efae4" opacity="0.5"/>
+  <circle cx="720" cy="142" r="3" fill="#5efae4" opacity="0.5"/>
+  <rect x="60" y="340" width="680" height="6" fill="#413fd6" opacity="0.2"/>
+  <line x1="60" y1="346" x2="60" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="150" y1="346" x2="150" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="240" y1="346" x2="240" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="330" y1="346" x2="330" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="420" y1="346" x2="420" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="510" y1="346" x2="510" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="600" y1="346" x2="600" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <line x1="690" y1="346" x2="690" y2="400" stroke="#413fd6" stroke-width="2" opacity="0.08"/>
+  <rect x="60" y="346" width="680" height="54" fill="#413fd6" opacity="0.04"/>
+  <path d="M80 360 L140 360 L140 370 L80 370 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M170 365 L230 365 L230 375 L170 375 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M260 360 L320 360 L320 370 L260 370 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M350 365 L410 365 L410 375 L350 375 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M440 360 L500 360 L500 370 L440 370 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M530 365 L590 365 L590 375 L530 375 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M620 360 L680 360 L680 370 L620 370 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <path d="M710 365 L740 365 L740 375 L710 375 Z" fill="none" stroke="#5efae4" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="110" cy="355" r="3" fill="#5efae4" opacity="0.5" filter="url(#glowSmall)"/>
+  <circle cx="300" cy="355" r="3" fill="#5efae4" opacity="0.5" filter="url(#glowSmall)"/>
+  <circle cx="480" cy="355" r="3" fill="#5efae4" opacity="0.5" filter="url(#glowSmall)"/>
+  <circle cx="660" cy="355" r="3" fill="#5efae4" opacity="0.5" filter="url(#glowSmall)"/>
+  <line x1="80" y1="200" x2="80" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="140" y1="220" x2="140" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="235" y1="200" x2="235" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="365" y1="210" x2="365" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="460" y1="220" x2="460" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="530" y1="215" x2="530" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="610" y1="200" x2="610" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
+  <line x1="740" y1="220" x2="740" y2="340" stroke="#413fd6" stroke-width="1.5" opacity="0.2"/>
 </svg>

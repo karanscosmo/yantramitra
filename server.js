@@ -350,6 +350,89 @@ app.get('/api/onboarding/status', async (req, res) => {
   } catch { res.status(401).json({ error: 'Invalid token' }); }
 });
 
+// ──────────────────────────────────────────────
+// YantraNklan AI Chat — powered by OpenAI
+// ──────────────────────────────────────────────
+app.post('/api/ai-chat', authApi, async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message is required' });
+
+    // Check for API key
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ 
+        error: 'api_key_missing',
+        message: 'AI assistant is not configured yet. Please ask your administrator to set the OPENAI_API_KEY environment variable.'
+      });
+    }
+
+    // Pull relevant context from the database
+    const [machines, alarms, plants, agents, workOrders, plans] = await Promise.all([
+      require('./lib/prisma').machine.findMany({ include: { plant: { select: { name: true } } } }),
+      require('./lib/prisma').alarm.findMany({ where: { status: 'active' }, include: { machine: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 20 }),
+      require('./lib/prisma').plant.findMany(),
+      require('./lib/prisma').agent.findMany({ orderBy: { createdAt: 'desc' } }),
+      require('./lib/prisma').workOrder.findMany({ include: { machine: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 20 }),
+      require('./lib/prisma').plan.findMany({ orderBy: { createdAt: 'desc' }, take: 10 }),
+    ]);
+
+    const contextSummary = {
+      plants: plants.map(p => ({ id: p.id, name: p.name, location: p.location, status: p.status })),
+      machines: machines.map(m => ({ id: m.id, name: m.name, type: m.type, status: m.status, health: m.health, plant: m.plant?.name })),
+      activeAlarms: alarms.map(a => ({ id: a.id, severity: a.severity, title: a.title, message: a.message, machine: a.machine?.name, status: a.status })),
+      agents: agents.map(a => ({ id: a.id, name: a.name, type: a.type, status: a.status, mission: a.mission, progress: a.progress })),
+      workOrders: workOrders.map(w => ({ id: w.id, title: w.title, status: w.status, priority: w.priority, machine: w.machine?.name, assignedTo: w.assignedTo })),
+      plans: plans.map(p => ({ id: p.id, title: p.title, type: p.type, status: p.status, priority: p.priority })),
+    };
+
+    const systemPrompt = `You are YantraNklan, YantraMitra's operations AI assistant. You have access to real-time operational data.
+
+Current operational context:
+${JSON.stringify(contextSummary, null, 2)}
+
+Guidelines:
+- Answer questions about specific machines, plants, alarms, and work orders using the provided data.
+- If asked about something not in the data, say you don't have that information.
+- Be concise, professional, and data-aware.
+- When referencing a machine or asset, include its health score and status if available.
+- For alarm questions, mention severity and which machine it's on.
+- For work orders, mention status, priority, and assignee.
+- Keep responses under 200 words.`;
+
+    const OpenAI = require('openai');
+    const openai = new OpenAI({ apiKey });
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message }
+      ],
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+
+    const reply = completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
+    res.json({ reply, model: 'gpt-4o-mini' });
+  } catch (e) {
+    console.error('AI Chat error:', e.message);
+    if (e.code === 'insufficient_quota' || (e.error && e.error.code === 'insufficient_quota')) {
+      return res.status(503).json({
+        error: 'api_quota_exceeded',
+        message: 'The AI assistant API key has exceeded its usage quota. Please ask your administrator to add billing to the OpenAI account or provide a new API key.'
+      });
+    }
+    if (e.code === 'invalid_api_key' || e.status === 401) {
+      return res.status(503).json({
+        error: 'api_key_invalid',
+        message: 'The AI assistant API key is invalid. Please ask your administrator to update the OPENAI_API_KEY environment variable.'
+      });
+    }
+    res.status(500).json({ error: 'ai_error', message: 'Failed to process AI chat request: ' + e.message });
+  }
+});
+
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`YantraMitra server running at http://localhost:${PORT}`);

@@ -163,13 +163,13 @@
 <header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md dark:bg-surface/70 border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)]">
 <div class="max-w-7xl mx-auto flex justify-between items-center px-md h-full">
 <div class="flex items-center gap-xs">
-<span class="font-headline-lg text-headline-lg font-bold text-primary">YantraMitra</span>
+<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 </div>
 <nav class="hidden md:flex items-center space-x-md">
-<a class="text-primary font-bold border-b-2 border-primary py-1 font-body-md text-body-md" href="#">Dashboard</a>
-<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="#">Assets</a>
-<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="#">Agents</a>
-<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="#">Work Orders</a>
+<a class="text-primary font-bold border-b-2 border-primary py-1 font-body-md text-body-md" href="/dashboard">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="/assets">Assets</a>
+<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="/agents">Agents</a>
+<a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="/work-orders">Work Orders</a>
 </nav>
 <div class="flex items-center space-x-sm">
 <div class="relative focus-within:ring-2 focus-within:ring-primary/50 transition-all">
@@ -192,25 +192,25 @@
 </header>
 <!-- SideNavBar (Floating Rail) -->
 <aside class="fixed right-4 top-24 bottom-24 w-[72px] rounded-full border border-outline-variant/30 bg-white/60 backdrop-blur-xl shadow-[0_0_20px_rgba(65,63,214,0.15)] flex flex-col items-center justify-center space-y-sm py-md z-40 hidden lg:flex">
-<button class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] active:scale-95 transition-all">
+<a href="/dashboard" class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] active:scale-95 transition-all">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/assets" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
 <span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/agents" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
 <span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/work-orders" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
 <span class="material-symbols-outlined" data-icon="build">build</span>
-</button>
+</a>
 <div class="flex-grow"></div>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+<a href="/ai-console" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
 <span class="material-symbols-outlined" data-icon="help">help</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/settings" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
-</button>
+</a>
 </aside>
 <main class="pt-24 pb-12">
 <!-- Hero Section -->
@@ -223,10 +223,10 @@
                     Unify operational intelligence with generative AI agents. Monitor, diagnose, and optimize your entire factory floor through a conversational interface built for heavy industry.
                 </p>
 <div class="flex flex-wrap gap-md pt-md">
-<button class="shimmer-btn bg-gradient-to-r from-[#5B5BF0] to-[#7C7CFA] text-on-primary font-body-md text-lg px-xl py-4 rounded-full shadow-[0_0_15px_rgba(91,91,240,0.4)] hover:shadow-[0_0_25px_rgba(91,91,240,0.6)] transition-all">
+<a href="/signup" class="shimmer-btn bg-gradient-to-r from-[#5B5BF0] to-[#7C7CFA] text-on-primary font-body-md text-lg px-xl py-4 rounded-full shadow-[0_0_15px_rgba(91,91,240,0.4)] hover:shadow-[0_0_25px_rgba(91,91,240,0.6)] transition-all inline-block">
                         Request Demo
-                    </button>
-<button class="glass-card flex items-center gap-xs px-xl py-4 rounded-full text-on-surface font-body-md text-lg hover:bg-white/90 transition-all">
+                    </a>
+<button class="glass-card flex items-center gap-xs px-xl py-4 rounded-full text-on-surface font-body-md text-lg hover:bg-white/90 transition-all" onclick="alert('Demo video coming soon')">
 <span class="material-symbols-outlined text-primary">play_circle</span>
                         Watch Demo
                     </button>
@@ -330,9 +330,9 @@
                         Join 200+ global manufacturing leaders who are redefining efficiency with Agentic Ops Intel.
                     </p>
 <div class="flex flex-wrap justify-center gap-md">
-<button class="bg-white text-primary font-bold px-xl py-4 rounded-full text-lg shadow-xl hover:scale-105 transition-all">
+<a href="/signup" class="bg-white text-primary font-bold px-xl py-4 rounded-full text-lg shadow-xl hover:scale-105 transition-all inline-block">
                             Get Started for Free
-                        </button>
+                        </a>
 <button class="bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold px-xl py-4 rounded-full text-lg hover:bg-white/20 transition-all">
                             Contact Sales
                         </button>
@@ -351,10 +351,10 @@
                 </p>
 </div>
 <div class="flex items-center gap-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Sitemap</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Privacy</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="#">Terms</a>
-<a class="text-primary underline font-body-md text-body-md" href="#">API Status</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="/sitemap">Sitemap</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="/privacy">Privacy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="/terms">Terms</a>
+<a class="text-primary underline font-body-md text-body-md" href="/api-status">API Status</a>
 </div>
 </div>
 </footer>

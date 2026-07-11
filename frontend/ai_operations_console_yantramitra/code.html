@@ -159,6 +159,12 @@
             from { transform: translate(-10%, -10%); }
             to { transform: translate(10%, 10%); }
         }
+
+        @keyframes bounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-6px); }
+        }
+        .animate-bounce { animation: bounce 1.4s infinite ease-in-out; }
     </style>
 </head>
 <body class="bg-background text-on-background font-body-md overflow-hidden min-h-screen">
@@ -168,7 +174,7 @@
 <!-- TopNavBar -->
 <header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md dark:bg-surface/70 border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
 <div class="flex items-center gap-xs">
-<span class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed">YantraMitra</span>
+<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 <span class="font-label-caps text-label-caps text-secondary px-xs py-0.5 rounded bg-secondary/10 border border-secondary/20">AI OPS</span>
 </div>
 <div class="flex-1 max-w-xl px-md">
@@ -189,169 +195,30 @@
 </header>
 <!-- SideNavBar (Right-aligned floating rail) -->
 <nav class="fixed right-4 top-24 bottom-24 w-[72px] rounded-full border border-outline-variant/30 bg-white/60 backdrop-blur-xl dark:bg-surface-container/60 shadow-[0_0_20px_rgba(65,63,214,0.15)] z-50 flex flex-col items-center justify-center space-y-sm py-md">
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+<a href="/dashboard" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/assets" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="precision_manufacturing">precision_manufacturing</span>
-</button>
-<button class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] hover:scale-110 transition-transform duration-200 active:scale-95 transition-all">
+</a>
+<span class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</span>
+<a href="/work-orders" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="build">build</span>
-</button>
+</a>
 <div class="flex-grow"></div>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+<a href="/ai-console" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="help">help</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
+</a>
+<a href="/settings" class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 inline-flex items-center justify-center">
 <span class="material-symbols-outlined" data-icon="settings">settings</span>
-</button>
+</a>
 </nav>
 <!-- Main Content Area: AI Operations Console -->
 <main class="pt-16 pr-[100px] pl-md h-screen flex flex-col">
 <!-- Chat Stream Wrapper -->
-<section class="flex-1 overflow-y-auto chat-scroll px-md py-lg space-y-md">
-<!-- Turn 1: User -->
-<div class="flex justify-end">
-<div class="max-w-[80%] glass-panel rounded-2xl rounded-tr-none px-md py-sm shadow-sm">
-<p class="text-on-surface">Show me the current operational status of Detroit Line 3.</p>
-</div>
-</div>
-<!-- Turn 2: AI Response -->
-<div class="flex justify-start">
-<div class="max-w-[90%] space-y-sm">
-<div class="glass-panel rounded-2xl rounded-tl-none px-md py-sm shadow-sm border-l-4 border-l-primary">
-<p class="text-on-surface mb-xs">Detroit Line 3 is currently at **92% efficiency**. Two assets are showing early vibration anomalies.</p>
-<!-- Structured Inline Card -->
-<div class="mt-md bg-white/40 border border-outline-variant/30 rounded-xl p-md overflow-hidden">
-<div class="flex justify-between items-start mb-md">
-<div>
-<h4 class="font-section-header text-section-header text-primary">Line 3 Health Metrics</h4>
-<p class="text-label-caps font-label-caps text-on-surface-variant uppercase">Updated: 2 mins ago</p>
-</div>
-<div class="flex gap-xs">
-<span class="w-2 h-2 rounded-full bg-secondary status-pulse-teal"></span>
-<span class="text-label-caps font-label-caps text-secondary">ACTIVE MONITORING</span>
-</div>
-</div>
-<!-- Multi-series mini chart placeholder -->
-<div class="h-32 w-full mb-md flex items-end justify-between gap-1">
-<!-- Simulated Chart Bars -->
-<div class="w-full bg-primary/20 h-[60%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[80%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-primary/20 h-[75%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[65%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-primary/20 h-[90%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[85%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-secondary/20 h-[50%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-secondary h-[40%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-primary/20 h-[80%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[70%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-primary/20 h-[65%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[55%] rounded-t-sm"></div>
-</div>
-<div class="w-full bg-primary/20 h-[70%] rounded-t-sm relative group">
-<div class="absolute inset-x-0 bottom-0 bg-primary h-[60%] rounded-t-sm"></div>
-</div>
-</div>
-<!-- Part List -->
-<div class="space-y-xs">
-<div class="flex items-center justify-between p-xs bg-white/60 rounded-lg border border-outline-variant/10">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="font-kpi-numeric text-on-surface">P-101 (Conveyor)</span>
-</div>
-<span class="text-label-caps font-label-caps text-on-surface-variant">98.2%</span>
-</div>
-<div class="flex items-center justify-between p-xs bg-white/60 rounded-lg border border-outline-variant/10">
-<div class="flex items-center gap-xs">
-<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">warning</span>
-<span class="font-kpi-numeric text-on-surface">P-102 (Hydraulic Pump)</span>
-</div>
-<span class="text-label-caps font-label-caps text-tertiary">74.5%</span>
-</div>
-</div>
-</div>
-<!-- Citations -->
-<div class="mt-sm pt-sm border-t border-outline-variant/20 flex gap-xs">
-<span class="text-label-caps font-label-caps text-on-surface-variant">Sources:</span>
-<span class="px-xs bg-surface-container rounded border border-outline-variant/50 text-[10px] font-medium text-primary cursor-pointer hover:bg-primary hover:text-white transition-all">Sensor Hub ID-882</span>
-<span class="px-xs bg-surface-container rounded border border-outline-variant/50 text-[10px] font-medium text-primary cursor-pointer hover:bg-primary hover:text-white transition-all">Log Report #044</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Turn 3: User -->
-<div class="flex justify-end">
-<div class="max-w-[80%] glass-panel rounded-2xl rounded-tr-none px-md py-sm shadow-sm">
-<p class="text-on-surface">Predict failure for P-102. When should we schedule maintenance?</p>
-</div>
-</div>
-<!-- Turn 4: AI Response -->
-<div class="flex justify-start">
-<div class="max-w-[90%] space-y-sm">
-<div class="glass-panel rounded-2xl rounded-tl-none px-md py-sm shadow-sm border-l-4 border-l-primary">
-<p class="text-on-surface">Based on thermal degradation patterns, P-102 has a **72% probability of failure within the next 48 hours**. I recommend scheduling maintenance during the 10:00 PM shift tonight.</p>
-<!-- Prediction Card -->
-<div class="mt-md grid grid-cols-2 gap-sm">
-<div class="bg-tertiary-container/10 border border-tertiary/20 rounded-xl p-sm flex items-center gap-sm">
-<div class="bg-tertiary rounded-full p-2">
-<span class="material-symbols-outlined text-white text-sm">schedule</span>
-</div>
-<div>
-<p class="text-label-caps font-label-caps text-on-surface-variant">EST. FAILURE</p>
-<p class="font-kpi-numeric text-tertiary">~42 Hours</p>
-</div>
-</div>
-<div class="bg-secondary-container/10 border border-secondary/20 rounded-xl p-sm flex items-center gap-sm">
-<div class="bg-secondary rounded-full p-2">
-<span class="material-symbols-outlined text-white text-sm">event_available</span>
-</div>
-<div>
-<p class="text-label-caps font-label-caps text-on-surface-variant">REC. SLOT</p>
-<p class="font-kpi-numeric text-secondary">Tonight 22:00</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Turn 5: User (Brief) -->
-<div class="flex justify-end">
-<div class="max-w-[80%] glass-panel rounded-2xl rounded-tr-none px-md py-sm shadow-sm">
-<p class="text-on-surface">What is the cost impact of unscheduled downtime?</p>
-</div>
-</div>
-<!-- Turn 6: AI Response -->
-<div class="flex justify-start">
-<div class="max-w-[90%] space-y-sm">
-<div class="glass-panel rounded-2xl rounded-tl-none px-md py-sm shadow-sm border-l-4 border-l-primary">
-<p class="text-on-surface">Unscheduled downtime for Line 3 costs approximately **$12,400 per hour** in lost production and idle labor. A failure on P-102 would likely cause a 3.5-hour stoppage.</p>
-</div>
-</div>
-</div>
-<!-- Turn 7: User (Brief) -->
-<div class="flex justify-end">
-<div class="max-w-[80%] glass-panel rounded-2xl rounded-tr-none px-md py-sm shadow-sm">
-<p class="text-on-surface">Approve maintenance for 10:00 PM.</p>
-</div>
-</div>
-<!-- Turn 8: AI Response -->
-<div class="flex justify-start">
-<div class="max-w-[90%] space-y-sm">
-<div class="glass-panel rounded-2xl rounded-tl-none px-md py-sm shadow-sm border-l-4 border-l-primary">
-<p class="text-on-surface">Maintenance task **MNT-2024-092** has been generated and assigned to the Night Shift Lead (Michael R.). Production schedules for 22:00 - 02:00 have been adjusted.</p>
-</div>
-</div>
-</div>
-</section>
+<section class="flex-1 overflow-y-auto chat-scroll px-md py-lg space-y-md"></section>
 <!-- Fixed Bottom Input Area -->
 <section class="pb-md pt-xs px-md">
 <!-- Suggested Prompt Pills -->
@@ -372,7 +239,7 @@
 <!-- Input Bar -->
 <div class="glass-panel rounded-2xl p-xs flex items-center gap-xs shadow-lg border-primary/20">
 <button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container rounded-lg transition-colors">attach_file</button>
-<input class="flex-1 bg-transparent border-none outline-none text-body-md px-sm py-2" placeholder="Ask YantraMitra anything about your operations..." type="text"/>
+<input class="flex-1 bg-transparent border-none outline-none text-body-md px-sm py-2" placeholder="Ask YantraNklan anything about your operations..." type="text"/>
 <div class="flex items-center gap-xs pr-xs">
 <button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container rounded-lg transition-colors">mic</button>
 <button class="bg-primary-container text-on-primary-container p-3 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md shimmer">

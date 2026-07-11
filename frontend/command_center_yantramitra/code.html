@@ -142,7 +142,7 @@
 <!-- Top Bar Navigation Shell -->
 <header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md shadow-[0_8px_32px_0_rgba(65,63,214,0.1)]">
 <div class="flex items-center gap-sm">
-<span class="font-headline-lg text-headline-lg font-bold text-primary">YantraMitra</span>
+<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 <div class="h-6 w-[1px] bg-outline-variant/50 mx-xs"></div>
 <span class="font-label-caps text-label-caps text-on-surface-variant">Ops Intel • Global Command</span>
 </div>
@@ -168,28 +168,28 @@
 <!-- Side Navigation Rail (Right Aligned Floating) -->
 <nav class="fixed right-4 top-24 bottom-24 w-[72px] rounded-full glass-panel border border-outline-variant/30 flex flex-col items-center justify-center space-y-sm py-md z-40">
 <!-- Dashboard (Active) -->
-<a class="group relative bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] active:scale-95 transition-all" href="#">
+<a class="group relative bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] active:scale-95 transition-all" href="/dashboard">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-primary text-on-primary text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Dashboard</span>
 </a>
-<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="#">
+<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="/assets">
 <span class="material-symbols-outlined">precision_manufacturing</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-surface-variant text-on-surface-variant text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Assets</span>
 </a>
-<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="#">
+<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="/agents">
 <span class="material-symbols-outlined">smart_toy</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-surface-variant text-on-surface-variant text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Agents</span>
 </a>
-<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="#">
+<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="/work-orders">
 <span class="material-symbols-outlined">build</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-surface-variant text-on-surface-variant text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Work Orders</span>
 </a>
 <div class="flex-grow"></div>
-<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="#">
+<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="/ai-console">
 <span class="material-symbols-outlined">help</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-surface-variant text-on-surface-variant text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Support</span>
 </a>
-<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="#">
+<a class="group relative text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200 active:scale-95" href="/settings">
 <span class="material-symbols-outlined">settings</span>
 <span class="absolute right-full mr-4 px-2 py-1 bg-surface-variant text-on-surface-variant text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">Settings</span>
 </a>
@@ -485,10 +485,10 @@
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md">
 <span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YANTRAMITRA PLATFORM. ALL RIGHTS RESERVED.</span>
 <div class="flex gap-md mt-sm md:mt-0">
-<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="#">Sitemap</a>
-<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="#">Privacy</a>
-<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="#">Terms</a>
-<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors flex items-center gap-1" href="#">
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors flex items-center gap-1" href="/api-status">
 <span class="w-2 h-2 bg-secondary rounded-full"></span> API Status
                 </a>
 </div>
