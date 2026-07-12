@@ -179,8 +179,28 @@
 <main class="h-screen w-screen map-container relative overflow-hidden pt-16">
 <!-- Background Map Visualization (High-end Geo Viz) -->
 <div class="absolute inset-0 z-0">
-<div class="w-full h-full opacity-80 bg-[radial-gradient(circle_at_52%_44%,rgba(91,91,240,.13),transparent_38%),linear-gradient(rgba(65,63,214,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(65,63,214,.07)_1px,transparent_1px)] bg-[size:auto,32px_32px,32px_32px]">
-<svg viewBox="0 0 1000 1000" class="absolute inset-0 h-full w-full" aria-label="India operations map" role="img"><path d="M465 130 L585 175 635 245 690 300 665 365 710 430 665 500 650 585 600 640 560 770 515 850 485 735 440 650 382 600 355 510 385 420 355 325 405 255Z" fill="#e1dfff" stroke="#5b5bf0" stroke-width="5" opacity=".8"/><path d="M470 180 L580 215M400 320 L660 350M390 450 L670 470M390 560 L640 590" stroke="#c1c1ff" stroke-width="3" opacity=".9"/></svg>
+<div class="w-full h-full opacity-90 bg-[radial-gradient(circle_at_72%_50%,rgba(94,250,228,.16),transparent_28%),radial-gradient(circle_at_50%_45%,rgba(91,91,240,.13),transparent_42%),linear-gradient(rgba(65,63,214,.06)_1px,transparent_1px),linear-gradient(90deg,rgba(65,63,214,.06)_1px,transparent_1px)] bg-[size:auto,auto,32px_32px,32px_32px]">
+<svg viewBox="0 0 1200 620" class="absolute inset-0 h-full w-full" aria-label="Global operations map" role="img" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="ym-land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f4ff"/><stop offset="1" stop-color="#d9d8ff"/></linearGradient>
+<filter id="ym-map-shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#413fd6" flood-opacity=".12"/></filter>
+</defs>
+<rect width="1200" height="620" fill="rgba(255,255,255,.18)"/>
+<g fill="url(#ym-land)" stroke="#8b89f6" stroke-width="1.5" opacity=".92" filter="url(#ym-map-shadow)">
+<path d="M91 174 148 126 237 117 312 145 329 201 302 247 227 258 199 305 122 294 78 244Z"/>
+<path d="M257 316 325 315 365 365 348 443 298 514 253 477 247 407 222 357Z"/>
+<path d="M492 139 602 108 714 128 742 185 694 220 621 205 565 246 486 221 430 183Z"/>
+<path d="M643 251 719 242 797 279 822 348 767 390 691 361 638 304Z"/>
+<path d="M777 166 929 134 1066 169 1125 247 1073 314 958 286 884 338 813 293 820 226Z"/>
+<path d="M885 360 971 373 1034 430 1012 501 929 491 872 436Z"/>
+<path d="M941 501 1009 521 1049 568 995 590 925 558Z"/>
+</g>
+<g fill="none" stroke="#c1c1ff" stroke-width="1" opacity=".38">
+<path d="M0 220H1200M0 310H1200M0 400H1200"/>
+<path d="M230 0V620M460 0V620M690 0V620M920 0V620"/>
+</g>
+<path d="M827 266 842 270 854 283 850 300 836 309 821 297 816 279Z" fill="#c8fff7" stroke="#006b5f" stroke-width="2" opacity=".95"/>
+</svg>
 </div>
 <!-- Interactive Map Pins -->
 <div id="pins-container"><!-- Global Network Lines -->

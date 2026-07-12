@@ -91,10 +91,6 @@
       }
       .ym-shell-rail .material-symbols-outlined { font-size: 23px; line-height: 1; }
       .ym-ask-yantranklan {
-        position: fixed;
-        right: 108px;
-        bottom: 96px;
-        z-index: 62;
         display: inline-flex;
         align-items: center;
         gap: 10px;
@@ -107,10 +103,16 @@
         box-shadow: 0 18px 42px rgba(65, 63, 214, .20);
         backdrop-filter: blur(18px);
         font: 700 13px/1.2 Inter, system-ui, sans-serif;
+        white-space: nowrap;
       }
-      body.ym-shell-safe-bottom main,
-      body.ym-shell-safe-bottom footer {
-        padding-bottom: 112px !important;
+      header .ym-ask-yantranklan {
+        box-shadow: 0 10px 24px rgba(65, 63, 214, .12);
+      }
+      body.ym-in-app footer {
+        display: none !important;
+      }
+      body.ym-digital-twin .ym-shell-rail {
+        z-index: 80;
       }
       .ym-home-motion {
         position: fixed;
@@ -256,6 +258,21 @@
         justify-content: center;
         padding: 0 4px;
       }
+      header .ym-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #ba1a1a;
+        color: #fff;
+        font-size: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+      }
       .ym-ask-yantranklan img {
         width: 34px;
         height: 34px;
@@ -300,7 +317,8 @@
       .ym-auth-back .material-symbols-outlined { font-size: 18px; }
       @media (max-width: 900px) {
         .ym-shell-rail { right: 8px; top: auto; left: 8px; bottom: 8px; width: auto; height: 64px; flex-direction: row; border-radius: 9999px; overflow-x: auto; overflow-y: hidden; }
-        .ym-ask-yantranklan { right: 14px; bottom: 84px; }
+        header .ym-ask-yantranklan span { display: none; }
+        header .ym-ask-yantranklan { padding: 6px; }
       }
       @media (max-width: 1100px) {
         .ym-home-search,
@@ -355,12 +373,18 @@
   function addYantraNklanEntry() {
     if (shellExcludedPaths.includes(currentPath)) return;
     if (document.querySelector('.ym-ask-yantranklan') || currentPath === '/ai-console') return;
-    document.body.classList.add('ym-shell-safe-bottom');
     const link = document.createElement('a');
     link.href = '/ai-console';
     link.className = 'ym-ask-yantranklan';
     link.innerHTML = '<img src="/images/yantranklan-avatar-ai.jpg" alt="YantraNklan"><span>Ask YantraNklan</span>';
-    document.body.appendChild(link);
+    const header = document.querySelector('header');
+    const headerActions = header ? Array.from(header.querySelectorAll('div')).reverse().find(el => {
+      const icons = el.querySelectorAll('.material-symbols-outlined').length;
+      return icons >= 1 && el.querySelector('img[src*="ym-operator-avatar"]');
+    }) : null;
+    if (headerActions) headerActions.insertBefore(link, headerActions.firstChild);
+    else if (header) header.appendChild(link);
+    else document.body.appendChild(link);
   }
 
   function wireHeaderShortcuts() {
@@ -384,6 +408,18 @@
         target.addEventListener('click', () => { window.location.href = '/settings'; });
       }
     });
+  }
+
+  function cleanupInAppChrome() {
+    if (shellExcludedPaths.includes(currentPath)) return;
+    document.querySelectorAll('footer').forEach(footer => { footer.style.display = 'none'; });
+    document.querySelectorAll('.ym-notification-fab').forEach(el => el.remove());
+    if (currentPath === '/digital-twin') {
+      document.querySelectorAll('body > div, main > div, main section > div').forEach(el => {
+        const text = el.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+        if (text.includes('grid status') || text.includes('active personnel')) el.remove();
+      });
+    }
   }
 
   function addHomeAuthActions() {
@@ -612,16 +648,29 @@
   }
 
   async function addNotificationCenter() {
-    if (shellExcludedPaths.includes(currentPath) || document.querySelector('.ym-notification-fab')) return;
+    if (shellExcludedPaths.includes(currentPath)) return;
     const notes = await api('/api/notifications').catch(() => []);
     const unread = notes.filter(n => n.status === 'unread').length;
-    const btn = document.createElement('button');
-    btn.className = 'ym-notification-fab';
-    btn.innerHTML = `<span class="material-symbols-outlined">notifications</span>${unread ? `<span class="ym-badge">${unread}</span>` : ''}`;
-    btn.addEventListener('click', () => {
+    const existingButtons = Array.from(document.querySelectorAll('header button, header a')).filter(el => {
+      const icon = el.querySelector('.material-symbols-outlined') || (el.classList?.contains('material-symbols-outlined') ? el : null);
+      return icon?.textContent.trim() === 'notifications';
+    });
+    const btn = existingButtons[0] || document.createElement('button');
+    if (!existingButtons.length) {
+      btn.type = 'button';
+      btn.className = 'material-symbols-outlined text-primary p-2 hover:bg-primary/10 rounded-full transition-colors';
+      btn.textContent = 'notifications';
+      document.querySelector('header')?.appendChild(btn);
+    }
+    if (unread && !btn.querySelector('.ym-badge')) {
+      btn.style.position = 'relative';
+      btn.insertAdjacentHTML('beforeend', `<span class="ym-badge">${unread}</span>`);
+    }
+    existingButtons.slice(1).forEach(el => { el.style.display = 'none'; });
+    btn.addEventListener('click', event => {
+      event.preventDefault();
       showModal('Notification Center', notes.length ? `<div style="display:grid;gap:10px">${notes.map(n => `<a href="${n.link || '#'}" style="display:block;text-decoration:none;color:#191a28;padding:12px;border:1px solid #c7c4d7;border-radius:12px"><strong>${n.title}</strong><p style="color:#464555;margin:4px 0 0">${n.message}</p><small>${n.priority} · ${n.status}</small></a>`).join('')}</div>` : '<p>No notifications.</p>');
     });
-    document.body.appendChild(btn);
   }
 
   function openCommandPalette() {
@@ -743,9 +792,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    if (!shellExcludedPaths.includes(currentPath)) document.body.classList.add('ym-in-app');
+    if (currentPath === '/digital-twin') document.body.classList.add('ym-digital-twin');
     injectStyles();
     normalizeRightRail();
     addYantraNklanEntry();
+    cleanupInAppChrome();
     wireHeaderShortcuts();
     wireLogoAndBackNavigation();
     addHomeAuthActions();

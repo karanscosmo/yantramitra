@@ -171,11 +171,11 @@
     if (!main) return;
     main.innerHTML = `
       <section class="h-screen pt-6 px-md md:pr-32 relative overflow-hidden">
-        <div class="absolute top-24 left-md z-30 glass-panel rounded-2xl p-4 w-[min(390px,calc(100vw-32px))]">
+        <div class="absolute top-28 left-md z-30 glass-panel rounded-2xl p-4 w-[min(460px,calc(100vw-32px))] max-h-[calc(100vh-210px)] overflow-hidden">
           <p class="text-[11px] uppercase tracking-[0.16em] text-primary font-bold">Interactive 3D Digital Twin</p>
-          <h1 class="text-3xl font-black text-on-surface mt-1">Live 3D Machine Floor</h1>
-          <select id="ym-plant-select" class="mt-4 w-full rounded-xl border border-outline-variant/50 bg-white/80 p-3 font-bold"></select>
-          <p id="ym-plant-meta" class="text-sm text-on-surface-variant mt-3"></p>
+          <h1 class="text-2xl font-black text-on-surface mt-1 leading-tight">Live 3D Machine Floor</h1>
+          <select id="ym-plant-select" class="mt-3 w-full rounded-xl border border-outline-variant/50 bg-white/80 p-3 pr-8 font-bold text-sm leading-tight"></select>
+          <p id="ym-plant-meta" class="text-sm text-on-surface-variant mt-3 leading-relaxed break-words"></p>
         </div>
         <div id="ym-twin-canvas" class="absolute inset-0 bg-[#f4f2ff]"></div>
         <aside id="ym-twin-inspector" class="fixed right-[104px] top-24 bottom-28 w-[360px] max-w-[calc(100vw-128px)] overflow-auto glass-panel rounded-2xl p-5 z-40 shadow-2xl"></aside>

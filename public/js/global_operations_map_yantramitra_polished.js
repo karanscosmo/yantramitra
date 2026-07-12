@@ -16,11 +16,10 @@
     }
   }
 
-  function projectIndia(lat, lng) {
-    const minLat = 7.5, maxLat = 32.5, minLng = 68, maxLng = 90;
+  function projectWorld(lat, lng) {
     return {
-      left: Math.max(8, Math.min(92, ((lng - minLng) / (maxLng - minLng)) * 100)),
-      top: Math.max(10, Math.min(90, (1 - (lat - minLat) / (maxLat - minLat)) * 100))
+      left: Math.max(3, Math.min(97, ((lng + 180) / 360) * 100)),
+      top: Math.max(6, Math.min(94, (1 - ((lat + 70) / 150)) * 100))
     };
   }
 
@@ -33,14 +32,13 @@
   function renderPins(plants) {
     const host = document.getElementById('pins-container');
     if (!host) return;
+    const projected = plants.map(plant => ({ plant, pos: projectWorld(plant.lat, plant.lng) }));
+    const hub = { left: 70.5, top: 51 };
     host.innerHTML = `
       <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none" viewBox="0 0 1000 1000">
-        <path d="M 330 350 Q 500 245 690 520" fill="none" opacity="0.28" stroke="#413fd6" stroke-width="1.5"></path>
-        <path d="M 470 560 Q 610 530 745 615" fill="none" opacity="0.28" stroke="#413fd6" stroke-width="1.5"></path>
-        <path d="M 570 390 Q 650 450 760 520" fill="none" opacity="0.28" stroke="#413fd6" stroke-width="1.5"></path>
+        ${projected.map(({ pos }) => `<path d="M ${hub.left * 10} ${hub.top * 10} Q ${(hub.left * 10 + pos.left * 10) / 2} ${Math.min(hub.top, pos.top) * 10 - 60} ${pos.left * 10} ${pos.top * 10}" fill="none" opacity="0.32" stroke="#413fd6" stroke-width="1.5"></path>`).join('')}
       </svg>
-      ${plants.map(plant => {
-        const pos = projectIndia(plant.lat, plant.lng);
+      ${projected.map(({ plant, pos }) => {
         const t = tone(plant.status);
         return `<button class="absolute -translate-x-1/2 -translate-y-1/2 z-10 group cursor-pointer" style="left:${pos.left}%;top:${pos.top}%;" data-plant-id="${plant.id}">
           <div class="w-3.5 h-3.5 ${t.dot} rounded-full pulse-marker relative shadow-[0_0_12px_rgba(65,63,214,0.8)]"></div>

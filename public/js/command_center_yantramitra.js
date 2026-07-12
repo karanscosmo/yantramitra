@@ -103,7 +103,7 @@
       }
     ];
     host.innerHTML = items.map(item => `
-      <div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+      <button type="button" data-agent-context="${encodeURIComponent(item.agent)}" class="w-full text-left p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
         <div class="w-10 h-10 rounded-full ${item.color} flex items-center justify-center flex-shrink-0">
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">${item.icon}</span>
         </div>
@@ -112,7 +112,12 @@
           <p class="text-xs text-on-surface-variant leading-relaxed">${item.text}</p>
           <p class="text-[10px] text-primary mt-xs font-medium uppercase tracking-wider">${item.time}</p>
         </div>
-      </div>`).join('');
+      </button>`).join('');
+    host.querySelectorAll('[data-agent-context]').forEach(button => {
+      button.addEventListener('click', () => {
+        window.location.href = '/agents?focus=' + button.dataset.agentContext;
+      });
+    });
   }
 
   function wireNavigation() {
