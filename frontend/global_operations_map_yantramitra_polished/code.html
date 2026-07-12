@@ -11,7 +11,7 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <style>
   body { margin: 0; overflow: hidden; font-family: Inter, system-ui, sans-serif; }
-  #ym-map { position: fixed; inset: 72px 84px 0 0; z-index: 1; }
+  #ym-map { position: fixed; inset: 72px var(--sidebar-width) 0 0; z-index: 1; }
   .ym-popup-custom .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 20px 60px rgba(65,63,214,0.18); padding: 0; }
   .ym-popup-custom .leaflet-popup-content { margin: 14px; min-width: 260px; }
   .ym-popup-custom .leaflet-popup-close-button { top: 8px !important; right: 8px !important; color: #767586 !important; font-size: 18px !important; }
@@ -37,14 +37,13 @@
   .ym-control-btn.is-active { background: #413fd6; color: #fff; }
   .modal-backdrop { position: fixed; inset: 0; z-index: 500; background: rgba(25,26,40,0.36); display: flex; align-items: center; justify-content: center; padding: 18px; }
   .modal-card { width: min(680px, calc(100vw - 32px)); max-height: min(80vh, 680px); overflow-y: auto; border-radius: 18px; border: 1px solid rgba(199,196,215,0.72); background: rgba(255,255,255,0.96); box-shadow: 0 30px 90px rgba(25,26,40,0.28); padding: 20px; }
-  @media (max-width: 900px) { #ym-map { right: 56px; } }
-  @media (max-width: 480px) { #ym-map { right: 48px; } }
+
 </style>
 </head>
 <body>
 <div id="ym-map"></div>
 
-<div id="ym-overlay-controls" class="fixed top-20 right-[96px] z-50 flex items-center gap-1 glass-panel-solid rounded-2xl px-2 py-1.5 shadow-lg">
+<div id="ym-overlay-controls" class="fixed top-20 z-50 flex items-center gap-1 glass-panel-solid rounded-2xl px-2 py-1.5 shadow-lg" style="right: calc(var(--sidebar-width) + 12px)">
   <button class="ym-overlay-btn is-active" data-layer="plants"><span class="material-symbols-outlined text-sm">precision_manufacturing</span> Plants</button>
   <button class="ym-overlay-btn" data-layer="health"><span class="material-symbols-outlined text-sm">monitoring</span> Health</button>
   <button class="ym-overlay-btn" data-layer="network"><span class="material-symbols-outlined text-sm">hub</span> Network</button>

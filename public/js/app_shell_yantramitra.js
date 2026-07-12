@@ -20,7 +20,6 @@
   const shellExcludedPaths = ['/', ...authPaths];
   const demoStorageKeys = ['ymDemoActive', 'ymDemoIndex', 'ymDemoPaused', 'ymDemoStartedAt'];
   const demoTtlMs = 8 * 60 * 1000;
-  const RAIL_WIDTH = 84;
 
   const demoSteps = [
     { route: '/dashboard', target: 'h1, .font-headline-lg', caption: 'Global command center: live KPIs, open incidents, and agent activity across Indian facilities.' },
@@ -43,6 +42,10 @@
     const style = document.createElement('style');
     style.id = 'ym-shell-styles';
     style.textContent = `
+      :root { --sidebar-width: 84px; }
+      @media (max-width: 768px) { :root { --sidebar-width: 56px; } }
+      @media (max-width: 480px) { :root { --sidebar-width: 48px; } }
+
       .ym-app-shell {
         display: flex;
         width: 100%;
@@ -53,7 +56,7 @@
         right: 0;
         top: 0;
         bottom: 0;
-        width: ${RAIL_WIDTH}px;
+        width: var(--sidebar-width);
         z-index: 80;
         display: flex;
         flex-direction: column;
@@ -69,7 +72,7 @@
       .ym-nav-rail::-webkit-scrollbar { display: none; }
       .ym-nav-rail a,
       .ym-nav-rail .ym-shell-logout {
-        width: ${RAIL_WIDTH - 16}px;
+        width: calc(var(--sidebar-width) - 16px);
         min-height: 48px;
         display: flex;
         flex-direction: column;
@@ -112,7 +115,7 @@
       .ym-standard-topbar {
         position: fixed;
         left: 0;
-        right: ${RAIL_WIDTH}px;
+        right: var(--sidebar-width);
         top: 0;
         height: 72px;
         z-index: 95;
@@ -129,7 +132,7 @@
       body.ym-in-app > header:not(.ym-standard-topbar) { display: none !important; }
 
       body.ym-in-app main {
-        margin-right: ${RAIL_WIDTH}px;
+        margin-right: var(--sidebar-width);
         width: auto !important;
         max-width: none !important;
         box-sizing: border-box;
@@ -235,9 +238,9 @@
       .ym-page-detail-drawer {
         position: fixed;
         top: 72px;
-        right: ${RAIL_WIDTH}px;
+        right: var(--sidebar-width);
         bottom: 0;
-        width: min(460px, calc(100vw - ${RAIL_WIDTH + 20}px));
+        width: min(460px, calc(100vw - var(--sidebar-width) - 20px));
         min-width: 360px;
         z-index: 62 !important;
       }
@@ -384,21 +387,11 @@
       .ym-auth-back .material-symbols-outlined { font-size: 18px; }
 
       @media (max-width: 768px) {
-        .ym-nav-rail { width: 56px; }
-        body.ym-in-app main { margin-right: 56px; }
-        .ym-standard-topbar { right: 56px; padding: 0 12px; gap: 12px; }
         .ym-standard-search { display: none; }
-        .ym-page-detail-drawer { right: 56px; }
-        .ym-nav-rail a, .ym-nav-rail .ym-shell-logout { width: 40px; min-height: 40px; }
         .ym-nav-rail .ym-shell-label { font-size: 7px; }
         .ym-standard-title { min-width: auto; font-size: 11px; }
       }
       @media (max-width: 480px) {
-        .ym-nav-rail { width: 48px; }
-        body.ym-in-app main { margin-right: 48px; }
-        .ym-standard-topbar { right: 48px; padding: 0 8px; gap: 8px; }
-        .ym-page-detail-drawer { right: 48px; }
-        .ym-nav-rail a, .ym-nav-rail .ym-shell-logout { width: 36px; min-height: 36px; }
         .ym-nav-rail .material-symbols-outlined { font-size: 18px; }
         .ym-nav-rail .ym-shell-label { font-size: 6px; }
         .ym-standard-title { display: none; }
