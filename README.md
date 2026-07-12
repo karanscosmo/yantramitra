@@ -110,10 +110,10 @@ Signup supports these persisted roles: `operator`, `maintenance`, `plant_manager
 | `/onboarding` | Role onboarding |
 | `/dashboard` | Global command center |
 | `/map` | Global operations map |
-| `/plant/detroit` | Detroit plant overview |
+| `/plant/:id` | Plant overview for a seeded Indian facility, for example `/plant/pune-auto` |
 | `/digital-twin` | Digital twin |
 | `/assets` | Asset fleet |
-| `/assets/pump-p-102` | Asset detail |
+| `/assets/:id` | Asset detail for a seeded machine |
 | `/anomaly` | Anomaly investigation |
 | `/reliability` | Reliability forecast |
 | `/simulator` | Scenario simulator |

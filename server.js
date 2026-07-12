@@ -204,6 +204,7 @@ app.get('/api-status', (req, res) => {
 app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, keyPrefix: 'login' }), async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -217,6 +218,8 @@ app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, keyPr
 app.post('/api/auth/signup', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, keyPrefix: 'signup' }), async (req, res) => {
   try {
     const { email, password, name } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
     const allowedSignupRoles = ['operator', 'maintenance', 'plant_manager', 'executive'];
     const role = allowedSignupRoles.includes(req.body.role) ? req.body.role : 'operator';
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -300,11 +303,7 @@ app.get('/api/machines', authApi, async (req, res) => {
         plant: { select: { name: true, location: true } },
         productionLine: { include: { building: { include: { plant: { select: { name: true } } } } } },
         alarms: { orderBy: { createdAt: 'desc' }, take: 5 },
-        readings: { orderBy: { timestamp: 'desc' }, take: 18 },
         sensors: { take: 12, orderBy: { createdAt: 'asc' } },
-        components: { take: 6, orderBy: { createdAt: 'asc' } },
-        inventoryParts: { take: 6, orderBy: { createdAt: 'asc' } },
-        maintenanceEvents: { take: 4, orderBy: { performedAt: 'desc' } },
         _count: { select: { alarms: true, workOrders: true } }
       }
     });
@@ -339,7 +338,11 @@ app.get('/api/readings', authApi, async (req, res) => {
     const where = {};
     if (machineId) where.machineId = machineId;
     if (metric) where.metric = metric;
-    const since = hours ? new Date(Date.now() - parseInt(hours) * 3600000) : new Date(0);
+    const parsedHours = hours ? Number(hours) : null;
+    if (hours && (!Number.isFinite(parsedHours) || parsedHours <= 0)) {
+      return res.status(400).json({ error: 'hours must be a positive number' });
+    }
+    const since = parsedHours ? new Date(Date.now() - parsedHours * 3600000) : new Date(0);
     where.timestamp = { gte: since };
     const readings = await prisma.sensorReading.findMany({
       where,
@@ -705,7 +708,7 @@ app.get('/api/command-palette', authApi, async (req, res) => {
 app.get('/api/analytics/reliability', authApi, async (req, res) => {
   try {
     const plants = await prisma.plant.findMany({
-      include: { machines: { include: { readings: { orderBy: { timestamp: 'desc' }, take: 100 } } } }
+      include: { machines: true }
     });
     const reliability = plants.map(p => {
       const avgHealth = p.machines.reduce((sum, m) => sum + m.health, 0) / (p.machines.length || 1);

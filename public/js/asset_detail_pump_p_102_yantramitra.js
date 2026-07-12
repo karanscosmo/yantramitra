@@ -13,7 +13,11 @@
     const assetId = window.location.pathname.split('/assets/')[1] || '';
     try {
       const machines = await get('/api/machines');
-      let machine = machines.find(m => m.id === assetId) || machines.find(m => m.name.includes('Pump')) || machines[0];
+      const slugify = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let machine = machines.find(m => m.id === assetId) ||
+        machines.find(m => slugify(m.name) === assetId) ||
+        machines.find(m => m.name.includes('Pump')) ||
+        machines[0];
       const details = await get('/api/machines/' + (machine?.id || assetId));
 
       if (details) {

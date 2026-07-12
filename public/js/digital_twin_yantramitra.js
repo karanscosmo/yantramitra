@@ -29,7 +29,7 @@
     return 'manufacturing';
   }
 
-  function latest(readings, metric) {
+  function latest(readings = [], metric) {
     const row = readings.find(r => r.metric === metric);
     return row ? `${Number(row.value).toFixed(1)} ${row.unit}` : 'n/a';
   }
@@ -80,9 +80,22 @@
     return group;
   }
 
-  function renderInspector(machine) {
+  async function renderInspector(machine, shouldHydrate = true) {
     const panel = document.getElementById('ym-twin-inspector');
     if (!panel) return;
+    if (shouldHydrate) {
+      panel.innerHTML = `<div class="h-full min-h-[240px] flex flex-col items-center justify-center text-center gap-3">
+        <span class="material-symbols-outlined text-primary text-4xl animate-spin">sync</span>
+        <p class="font-bold text-on-surface">Loading ${machine.name} live detail...</p>
+      </div>`;
+      try {
+        const fullMachine = await get('/api/machines/' + machine.id);
+        if (fullMachine && fullMachine.id) {
+          Object.assign(machine, fullMachine);
+          return renderInspector(machine, false);
+        }
+      } catch {}
+    }
     const activeAlarms = (machine.alarms || []).filter(a => a.status === 'active');
     const hierarchy = [
       'Yantra Manufacturing Technologies Pvt. Ltd.',

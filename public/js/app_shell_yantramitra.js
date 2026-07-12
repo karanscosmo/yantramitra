@@ -21,10 +21,10 @@
   const demoSteps = [
     { route: '/dashboard', target: 'h1, .font-headline-lg', caption: 'Global command center: live KPIs, open incidents, and agent activity across Indian facilities.' },
     { route: '/map', target: 'h1, .font-headline-lg', caption: 'Map view: all five facilities are pinned at real Indian city coordinates.' },
-    { route: '/plant/detroit', target: 'h1, .font-headline-lg', caption: 'Plant overview: drill into one facility before opening its live digital twin.' },
+    { route: '/plant/pune-auto', target: 'h1, .font-headline-lg', caption: 'Plant overview: drill into the Pune automotive facility before opening its live digital twin.' },
     { route: '/digital-twin', target: '#ym-twin-canvas, main', caption: '3D Digital Twin: rotate, zoom, and click faulted red machines to inspect live sensor context.' },
     { route: '/assets', target: 'h1, .font-headline-lg', caption: 'Asset fleet: compare health, status, and maintenance exposure across machines.' },
-    { route: '/assets/pump-p-102', target: 'h1, .font-headline-lg', caption: 'Asset detail: sensor traces, alarms, and linked work orders live in one view.' },
+    { route: '/assets/cnc-cell-pna-01', target: 'h1, .font-headline-lg', caption: 'Asset detail: sensor traces, alarms, and linked work orders live in one view.' },
     { route: '/anomaly', target: 'h1, .font-headline-lg', caption: 'Anomaly investigation: operational context and fault evidence come together.' },
     { route: '/plans', target: 'h1, .font-headline-lg', caption: 'Plan review: approve or reject maintenance plans against current plant risk.' },
     { route: '/work-orders', target: 'h1, .font-headline-lg', caption: 'Work orders: track technician ownership and status changes.' },
@@ -589,13 +589,23 @@
   function startDemo() {
     localStorage.setItem('ymDemoActive', '1');
     localStorage.setItem('ymDemoIndex', '0');
+    localStorage.removeItem('ymDemoPaused');
     window.location.href = demoSteps[0].route;
   }
 
   function stopDemo() {
     localStorage.removeItem('ymDemoActive');
     localStorage.removeItem('ymDemoIndex');
+    localStorage.removeItem('ymDemoPaused');
     document.querySelector('.ym-demo-overlay')?.remove();
+  }
+
+  function advanceDemo(index) {
+    if (localStorage.getItem('ymDemoActive') !== '1') return;
+    if (localStorage.getItem('ymDemoPaused') === '1') return;
+    localStorage.setItem('ymDemoIndex', String(index + 1));
+    if (demoSteps[index + 1]) window.location.href = demoSteps[index + 1].route;
+    else stopDemo();
   }
 
   function runDemoIfActive() {
@@ -619,21 +629,26 @@
           <p style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#413fd6;font-weight:900">Run Demo · ${index + 1}/${demoSteps.length}</p>
           <p style="margin-top:8px;color:#191a28;font-weight:800;line-height:1.35">${step.caption}</p>
           <div style="height:6px;background:#eeecff;border-radius:999px;margin-top:12px;overflow:hidden"><div style="width:${((index + 1) / demoSteps.length) * 100}%;height:100%;background:#5efae4"></div></div>
-          <div style="display:flex;justify-content:space-between;margin-top:12px"><button class="ym-demo-skip" style="background:#eeecff;color:#464555">Skip</button><button class="ym-demo-next" style="background:#413fd6;color:white">Next</button></div>
+          <div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px"><button class="ym-demo-skip" style="background:#eeecff;color:#464555">Skip</button><button class="ym-demo-pause" style="background:#eeecff;color:#413fd6">${localStorage.getItem('ymDemoPaused') === '1' ? 'Resume' : 'Pause'}</button><button class="ym-demo-next" style="background:#413fd6;color:white">Next</button></div>
         </div>`;
       document.body.appendChild(overlay);
       overlay.querySelector('.ym-demo-skip').addEventListener('click', stopDemo);
-      overlay.querySelector('.ym-demo-next').addEventListener('click', () => {
-        localStorage.setItem('ymDemoIndex', String(index + 1));
-        if (demoSteps[index + 1]) window.location.href = demoSteps[index + 1].route;
-        else stopDemo();
+      overlay.querySelector('.ym-demo-pause').addEventListener('click', event => {
+        const paused = localStorage.getItem('ymDemoPaused') === '1';
+        if (paused) {
+          localStorage.removeItem('ymDemoPaused');
+          event.currentTarget.textContent = 'Pause';
+          setTimeout(() => advanceDemo(index), 11000);
+        } else {
+          localStorage.setItem('ymDemoPaused', '1');
+          event.currentTarget.textContent = 'Resume';
+        }
       });
-      setTimeout(() => {
-        if (localStorage.getItem('ymDemoActive') !== '1') return;
-        localStorage.setItem('ymDemoIndex', String(index + 1));
-        if (demoSteps[index + 1]) window.location.href = demoSteps[index + 1].route;
-        else stopDemo();
-      }, 11000);
+      overlay.querySelector('.ym-demo-next').addEventListener('click', () => {
+        localStorage.removeItem('ymDemoPaused');
+        advanceDemo(index);
+      });
+      setTimeout(() => advanceDemo(index), 11000);
     }, 700);
   }
 
