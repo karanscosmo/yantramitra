@@ -29,26 +29,7 @@ input[type="range"]::-webkit-slider-thumb { height: 16px; width: 16px; border-ra
 </style>
 </head>
 <body class="font-body-md text-on-surface">
-<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
-<div class="flex items-center space-x-sm">
-<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
-<span class="bg-primary/10 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded-full border border-primary/20 uppercase tracking-widest">Simulator</span>
-</div>
-<div class="flex items-center space-x-md">
-<div class="relative hidden md:block">
-<input class="w-64 h-10 px-4 pr-10 rounded-full border border-outline-variant/30 bg-white/40 focus:ring-2 focus:ring-primary/50 transition-all outline-none text-body-md" placeholder="Search assets... (⌘K)" type="text"/>
-<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant">search</span>
-</div>
-<div class="flex items-center space-x-sm">
-<button class="material-symbols-outlined text-primary p-2 hover:bg-primary/10 rounded-full transition-colors">notifications</button>
-<button class="material-symbols-outlined text-primary p-2 hover:bg-primary/10 rounded-full transition-colors" onclick="window.location.href='/map'">factory</button>
-<div class="w-10 h-10 rounded-full bg-surface-container border border-outline-variant/30 overflow-hidden cursor-pointer" onclick="window.location.href='/settings'">
-<img class="w-full h-full object-cover" src="/images/ym-operator-avatar.jpg"/>
-</div>
-</div>
-</div>
-</header>
-<main class="pt-16 h-screen flex overflow-hidden pr-[88px]">
+<main class="pt-16 h-screen flex overflow-hidden">
 <section class="w-3/5 h-full relative overflow-hidden bg-surface-container-low" id="ym-scene-container">
 <div class="absolute inset-0 z-0" id="ym-scene-bg"></div>
 <div class="absolute top-8 left-8 space-y-4 z-10">

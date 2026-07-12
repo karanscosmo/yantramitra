@@ -107,6 +107,7 @@
       }
       body.ym-in-app main {
         margin-right: 328px !important;
+        padding-right: 0 !important;
         max-width: calc(100vw - 328px);
         transition: margin-right .3s ease, max-width .3s ease, padding-right .3s ease;
         width: auto !important;

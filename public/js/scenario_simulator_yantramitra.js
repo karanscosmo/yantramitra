@@ -120,7 +120,7 @@
   function initScene(plant) {
     const container = document.getElementById('ym-scene-bg');
     if (!container) return;
-    const img = plant?.image || '/images/ym-digital-twin-factory.jpg';
+    const img = plant?.image || '/images/home-pune-automotive.jpg';
     container.innerHTML = `<img src="${img}" class="w-full h-full object-cover"/>`;
     const overlay = container.querySelector('.scene-overlay') || document.createElement('div');
     overlay.className = 'scene-overlay absolute inset-0';
