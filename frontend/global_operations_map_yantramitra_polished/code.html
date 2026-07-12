@@ -374,6 +374,13 @@
 </div>
 </div>
 </footer>
+<div id="ym-facility-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-on-surface/40 p-md" role="dialog" aria-modal="true" aria-labelledby="ym-facility-title">
+<form id="ym-facility-form" class="glass-panel w-full max-w-lg rounded-2xl p-lg space-y-sm">
+<div class="flex items-center justify-between"><div><h2 id="ym-facility-title" class="font-section-header">Add facility</h2><p class="text-xs text-on-surface-variant">Add a live location to the operations network.</p></div><button type="button" data-close-facility class="material-symbols-outlined p-2" aria-label="Close">close</button></div>
+<div class="grid grid-cols-2 gap-sm"><label class="text-xs font-bold">Facility name<input name="name" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Industry<input name="industry" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">City<input name="city" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Plant manager<input name="plantManager" class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Latitude<input name="latitude" type="number" step="any" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Longitude<input name="longitude" type="number" step="any" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Machine count<input name="machineCount" type="number" min="0" class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Status<select name="status" class="mt-1 w-full rounded-lg border-outline-variant/40"><option value="operational">Operational</option><option value="optimized">Optimized</option><option value="attention">Attention</option></select></label></div>
+<p id="ym-facility-error" class="hidden text-sm text-error" role="alert"></p><button class="w-full rounded-xl bg-primary py-3 font-label-caps text-on-primary">SAVE FACILITY</button>
+</form>
+</div>
 <script>
         // Micro-interactions for map pins and plant cards
         document.querySelectorAll('.glass-panel').forEach(card => {

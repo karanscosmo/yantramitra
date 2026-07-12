@@ -338,6 +338,23 @@ app.get('/api/plants', authApi, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/plants', authApi, requireRole('admin', 'executive', 'plant_manager'), async (req, res) => {
+  try {
+    const { name, industry, city, latitude, longitude, machineCount, plantManager, status } = req.body;
+    if (!name || !city || !industry || !Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude))) {
+      return res.status(400).json({ error: 'Name, industry, city, latitude, and longitude are required' });
+    }
+    const plant = await prisma.plant.create({
+      data: {
+        name: String(name).trim(), location: String(city).trim(), domain: String(industry).trim(),
+        lat: Number(latitude), lng: Number(longitude), status: ['operational', 'optimized', 'attention', 'warning'].includes(status) ? status : 'operational',
+        image: '/images/home-bengaluru-precision.jpg', floorLayout: { machineCount: Math.max(0, Number(machineCount) || 0), plantManager: String(plantManager || '').trim() }
+      }, include: { _count: { select: { machines: true } } }
+    });
+    res.status(201).json(plant);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/plants/:id', authApi, async (req, res) => {
   try {
     const plants = await prisma.plant.findMany({

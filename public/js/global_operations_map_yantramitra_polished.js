@@ -105,7 +105,24 @@
       const url = URL.createObjectURL(new Blob([rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')], { type: 'text/csv' }));
       const link = document.createElement('a'); link.href = url; link.download = 'yantramitra-facility-report.csv'; link.click(); URL.revokeObjectURL(url);
     });
-    document.getElementById('ym-add-facility')?.addEventListener('click', () => { window.location.href = '/settings'; });
+    const modal = document.getElementById('ym-facility-modal');
+    const closeModal = () => modal?.classList.add('hidden');
+    document.getElementById('ym-add-facility')?.addEventListener('click', () => modal?.classList.remove('hidden'));
+    document.querySelector('[data-close-facility]')?.addEventListener('click', closeModal);
+    document.getElementById('ym-facility-form')?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const error = document.getElementById('ym-facility-error');
+      const submit = form.querySelector('button[type="submit"]');
+      submit.disabled = true; submit.textContent = 'SAVING…'; error?.classList.add('hidden');
+      try {
+        const response = await fetch('/api/plants', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+        const created = await response.json();
+        if (!response.ok) throw new Error(created.error || 'Unable to save facility');
+        plants.push(created); renderPins(plants); renderPlantList(plants); form.reset(); closeModal();
+      } catch (err) { error.textContent = err.message; error.classList.remove('hidden'); }
+      finally { submit.disabled = false; submit.textContent = 'SAVE FACILITY'; }
+    });
   }
 
   document.addEventListener('DOMContentLoaded', async () => {

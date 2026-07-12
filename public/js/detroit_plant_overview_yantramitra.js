@@ -60,16 +60,7 @@
       initialAngle: 0.64,
       pixelRatio: 1.45,
       onSelect(machine) {
-        const alertHost = Array.from(document.querySelectorAll('.space-y-3')).find(node => node.closest('aside'));
-        if (!alertHost) return;
-        alertHost.insertAdjacentHTML('afterbegin', `<div class="p-3 rounded-xl bg-gradient-to-r from-secondary/10 to-transparent border-l-4 border-secondary">
-          <div class="flex justify-between items-start mb-1">
-            <span class="font-label-caps text-[10px] text-secondary">selected machine</span>
-            <span class="text-[10px] text-on-surface-variant">${plant.name}</span>
-          </div>
-          <h4 class="text-sm font-bold text-on-surface">${machine.name}</h4>
-          <p class="text-xs text-on-surface-variant mt-1">${machine.type.replace(/_/g, ' ')} · ${Math.round(machine.health || 0)}% health · ${machine.status}</p>
-        </div>`);
+        window.location.href = `/digital-twin?machine=${encodeURIComponent(machine.id || machine.name)}&plant=${encodeURIComponent(plant.id)}`;
       }
     });
     if (picked) {
@@ -125,6 +116,7 @@
       const tip = nodeLabels[index].querySelector('div');
       if (tip) tip.textContent = `${machine.name}: ${Math.round(machine.health)}%`;
       nodeLabels[index].className = nodeLabels[index].className.replace(/bg-(secondary|tertiary)/, machine.status === 'running' ? 'bg-secondary' : 'bg-tertiary');
+      nodeLabels[index].addEventListener('click', () => { window.location.href = `/digital-twin?machine=${encodeURIComponent(machine.id || machine.name)}&plant=${encodeURIComponent(plant.id)}`; });
     });
   }
 
