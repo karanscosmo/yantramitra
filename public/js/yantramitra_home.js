@@ -29,6 +29,7 @@
     refreshStats();
 
     const modal = document.getElementById('ym-contact-modal');
+    const demoModal = document.getElementById('ym-demo-modal');
     const status = document.querySelector('[data-contact-status]');
     const openContact = () => {
       if (!modal) return;
@@ -41,25 +42,42 @@
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     };
+    const openDemo = () => {
+      if (!demoModal) return;
+      demoModal.classList.remove('hidden');
+      demoModal.classList.add('flex');
+      demoModal.querySelector('[data-close-demo]')?.focus();
+    };
+    const closeDemo = () => {
+      if (!demoModal) return;
+      demoModal.classList.add('hidden');
+      demoModal.classList.remove('flex');
+    };
 
     document.querySelectorAll('[data-contact-sales]').forEach(btn => {
       btn.addEventListener('click', openContact);
     });
     document.querySelector('[data-close-contact]')?.addEventListener('click', closeContact);
+    document.querySelector('[data-watch-demo]')?.addEventListener('click', openDemo);
+    document.querySelectorAll('[data-close-demo]').forEach(btn => {
+      btn.addEventListener('click', closeDemo);
+    });
     modal?.addEventListener('click', event => {
       if (event.target === modal) closeContact();
     });
+    demoModal?.addEventListener('click', event => {
+      if (event.target === demoModal) closeDemo();
+    });
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeContact();
+      if (event.key === 'Escape') {
+        closeContact();
+        closeDemo();
+      }
     });
 
     document.querySelector('[data-contact-form]')?.addEventListener('submit', event => {
       event.preventDefault();
       if (status) status.classList.remove('hidden');
-    });
-
-    document.querySelector('[data-watch-demo]')?.addEventListener('click', () => {
-      document.getElementById('overview')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     (async () => {

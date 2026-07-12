@@ -260,6 +260,38 @@
   </div>
 </div>
 
+<div id="ym-demo-modal" class="fixed inset-0 z-[82] hidden items-center justify-center bg-ink/50 p-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="ym-demo-title">
+  <div class="grid w-full max-w-4xl overflow-hidden rounded-[28px] bg-white shadow-2xl md:grid-cols-[1.05fr_.95fr]">
+    <div class="relative min-h-[320px] bg-ink">
+      <img src="/images/home-pune-automotive.jpg" alt="YantraMitra product demo preview" class="absolute inset-0 h-full w-full object-cover opacity-72"/>
+      <div class="absolute inset-0 bg-gradient-to-tr from-ink via-ink/50 to-primary/20"></div>
+      <div class="relative z-10 flex h-full flex-col justify-end p-7 text-white">
+        <p class="font-monohead text-xs font-black uppercase tracking-[.2em] text-teal">Demo preview</p>
+        <h2 id="ym-demo-title" class="mt-3 text-3xl font-black leading-tight">See YantraMitra move from plant signal to work order.</h2>
+        <p class="mt-3 text-sm font-semibold leading-6 text-white/78">A guided product story across command center, plant map, digital twin, YantraNklan agents, and maintenance execution.</p>
+      </div>
+    </div>
+    <div class="p-7">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="font-monohead text-xs font-black uppercase tracking-[.18em] text-primary">Watch demo</p>
+          <h3 class="mt-2 text-2xl font-black text-ink">What you will see</h3>
+        </div>
+        <button data-close-demo class="rounded-full bg-primary/10 p-2 text-primary" aria-label="Close demo"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="mt-6 grid gap-4">
+        <div class="rounded-2xl border border-line/60 bg-surface p-4"><strong class="text-primary">01 Command center</strong><p class="mt-1 text-sm font-semibold leading-6 text-muted">Live KPIs, open incidents, and risk across all five Indian facilities.</p></div>
+        <div class="rounded-2xl border border-line/60 bg-surface p-4"><strong class="text-secondary">02 Digital twin</strong><p class="mt-1 text-sm font-semibold leading-6 text-muted">Machine health, alarms, sensor traces, and plant-specific context in one view.</p></div>
+        <div class="rounded-2xl border border-line/60 bg-surface p-4"><strong class="text-amber">03 Agent action</strong><p class="mt-1 text-sm font-semibold leading-6 text-muted">YantraNklan explains root cause, proposes a plan, and turns it into work.</p></div>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/signup" class="rounded-full bg-primary px-5 py-3 text-sm font-black text-white">Start demo account</a>
+        <button data-close-demo class="rounded-full border border-line bg-white px-5 py-3 text-sm font-black text-ink">Stay on home</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="/js/yantramitra_home.js" defer></script>
 <script src="/js/app_shell_yantramitra.js" defer></script>
 </body>
