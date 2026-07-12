@@ -171,12 +171,31 @@
     if (!main) return;
     main.innerHTML = `
       <section class="h-screen pt-6 px-md md:pr-32 relative overflow-hidden">
-        <div class="absolute top-28 left-md z-30 glass-panel rounded-2xl p-4 w-[min(460px,calc(100vw-32px))] max-h-[calc(100vh-210px)] overflow-hidden">
+        <div class="absolute top-28 left-md z-30 glass-panel rounded-2xl p-4 w-[min(460px,calc(100vw-32px))] max-h-[calc(100vh-100px)] overflow-y-auto">
           <p class="text-[11px] uppercase tracking-[0.16em] text-primary font-bold">Interactive 3D Digital Twin</p>
           <h1 class="text-2xl font-black text-on-surface mt-1 leading-tight">Live 3D Machine Floor</h1>
           <select id="ym-plant-select" class="mt-3 w-full rounded-xl border border-outline-variant/50 bg-white/80 p-3 pr-8 font-bold text-sm leading-tight"></select>
           <p id="ym-plant-meta" class="text-sm text-on-surface-variant mt-3 leading-relaxed break-words"></p>
-        </div>
+          <div class="flex flex-col gap-4 mt-4">
+            <div class="glass-panel p-3 rounded-2xl flex items-center gap-3 shadow-lg">
+              <div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary flex-shrink-0">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-on-surface-variant font-bold uppercase">Grid Status</p>
+                <p class="text-md font-kpi-numeric">Stable • 12MW</p>
+              </div>
+            </div>
+            <div class="glass-panel p-3 rounded-2xl flex items-center gap-3 shadow-lg">
+              <div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="material-symbols-outlined">group</span>
+              </div>
+              <div>
+                <p class="text-[10px] text-on-surface-variant font-bold uppercase">Active Personnel</p>
+                <p class="text-md font-kpi-numeric">14 On-Floor</p>
+              </div>
+            </div>
+          </div>
         <div id="ym-twin-canvas" class="absolute inset-0 bg-[#f4f2ff]"></div>
         <aside id="ym-twin-inspector" class="fixed right-[104px] top-24 bottom-28 w-[360px] max-w-[calc(100vw-128px)] overflow-auto glass-panel rounded-2xl p-5 z-40 shadow-2xl"></aside>
         <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 glass-panel rounded-full px-4 py-2 flex items-center gap-3 text-sm font-bold text-on-surface-variant">
