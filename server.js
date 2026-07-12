@@ -880,22 +880,67 @@ app.get('/api/onboarding/status', authApi, async (req, res) => {
 // ──────────────────────────────────────────────
 // YantraNklan AI Chat — powered by OpenAI
 // ──────────────────────────────────────────────
+function normalizeLookupText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function buildYantraNklanFallback(message, contextSummary) {
-  const text = String(message || '').toLowerCase();
+  const text = normalizeLookupText(message);
   const alarms = contextSummary.activeAlarms || [];
   const machines = contextSummary.machines || [];
   const workOrders = contextSummary.workOrders || [];
   const agents = contextSummary.agents || [];
+  const plants = contextSummary.plants || [];
 
-  const namedMachine = machines.find(m => text.includes(String(m.name || '').toLowerCase()) || text.includes(String(m.id || '').toLowerCase()));
-  if (namedMachine) {
-    const relatedAlarms = alarms.filter(a => a.machine === namedMachine.name);
-    const relatedOrders = workOrders.filter(w => w.machine === namedMachine.name);
-    return [
-      `YantraNklan fallback mode: ${namedMachine.name} is currently ${namedMachine.status} with a ${namedMachine.health}% health score at ${namedMachine.plant}.`,
-      relatedAlarms.length ? `Active alarm: ${relatedAlarms[0].severity} - ${relatedAlarms[0].title}.` : 'No active alarm is attached to this machine in the current database snapshot.',
-      relatedOrders.length ? `Latest work order: ${relatedOrders[0].title} (${relatedOrders[0].status}, ${relatedOrders[0].priority}).` : 'No open work order is linked in the latest work order list.'
-    ].join(' ');
+  const machineTerms = ['cnc', 'cell', 'machine', 'asset', 'pump', 'conveyor', 'robot', 'sensor'];
+  const candidateMachines = machines
+    .map(machine => {
+      const name = normalizeLookupText(machine.name);
+      const type = normalizeLookupText(machine.type);
+      const plant = normalizeLookupText(machine.plant || '');
+      const aiSummary = normalizeLookupText(machine.aiSummary || '');
+      const haystack = `${name} ${type} ${plant} ${aiSummary}`;
+      let score = 0;
+
+      if (text.includes(name)) score += 30;
+      if (text.includes(type)) score += 8;
+      if (text.includes(plant)) score += 6;
+      if (machineTerms.some(term => text.includes(term) && haystack.includes(term))) score += 4;
+
+      const tokens = text.split(' ').filter(token => token.length > 2 && !['what', 'where', 'when', 'current', 'status', 'health', 'summary', 'report', 'give', 'show', 'please', 'about', 'the', 'is', 'of', 'for', 'and'].includes(token));
+      tokens.forEach(token => {
+        if (haystack.includes(token)) score += 2;
+      });
+
+      return { machine, score };
+    })
+    .filter(entry => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const bestMachineEntry = candidateMachines[0];
+  const bestMachine = bestMachineEntry?.machine;
+
+  if (bestMachine) {
+    const relatedAlarms = alarms.filter(a => a.machine === bestMachine.name);
+    const relatedOrders = workOrders.filter(w => w.machine === bestMachine.name);
+    const mostUrgentAlarm = relatedAlarms[0];
+    const latestOrder = relatedOrders[0];
+    const statusLine = `${bestMachine.name} (${bestMachine.plant}) is ${bestMachine.status} with health ${bestMachine.health}%.`;
+    const riskLine = `Failure probability is ${bestMachine.failureProbability ?? 'not currently published'} and remaining useful life is ${bestMachine.remainingUsefulLife ?? 'not currently published'} days.`;
+    const alarmLine = mostUrgentAlarm ? `Most relevant alarm: ${mostUrgentAlarm.severity} - ${mostUrgentAlarm.title}.` : 'No active alarm is attached to this asset in the current snapshot.';
+    const orderLine = latestOrder ? `Latest linked work order: ${latestOrder.title} (${latestOrder.status}, ${latestOrder.priority}${latestOrder.assignedTo ? `, assigned to ${latestOrder.assignedTo}` : ''}).` : 'No linked work order was found in the current snapshot.';
+    return `YantraNklan fallback mode: ${statusLine} ${riskLine} ${alarmLine} ${orderLine}`;
+  }
+
+  if (text.includes('energy') || text.includes('co2') || text.includes('carbon')) {
+    const topPlant = [...plants].sort((a, b) => (b.energyUsage || 0) - (a.energyUsage || 0))[0];
+    const avgEnergy = plants.reduce((sum, plant) => sum + (plant.energyUsage || 0), 0) / Math.max(plants.length, 1);
+    const avgCo2 = plants.reduce((sum, plant) => sum + (plant.co2Tonnes || 0), 0) / Math.max(plants.length, 1);
+    return `YantraNklan fallback mode: ${topPlant ? `${topPlant.name} is currently the highest-energy site at ${topPlant.energyUsage} MWh, while the fleet average is ${avgEnergy.toFixed(1)} MWh.` : 'Energy benchmarks are not available.'} Fleet average CO₂ is ${avgCo2.toFixed(1)} tonnes.`;
   }
 
   if (text.includes('alarm') || text.includes('alert') || text.includes('incident') || text.includes('anomaly')) {
@@ -903,12 +948,18 @@ function buildYantraNklanFallback(message, contextSummary) {
     return `YantraNklan fallback mode: ${alarms.length} active alarms are in the current snapshot. Highest priority item: ${alarms[0].severity} - ${alarms[0].title} on ${alarms[0].machine}.`;
   }
 
-  if (text.includes('work order') || text.includes('maintenance')) {
+  if (text.includes('work order') || text.includes('maintenance') || text.includes('plan')) {
     if (!workOrders.length) return 'YantraNklan fallback mode: there are no recent work orders in the current database snapshot.';
     return `YantraNklan fallback mode: ${workOrders.length} recent work orders are available. Latest: ${workOrders[0].title}, status ${workOrders[0].status}, priority ${workOrders[0].priority}, assigned to ${workOrders[0].assignedTo || 'unassigned'}.`;
   }
 
-  return `YantraNklan fallback mode: I can see ${contextSummary.plants.length} plants, ${machines.length} machines, ${alarms.length} active alarms, ${workOrders.length} recent work orders, and ${agents.length} agents in the current operations database. Ask about a machine, alarm, or work order for a more specific lookup.`;
+  if (text.includes('agent') || text.includes('mission')) {
+    if (!agents.length) return 'YantraNklan fallback mode: there are no active agent records in the current database snapshot.';
+    const firstAgent = agents[0];
+    return `YantraNklan fallback mode: ${firstAgent.name} is currently ${firstAgent.status} with mission progress ${firstAgent.progress}% and success rate ${firstAgent.successRate}.`;
+  }
+
+  return `YantraNklan fallback mode: I can see ${plants.length} plants, ${machines.length} machines, ${alarms.length} active alarms, ${workOrders.length} recent work orders, and ${agents.length} agents in the current operations database. Ask about a machine, alarm, or work order for a more specific lookup.`;
 }
 
 app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyPrefix: 'ai-chat' }), async (req, res) => {

@@ -183,11 +183,6 @@
       body.ym-in-app .shimmer-btn {
         color: #fff !important;
       }
-      body.ym-in-app button:empty::after {
-        content: 'Open';
-        color: inherit;
-        font-weight: 800;
-      }
       .ym-shell-rail::-webkit-scrollbar { display: none; }
       .ym-shell-rail a,
       .ym-shell-rail button {

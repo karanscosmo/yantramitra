@@ -118,6 +118,10 @@
       const data = await sendMessage(message);
       removeTypingIndicator();
 
+      if (data.warning) {
+        addMessage('⚠️ ' + data.warning, false);
+      }
+
       if (data.error === 'api_key_missing') {
         addMessage('⚠️ ' + data.message, false);
       } else if (data.error === 'api_quota_exceeded') {
