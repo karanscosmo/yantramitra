@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>YantraMitra Project Overview</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #191a28; font-family: Inter, Arial, sans-serif; line-height: 1.55; }
+    .page { min-height: 260mm; page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    h1, h2, h3 { font-family: Arial, sans-serif; letter-spacing: 0; }
+    h1 { font-size: 34px; line-height: 1.1; margin: 0 0 16px; }
+    h2 { font-size: 24px; margin: 0 0 14px; }
+    h3 { font-size: 16px; margin: 0 0 8px; }
+    p { margin: 0 0 12px; color: #464555; }
+    .eyebrow { color: #413fd6; font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: .12em; margin-bottom: 10px; }
+    .hero { border-radius: 20px; padding: 28px; background: linear-gradient(135deg, #413fd6, #006b5f); color: white; margin-bottom: 22px; }
+    .hero p { color: rgba(255,255,255,.82); font-size: 17px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { border: 1px solid #c7c4d7; border-radius: 14px; padding: 14px; background: #fbf8ff; }
+    .metric { display: inline-block; margin-right: 18px; }
+    .metric strong { display: block; color: #413fd6; font-size: 24px; }
+    ul { margin: 0; padding-left: 18px; color: #464555; }
+    li { margin-bottom: 7px; }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+    .step { border-radius: 12px; background: #eeecff; padding: 12px; font-size: 12px; font-weight: 700; }
+    .footer { margin-top: 24px; color: #767586; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <div class="hero">
+      <div class="eyebrow" style="color:#5efae4">YantraMitra Platform · 2026</div>
+      <h1>Industrial operations intelligence for a five-plant Indian manufacturing company.</h1>
+      <p>YantraMitra unifies plants, machines, sensors, work orders, digital twins, and AI agents into a single operating layer so teams can understand issues and act quickly.</p>
+    </div>
+    <div class="card">
+      <div class="metric"><strong>5</strong> Facilities</div>
+      <div class="metric"><strong>29</strong> Machines</div>
+      <div class="metric"><strong>174</strong> Sensors monitored</div>
+    </div>
+    <h2 style="margin-top:24px">Scenario</h2>
+    <p>The seeded company operates Pune automotive components, Ahmedabad textile and chemical process lines, Chennai electronics assembly, Bengaluru precision engineering, and a Nagpur logistics hub. Each plant has plant-specific machines, risks, and operational workflows.</p>
+    <div class="grid">
+      <div class="card"><h3>Pune Automotive</h3><p>Robotic welding, CNC cells, AGV movement, and drivetrain component production.</p></div>
+      <div class="card"><h3>Ahmedabad Process</h3><p>Textile finishing, dye tanks, process parameters, and chemical quality context.</p></div>
+      <div class="card"><h3>Chennai Electronics</h3><p>SMT machines, AOI inspection, reflow ovens, and electronics test benches.</p></div>
+      <div class="card"><h3>Bengaluru Precision</h3><p>Micro-machining, metrology, CMM inspection, calibration, and additive manufacturing.</p></div>
+      <div class="card"><h3>Nagpur Logistics</h3><p>ASRS aisles, sortation, dock operations, AGVs, and warehouse flow monitoring.</p></div>
+    </div>
+    <div class="footer">YantraMitra Project Overview · Page 1</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">Product experience</div>
+    <h1>What the app contains</h1>
+    <div class="grid">
+      <div class="card"><h3>Command Center</h3><p>Live KPIs, open incidents, critical alerts, facility health cards, and agent activity.</p></div>
+      <div class="card"><h3>Global Plant Map</h3><p>All five plants pinned using their real Indian cities with cards and drilldowns.</p></div>
+      <div class="card"><h3>Plant Overview</h3><p>A dynamic plant route renders the requested facility instead of hardcoded city data.</p></div>
+      <div class="card"><h3>Digital Twin</h3><p>Machine state, sensor telemetry, and fault context are visualized together.</p></div>
+      <div class="card"><h3>Asset Fleet</h3><p>Machine inventory, health, alert state, and detail routes for asset-level inspection.</p></div>
+      <div class="card"><h3>YantraNklan AI Console</h3><p>A plant-aware assistant for asking operational questions and drafting next steps.</p></div>
+      <div class="card"><h3>Agents</h3><p>Mission control for diagnostic, planner, sentinel, and operations agents.</p></div>
+      <div class="card"><h3>Work Orders</h3><p>Maintenance execution with assignment, status, approval, and closure tracking.</p></div>
+    </div>
+    <h2 style="margin-top:24px">Signal-to-action loop</h2>
+    <div class="flow">
+      <div class="step">01 Sense</div>
+      <div class="step">02 Understand</div>
+      <div class="step">03 Recommend</div>
+      <div class="step">04 Approve</div>
+      <div class="step">05 Execute</div>
+    </div>
+    <p style="margin-top:16px">The core design goal is continuity. Operators should not lose context when moving from an alert to a machine, from a machine to an agent explanation, or from an explanation to a work order.</p>
+    <div class="footer">YantraMitra Project Overview · Page 2</div>
+  </section>
+
+  <section class="page">
+    <div class="eyebrow">Company-ready notes</div>
+    <h1>Deployment and operating model</h1>
+    <div class="card">
+      <h3>Authentication and roles</h3>
+      <p>Public pages explain the platform. Application pages require authentication. Signup supports role selection, and the app separates manager, maintenance, operator, and executive workflows.</p>
+    </div>
+    <div class="card">
+      <h3>Data model</h3>
+      <p>The seeded database contains plants, machines, sensors, alerts, work orders, agent missions, and profile data. The public home page uses the same counts so the landing experience feels connected to the actual product.</p>
+    </div>
+    <div class="card">
+      <h3>AI assistant</h3>
+      <p>YantraNklan can be connected to OpenAI with a company-owned API key. For production, configure secrets in environment variables, restrict access by role, and keep human approval for physical maintenance actions.</p>
+    </div>
+    <h2 style="margin-top:22px">Release checklist</h2>
+    <ul>
+      <li>Use a production JWT secret and environment-managed API keys.</li>
+      <li>Connect the database to company-approved infrastructure.</li>
+      <li>Validate agent recommendations through plant operating procedures.</li>
+      <li>Confirm sensor integrations and work-order ownership rules before live use.</li>
+      <li>Keep public documentation accurate as plant data or workflows change.</li>
+    </ul>
+    <div class="footer">YantraMitra Project Overview · Page 3</div>
+  </section>
+</body>
+</html>

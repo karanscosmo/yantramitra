@@ -188,6 +188,18 @@ app.get('/plans', authRequired, servePage('plan_review_yantramitra'));
 app.get('/maintenance', authRequired, servePage('maintenance_planner_yantramitra'));
 app.get('/work-orders', authRequired, servePage('work_orders_yantramitra'));
 app.get('/settings', authRequired, servePage('settings_yantramitra'));
+app.get('/about', (req, res) => {
+  res.send(infoPage('About YantraMitra', '<p>YantraMitra is an industrial operations intelligence platform built around a realistic five-plant Indian manufacturing company. The product combines command dashboards, plant maps, machine health, work orders, digital-twin views, and YantraNklan AI agents.</p><p>The public site explains the platform without sending logged-out visitors into protected app routes. After sign-in, teams can enter the working company operations environment.</p>'));
+});
+app.get('/help', (req, res) => {
+  res.send(infoPage('Help', '<p><strong>Getting started:</strong> create an account, choose a role, complete onboarding, then open the command center.</p><p><strong>Common flow:</strong> review plant status, inspect the relevant machine or plant, ask YantraNklan for context, approve a plan, and track the work order to closure.</p><p><strong>Company setup:</strong> configure environment secrets, seed or connect live plant data, and confirm role access before production use.</p>'));
+});
+app.get('/contact', (req, res) => {
+  res.send(infoPage('Contact', '<p>For demo planning, deployment questions, or company rollout discussion, use the Contact Sales modal on the home page or email the project owner from your company workspace.</p><p>Suggested information to prepare: number of plants, machine classes, sensor sources, current CMMS/work-order tools, user roles, and deployment timeline.</p>'));
+});
+app.get('/documentation', (req, res) => {
+  res.send(infoPage('Documentation', '<p>The project overview PDF below explains the YantraMitra scenario, feature map, operating flow, and release notes.</p><p><a class="text-[#413fd6] font-semibold" href="/docs/yantramitra-project-overview.pdf">Open PDF in a new tab</a></p><iframe title="YantraMitra Project Overview PDF" src="/docs/yantramitra-project-overview.pdf" style="width:100%;height:72vh;border:1px solid #c7c4d7;border-radius:14px;background:#fff"></iframe>'));
+});
 app.get('/privacy', (req, res) => {
   res.send(infoPage('Privacy', '<p>YantraMitra is designed for company-controlled operational data. Production deployments should connect only approved databases, restrict user access, and configure OpenAI keys under the company account.</p><p>This demo build does not sell personal data. Profile and operations data are used to provide dashboards, work order workflows, and YantraNklan AI responses.</p>'));
 });
@@ -195,7 +207,7 @@ app.get('/terms', (req, res) => {
   res.send(infoPage('Terms', '<p>YantraMitra is provided for authorized industrial operations teams. Users are responsible for validating AI-assisted recommendations before taking physical maintenance or production action.</p><p>Company deployments should define their own operating procedures, approval rules, and incident response policy.</p>'));
 });
 app.get('/sitemap', (req, res) => {
-  res.send(infoPage('Sitemap', '<p><a class="text-[#413fd6] font-semibold" href="/">Home</a></p><p><a class="text-[#413fd6] font-semibold" href="/dashboard">Dashboard</a></p><p><a class="text-[#413fd6] font-semibold" href="/map">Global Map</a></p><p><a class="text-[#413fd6] font-semibold" href="/assets">Assets</a></p><p><a class="text-[#413fd6] font-semibold" href="/digital-twin">Digital Twin</a></p><p><a class="text-[#413fd6] font-semibold" href="/ai-console">YantraNklan AI Console</a></p><p><a class="text-[#413fd6] font-semibold" href="/agents">Agent Mission Control</a></p><p><a class="text-[#413fd6] font-semibold" href="/plans">Plan Review</a></p><p><a class="text-[#413fd6] font-semibold" href="/maintenance">Maintenance Planner</a></p><p><a class="text-[#413fd6] font-semibold" href="/work-orders">Work Orders</a></p><p><a class="text-[#413fd6] font-semibold" href="/settings">Settings</a></p>'));
+  res.send(infoPage('Sitemap', '<p><a class="text-[#413fd6] font-semibold" href="/">Home</a></p><p><a class="text-[#413fd6] font-semibold" href="/about">About</a></p><p><a class="text-[#413fd6] font-semibold" href="/help">Help</a></p><p><a class="text-[#413fd6] font-semibold" href="/contact">Contact</a></p><p><a class="text-[#413fd6] font-semibold" href="/documentation">Documentation</a></p><p><a class="text-[#413fd6] font-semibold" href="/privacy">Privacy</a></p><p><a class="text-[#413fd6] font-semibold" href="/terms">Terms</a></p><p><a class="text-[#413fd6] font-semibold" href="/api-status">API Status</a></p>'));
 });
 app.get('/api-status', (req, res) => {
   res.send(infoPage('API Status', `<p><strong>Status:</strong> Operational</p><p><strong>Runtime:</strong> Node.js / Express</p><p><strong>Uptime:</strong> ${Math.round(process.uptime())} seconds</p><p><strong>AI assistant:</strong> ${process.env.OPENAI_API_KEY ? 'Configured' : 'Needs OPENAI_API_KEY'}</p>`));
@@ -264,6 +276,17 @@ app.get('/api/auth/me', async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   clearAuthCookie(res);
   res.json({ message: 'Logged out' });
+});
+
+app.get('/api/public/stats', async (req, res) => {
+  try {
+    const [facilities, machines, sensors] = await Promise.all([
+      prisma.plant.count(),
+      prisma.machine.count(),
+      prisma.machineSensor.count(),
+    ]);
+    res.json({ facilities, machines, sensors });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/plants', authApi, async (req, res) => {

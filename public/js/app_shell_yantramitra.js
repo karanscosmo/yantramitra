@@ -354,14 +354,6 @@
       headerInner.appendChild(auth);
     }
 
-    const heroActions = document.querySelector('main section .flex.flex-wrap');
-    if (heroActions && !heroActions.querySelector('a[href="/login"]')) {
-      const login = document.createElement('a');
-      login.href = '/login';
-      login.className = 'glass-card flex items-center gap-xs px-xl py-4 rounded-full text-on-surface font-body-md text-lg hover:bg-white/90 transition-all';
-      login.innerHTML = '<span class="material-symbols-outlined text-primary">login</span><span>Login</span>';
-      heroActions.appendChild(login);
-    }
   }
 
   function wireKnownButtons() {
@@ -566,16 +558,6 @@
   }
 
   function addRunDemoButtons() {
-    if (currentPath === '/') {
-      const heroActions = document.querySelector('main section .flex.flex-wrap') || document.querySelector('main .flex');
-      if (heroActions && !heroActions.querySelector('.ym-demo-button')) {
-        const btn = document.createElement('button');
-        btn.className = 'ym-demo-button';
-        btn.innerHTML = '<span class="material-symbols-outlined">play_circle</span><span>Run Demo</span>';
-        btn.addEventListener('click', () => startDemo());
-        heroActions.appendChild(btn);
-      }
-    }
     if (currentPath === '/dashboard') {
       const header = document.querySelector('main header, main');
       if (header && !document.querySelector('.ym-demo-button')) {
