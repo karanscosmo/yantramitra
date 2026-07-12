@@ -44,6 +44,12 @@
     style.textContent = `
       :root { --sidebar-width: 80px; }
 
+      .ym-empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; text-align:center; }
+      .ym-empty-state .material-symbols-outlined { font-size:48px; color:#c7c4d7; margin-bottom:12px; }
+      .ym-empty-state h3 { font:700 16px/1.3 Geist,system-ui,sans-serif; color:#191a28; margin-bottom:4px; }
+      .ym-empty-state p { font-size:13px; color:#767586; max-width:360px; margin-bottom:16px; }
+      .ym-empty-state a, .ym-empty-state button { padding:8px 20px; border-radius:8px; background:#413fd6; color:#fff; font-weight:700; font-size:12px; text-decoration:none; transition:opacity .15s; }
+      .ym-empty-state a:hover, .ym-empty-state button:hover { opacity:.85; }
       .ym-nav-rail {
         position: fixed;
         right: 0;
@@ -243,6 +249,9 @@
       }
 
       body.ym-digital-twin .ym-nav-rail { z-index: 80; }
+      body:not(.ym-no-status) .ym-nav-rail { top: 82px; }
+      body:not(.ym-no-status) .ym-standard-topbar + .ym-status-bar { display:flex; }
+      body.ym-no-status .ym-status-bar { display:none; }
 
       .ym-home-motion {
         position: fixed;
@@ -377,9 +386,49 @@
       }
       .ym-auth-back .material-symbols-outlined { font-size: 18px; }
 
+      .ym-palette-hints {
+        display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;
+        margin-top: 14px; padding-top: 14px;
+        border-top: 1px solid rgba(199,196,215,.45);
+        font: 600 12px/1 Inter, system-ui, sans-serif;
+        color: #767586;
+      }
+      .ym-palette-hints kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid rgba(199,196,215,.6);
+        background: rgba(244,242,255,.6);
+        font: 700 11px/1.2 Inter, system-ui, sans-serif;
+        color: #464555;
+        margin: 0 2px;
+      }
+      .ym-command-row.is-highlighted {
+        background: #413fd6;
+        color: #fff;
+      }
+      .ym-command-row.is-highlighted small,
+      .ym-command-row.is-highlighted .material-symbols-outlined {
+        color: rgba(255,255,255,.8);
+      }
+      .ym-command-row.is-highlighted strong { color: #fff; }
+      .ym-palette-wrapper .ym-command-results {
+        margin-top: 8px;
+        display: grid;
+        gap: 4px;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+      .ym-palette-wrapper .ym-command-input {
+        box-sizing: border-box;
+      }
+      .ym-status-bar { position:fixed; top:56px; left:0; right:0; z-index:45; height:26px; background:rgba(244,242,255,.85); backdrop-filter:blur(8px); border-bottom:1px solid rgba(199,196,215,.3); display:flex; align-items:center; padding:0 16px; }
+      .ym-status-items { display:flex; align-items:center; gap:16px; font:500 10px/1 Inter,system-ui,sans-serif; color:#767586; overflow-x:auto; white-space:nowrap; width:100%; }
+      .ym-status-item { display:inline-flex; align-items:center; gap:4px; }
       @media (max-width: 768px) {
         .ym-standard-search { display: none; }
         .ym-standard-title { min-width: auto; font-size: 11px; }
+        .ym-status-bar { display:none; }
       }
       @media (max-width: 480px) {
         .ym-standard-title { display: none; }
@@ -463,6 +512,27 @@
     header.querySelector('input').addEventListener('keydown', event => {
       if (event.key === 'Enter' && event.currentTarget.value.trim()) openCommandPalette();
     });
+
+    // Enterprise Status Bar
+    if (!shellExcludedPaths.includes(currentPath) && !document.querySelector('.ym-status-bar') && currentPath !== '/' && currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/reset-password' && currentPath !== '/onboarding') {
+      const bar = document.createElement('div');
+      bar.className = 'ym-status-bar';
+      bar.innerHTML = `<div class="ym-status-items"><span class="ym-status-item" style="color:#006b5f"><span class="w-1.5 h-1.5 rounded-full bg-secondary" style="display:inline-block;margin-right:4px;vertical-align:middle"></span>Production</span><span class="ym-status-item">AI: Llama 3.3 70B</span><span class="ym-status-item" id="ym-status-plants">Plants: —</span><span class="ym-status-item" id="ym-status-devices">Devices: —</span><span class="ym-status-item" id="ym-status-uptime">Uptime: —</span><span class="ym-status-item">Last Sync: <span id="ym-status-sync">just now</span></span></div>`;
+      document.body.appendChild(bar);
+      fetch('/api/plants').then(r => r.json()).then(ps => {
+        document.getElementById('ym-status-plants').textContent = 'Plants: ' + (ps?.length || 0);
+        let devices = 0;
+        ps?.forEach(p => { if (p.machines) devices += p.machines.length; });
+        document.getElementById('ym-status-devices').textContent = 'Devices: ' + (devices || '—');
+      }).catch(() => {});
+      fetch('/api/dashboard/summary').then(r => r.json()).then(d => {
+        if (d?.uptime) document.getElementById('ym-status-uptime').textContent = 'Uptime: ' + d.uptime + '%';
+      }).catch(() => {});
+      setInterval(() => {
+        const el = document.getElementById('ym-status-sync');
+        if (el) el.textContent = new Date().toLocaleTimeString();
+      }, 30000);
+    }
   }
 
   function cleanupInAppChrome() {
@@ -671,17 +741,70 @@
   }
 
   function openCommandPalette() {
-    showModal('Command Palette', '<div class="ym-command-card-inner"><input class="ym-command-input" id="ym-command-input" placeholder="Search plants, machines, work orders, agents, pages, actions..." autofocus><div id="ym-command-results" style="margin-top:12px;display:grid;gap:4px"></div></div>');
-    const card = document.querySelector('.ym-modal-card');
-    if (card) card.classList.add('ym-command-card');
-    const input = document.getElementById('ym-command-input');
-    const results = document.getElementById('ym-command-results');
-    const render = async () => {
-      const items = await api('/api/command-palette?q=' + encodeURIComponent(input.value)).catch(() => []);
-      results.innerHTML = items.map((item, idx) => '<button class="ym-command-row" data-idx="' + idx + '"><span><strong>' + item.label + '</strong><br><small>' + item.type + ' · ' + (item.detail || '') + '</small></span><span class="material-symbols-outlined">arrow_forward</span></button>').join('');
-      results.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => { const item = items[Number(btn.dataset.idx)]; if (item.action === 'runDemo') return startDemo(); if (item.action === 'incidentReplay') return openIncidentReplay(); if (item.href) window.location.href = item.href; }));
-    };
+    if (document.querySelector('.ym-palette-wrapper')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'ym-palette-wrapper ym-modal-backdrop';
+    wrapper.innerHTML = `
+      <div class="ym-modal-card ym-command-card" role="dialog" aria-modal="true" aria-label="Command palette">
+        <input class="ym-command-input" id="ym-command-input" placeholder="Search plants, machines, work orders, agents, pages, actions..." autofocus>
+        <div class="ym-command-results" id="ym-command-results"></div>
+        <div class="ym-palette-hints">
+          <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+          <span><kbd>↵</kbd> select</span>
+          <span><kbd>Esc</kbd> close</span>
+        </div>
+      </div>`;
+    wrapper.addEventListener('click', function(e) { if (e.target === wrapper) wrapper.remove(); });
+    document.body.appendChild(wrapper);
+
+    const input = wrapper.querySelector('#ym-command-input');
+    const results = wrapper.querySelector('#ym-command-results');
+    let highlightedIndex = -1;
+    let items = [];
+
+    async function render() {
+      items = await api('/api/command-palette?q=' + encodeURIComponent(input.value)).catch(() => []);
+      highlightedIndex = items.length > 0 ? 0 : -1;
+      if (items.length === 0) {
+        results.innerHTML = '<div style="padding:16px;text-align:center;color:#767586;font-weight:600">No results found</div>';
+        return;
+      }
+      results.innerHTML = items.map(function(item, idx) {
+        return '<button class="ym-command-row' + (idx === 0 ? ' is-highlighted' : '') + '" data-idx="' + idx + '"><span><strong>' + item.label + '</strong><br><small>' + item.type + ' · ' + (item.detail || '') + '</small></span><span class="material-symbols-outlined">arrow_forward</span></button>';
+      }).join('');
+      results.querySelectorAll('button').forEach(function(btn) {
+        btn.addEventListener('click', function() { executeCommand(items[Number(btn.dataset.idx)]); });
+        btn.addEventListener('mouseenter', function() {
+          highlightedIndex = Number(btn.dataset.idx);
+          results.querySelectorAll('.ym-command-row').forEach(function(b, i) { b.classList.toggle('is-highlighted', i === highlightedIndex); });
+        });
+      });
+    }
+
+    function executeCommand(item) {
+      if (!item) return;
+      wrapper.remove();
+      if (item.action === 'runDemo') return startDemo();
+      if (item.action === 'incidentReplay') return openIncidentReplay();
+      if (item.href) window.location.href = item.href;
+    }
+
+    function highlightAdjacent(delta) {
+      if (items.length === 0) return;
+      highlightedIndex = Math.max(0, Math.min(items.length - 1, highlightedIndex + delta));
+      results.querySelectorAll('.ym-command-row').forEach(function(b, i) { b.classList.toggle('is-highlighted', i === highlightedIndex); });
+      var el = results.querySelector('.is-highlighted');
+      if (el) el.scrollIntoView({ block: 'nearest' });
+    }
+
     input.addEventListener('input', render);
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); highlightAdjacent(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); highlightAdjacent(-1); }
+      else if (e.key === 'Enter') { e.preventDefault(); executeCommand(items[highlightedIndex]); }
+      else if (e.key === 'Escape') { wrapper.remove(); }
+    });
+
     input.focus();
     render();
   }
@@ -778,6 +901,7 @@
     document.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCommandPalette(); }
       if (e.key === 'Escape') document.querySelector('.ym-modal-backdrop')?.remove();
+      if (e.key === '/' && !e.target.closest('input, textarea, [contenteditable]')) { e.preventDefault(); openCommandPalette(); }
     });
   });
 })();

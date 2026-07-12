@@ -247,6 +247,23 @@
 </div>
 </div>
 </div>
+<div class="overflow-x-auto glass-card rounded-xl mb-xl" id="ym-table-container" style="display:none">
+  <table class="w-full text-left" id="ym-orders-table">
+    <thead>
+      <tr class="text-on-surface-variant font-label-caps text-[11px] border-b border-outline-variant/10">
+        <th class="px-4 py-3 font-medium whitespace-nowrap">ID</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Asset</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Issue</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Priority</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Engineer</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Due Date</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Plant</th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap">Status</th>
+      </tr>
+    </thead>
+    <tbody id="ym-table-body"></tbody>
+  </table>
+</div>
 <div class="flex items-center gap-xs flex-wrap mb-sm" id="ym-active-filters"></div>
 <div class="space-y-sm" id="ym-orders-list"></div>
 </main>
@@ -277,7 +294,44 @@
 <div class="bg-primary/5 rounded-xl p-sm border border-primary/10 mb-md" id="ym-drawer-machine">
 <p class="text-sm text-on-surface-variant">Machine: <span class="font-semibold text-on-surface" id="ym-drawer-machine-name">—</span></p>
 <p class="text-xs text-on-surface-variant mt-1">Location: <span id="ym-drawer-location">—</span></p>
+    </div>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">DETAILS</h4>
+<div class="space-y-sm">
+<div>
+<label class="text-xs text-on-surface-variant">STATUS</label>
+<select class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-status-select">
+<option value="open">Open</option>
+<option value="assigned">Assigned</option>
+<option value="in_progress">In Progress</option>
+<option value="waiting_parts">Waiting Parts</option>
+<option value="completed">Completed</option>
+<option value="approved">Approved</option>
+<option value="cancelled">Cancelled</option>
+</select>
 </div>
+<div>
+<label class="text-xs text-on-surface-variant">PRIORITY</label>
+<select class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-priority-select">
+<option value="low">Low</option>
+<option value="medium">Medium</option>
+<option value="high">High</option>
+<option value="critical">Critical</option>
+</select>
+</div>
+<div>
+<label class="text-xs text-on-surface-variant">ASSIGNED ENGINEER</label>
+<input class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-assign-input" placeholder="Engineer name"/>
+</div>
+<div>
+<label class="text-xs text-on-surface-variant">NOTES</label>
+<textarea class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-notes" rows="2" placeholder="Add notes..."></textarea>
+</div>
+</div>
+<button class="w-full mt-sm py-2.5 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg text-sm flex items-center justify-center gap-xs" id="ym-drawer-save-btn">
+<span class="material-symbols-outlined text-sm">save</span> SAVE CHANGES
+</button>
+</section>
 <section class="mb-md">
 <h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
 <span>LEAD TECHNICIAN</span>
@@ -314,9 +368,14 @@
 <h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">APPROVAL HISTORY</h4>
 <div class="relative pl-6 space-y-md before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/20" id="ym-timeline"></div>
 </section>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">HISTORY LOG</h4>
+<div class="space-y-xs" id="ym-history-log"></div>
+</section>
 </div>
 </div>
 <div class="p-md bg-white/40 border-t border-outline-variant/20 flex gap-sm shrink-0" id="ym-drawer-actions">
+<button class="flex-1 py-3 rounded-full border border-error text-error font-label-caps text-label-caps hover:bg-error/5 transition-all" id="ym-close-order-btn">CLOSE ORDER</button>
 <button class="flex-1 py-3 rounded-full border border-primary text-primary font-label-caps text-label-caps hover:bg-primary/5 transition-all" id="ym-pause-btn">PAUSE SESSION</button>
 <button class="flex-[2] py-3 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg" id="ym-complete-btn">MARK AS COMPLETE</button>
 </div>

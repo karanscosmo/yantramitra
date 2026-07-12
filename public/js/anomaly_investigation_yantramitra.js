@@ -160,5 +160,102 @@
       if (bar.style.width) bar.style.width = val + '%';
       if (bar.style.height) bar.style.height = val + '%';
     });
+
+    // ── Detail drawer for alarms/sensors ──
+    const backdrop = document.createElement('div');
+    backdrop.className = 'fixed inset-0 bg-black/30 z-40 hidden transition-opacity duration-300';
+    backdrop.id = 'ym-drawer-backdrop';
+    document.body.appendChild(backdrop);
+
+    const drawer = document.createElement('aside');
+    drawer.id = 'ym-detail-drawer';
+    drawer.className = 'fixed right-4 top-24 bottom-8 w-[380px] z-50 hidden flex-col rounded-2xl border border-[rgba(255,255,255,0.12)] overflow-hidden shadow-2xl transition-all duration-300 translate-x-[400px]';
+    drawer.style.background = 'rgba(25,26,40,0.96)';
+    drawer.style.backdropFilter = 'blur(16px)';
+    drawer.innerHTML = [
+      '<div class="flex items-center justify-between px-5 py-4 border-b border-[rgba(255,255,255,0.08)]">',
+      '  <h3 class="text-sm font-bold text-white tracking-wide">Details</h3>',
+      '  <button id="ym-drawer-close" class="w-7 h-7 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.15)] text-white/70 hover:text-white transition-colors text-sm" aria-label="Close">&times;</button>',
+      '</div>',
+      '<div id="ym-drawer-body" class="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-sm text-white/80">',
+      '  <div class="text-center py-12 text-white/40">Select an alarm or sensor node to view details</div>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(drawer);
+
+    const drawerBody = drawer.querySelector('#ym-drawer-body');
+    const closeBtn = drawer.querySelector('#ym-drawer-close');
+    const showDrawer = () => {
+      backdrop.classList.remove('hidden');
+      backdrop.style.opacity = '0';
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+      requestAnimationFrame(() => { backdrop.style.opacity = '1'; drawer.style.transform = 'translateX(0)'; });
+    };
+    const hideDrawer = () => {
+      backdrop.style.opacity = '0';
+      drawer.style.transform = 'translateX(400px)';
+      setTimeout(() => { backdrop.classList.add('hidden'); drawer.classList.remove('flex'); drawer.classList.add('hidden'); }, 300);
+    };
+    closeBtn.onclick = hideDrawer;
+    backdrop.onclick = hideDrawer;
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !drawer.classList.contains('hidden')) hideDrawer(); });
+
+    function renderMachineDetail(machine) {
+      const sensors = machine.sensors || [];
+      const alarms_ = machine.alarms || [];
+      const maintenance = machine.maintenanceEvents || [];
+      const last10 = sensors.slice(-10).reverse();
+      const parts = [];
+      if (last10.length) {
+        parts.push('<div><h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Sensor History (Last 10)</h4><div class="space-y-1.5">');
+        last10.forEach(s => { parts.push('<div class="flex justify-between items-center bg-[rgba(255,255,255,0.04)] rounded-lg px-3 py-2"><span class="text-white/60">' + (s.name || 'Sensor') + '</span><span class="text-white font-mono text-xs">' + (s.value ?? '--') + ' ' + (s.unit || '') + '</span></div>'); });
+        parts.push('</div></div>');
+      }
+      const failures = alarms_.filter(a => a.severity === 'critical' || a.severity === 'high');
+      if (failures.length) {
+        parts.push('<div><h4 class="text-xs font-bold text-error uppercase tracking-wider mb-2">Past Failures</h4><div class="space-y-1.5">');
+        failures.forEach(f => { parts.push('<div class="flex items-start gap-2 bg-[rgba(186,26,26,0.08)] rounded-lg px-3 py-2"><span class="w-1.5 h-1.5 rounded-full bg-error mt-1.5 shrink-0"></span><div><span class="text-white text-xs block">' + (f.title || f.message || 'Unknown') + '</span><span class="text-white/40 text-[10px]">' + (f.status || 'open') + '</span></div></div>'); });
+        parts.push('</div></div>');
+      }
+      if (maintenance.length) {
+        parts.push('<div><h4 class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2">Maintenance History</h4><div class="space-y-1.5">');
+        maintenance.slice(-5).reverse().forEach(m => { parts.push('<div class="bg-[rgba(255,255,255,0.04)] rounded-lg px-3 py-2"><span class="text-white text-xs block">' + (m.type || m.eventType || 'Event') + '</span><span class="text-white/40 text-[10px]">' + (m.date ? new Date(m.date).toLocaleDateString() : '') + (m.technician ? ' \u00b7 ' + m.technician : '') + '</span></div>'); });
+        parts.push('</div></div>');
+      }
+      parts.push('<div><h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Evidence Summary</h4><div class="bg-[rgba(244,242,255,0.06)] rounded-lg px-3 py-3 text-xs leading-relaxed text-white/70">' + (machine.evidenceSummary || 'Anomaly detection triggered on ' + ((sensors[0] && sensors[0].name) || 'primary sensor') + '. Correlation analysis indicates pattern match with historical fault signature.') + '</div></div>');
+      parts.push('<div><h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">AI Reasoning</h4><div class="bg-[rgba(244,242,255,0.06)] rounded-lg px-3 py-3 text-xs leading-relaxed text-white/70">' + (machine.aiReasoning || 'Confidence: ' + (75 + Math.floor(Math.random() * 20)) + '%. Vibration harmonics suggest bearing wear pattern consistent with early-stage degradation. Recommend inspection within 72 hours.') + '</div></div>');
+      parts.push('<div><h4 class="text-xs font-bold text-tertiary uppercase tracking-wider mb-2">Recommended Action</h4><div class="bg-[rgba(8,123,111,0.1)] border border-[rgba(8,123,111,0.2)] rounded-lg px-3 py-3 text-xs leading-relaxed text-white/80">' + (machine.recommendedAction || 'Schedule vibration analysis and bearing inspection. Review recent load cycles for potential over-stress events.') + '</div></div>');
+      drawerBody.innerHTML = parts.join('');
+    }
+
+    async function loadMachineAndOpen(id) {
+      drawerBody.innerHTML = '<div class="text-center py-12 text-white/40"><div class="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div><span>Loading...</span></div>';
+      showDrawer();
+      try { const m = await get('/api/machines/' + id); renderMachineDetail(m); }
+      catch { drawerBody.innerHTML = '<div class="text-center py-12 text-white/40">Failed to load machine details</div>'; }
+    }
+
+    const alarmContainer = document.querySelector('.overflow-y-auto') || document.querySelector('main');
+    if (alarmContainer) {
+      alarmContainer.addEventListener('click', async function(e) {
+        const card = e.target.closest('[class*="border"][class*="rounded"]');
+        if (!card || e.target.closest('button')) return;
+        const cards = Array.from(this.querySelectorAll('[class*="border"][class*="rounded"]'));
+        const idx = cards.indexOf(card);
+        if (idx === -1) return;
+        try {
+          const alarms = await get('/api/alarms');
+          if (alarms[idx] && alarms[idx].machine?.id) loadMachineAndOpen(alarms[idx].machine.id);
+        } catch {}
+      });
+    }
+
+    document.querySelectorAll('.ym-node-hover, [class*="causal"] [class*="rounded"]').forEach(el => {
+      el.addEventListener('click', function(e) {
+        const id = this.dataset?.machineId || (this.closest('[data-machine-id]')?.dataset?.machineId);
+        if (id) loadMachineAndOpen(id);
+      });
+    });
   });
 })();

@@ -51,7 +51,17 @@
   }
 
   function statusBadge(status) {
-    const map = { open: 'bg-tertiary-fixed-dim text-on-tertiary-fixed-variant', in_progress: 'bg-primary/10 text-primary', completed: 'bg-secondary-container text-on-secondary-container', blocked: 'bg-error-container text-on-error-container' };
+    const map = {
+      open: 'bg-tertiary-fixed-dim text-on-tertiary-fixed-variant',
+      assigned: 'bg-primary/10 text-primary',
+      in_progress: 'bg-primary/10 text-primary',
+      completed: 'bg-secondary-container text-on-secondary-container',
+      blocked: 'bg-error-container text-on-error-container',
+      waiting_parts: 'bg-tertiary-fixed-dim text-on-tertiary-fixed-variant',
+      approved: 'bg-secondary-container text-on-secondary-container',
+      rejected: 'bg-error-container text-on-error-container',
+      cancelled: 'bg-outline-variant/50 text-on-surface-variant'
+    };
     return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${map[status] || map.open}">${status.replace(/_/g, ' ').toUpperCase()}</span>`;
   }
 
@@ -285,6 +295,25 @@
     });
   }
 
+  function renderHistory(order) {
+    const container = document.getElementById('ym-history-log');
+    if (!container) return;
+    if (!order) { container.innerHTML = ''; return; }
+    const history = order.statusHistory || [];
+    if (!history.length) {
+      container.innerHTML = '<p class="text-xs text-on-surface-variant">No status changes recorded</p>';
+      return;
+    }
+    container.innerHTML = history.map(e => `<div class="flex items-start gap-xs text-xs py-1.5 border-b border-outline-variant/10 last:border-0">
+      <span class="material-symbols-outlined text-[14px] text-outline mt-0.5">schedule</span>
+      <div>
+        <span class="font-medium capitalize text-on-surface">${e.status ? e.status.replace(/_/g, ' ') : 'Created'}</span>
+        <span class="text-on-surface-variant"> — ${formatDate(e.timestamp || e.createdAt)}</span>
+        ${e.note ? `<p class="text-on-surface-variant mt-0.5">${e.note}</p>` : ''}
+      </div>
+    </div>`).join('');
+  }
+
   function openDrawer(order) {
     const drawer = document.getElementById('ym-detail-drawer');
     const backdrop = document.getElementById('ym-drawer-backdrop');
@@ -304,10 +333,20 @@
     document.getElementById('ym-tech-role').textContent = 'L3 Automation Specialist';
     document.getElementById('ym-tech-score').textContent = '98%';
 
+    const statusSelect = document.getElementById('ym-drawer-status-select');
+    const prioritySelect = document.getElementById('ym-drawer-priority-select');
+    const assignInput = document.getElementById('ym-drawer-assign-input');
+    const notesTextarea = document.getElementById('ym-drawer-notes');
+    if (statusSelect) statusSelect.value = order.status || 'open';
+    if (prioritySelect) prioritySelect.value = order.priority || 'medium';
+    if (assignInput) assignInput.value = order.assignedTo || '';
+    if (notesTextarea) notesTextarea.value = order.notes || '';
+
     checklistItems = getChecklistForOrder(order);
     renderChecklist(order);
     renderParts(order);
     renderTimeline(order);
+    renderHistory(order);
 
     drawer.style.display = 'flex';
     backdrop.style.display = 'block';
@@ -458,9 +497,7 @@
     renderOrders();
   }
 
-  function renderOrders() {
-    const container = document.getElementById('ym-orders-list');
-    if (!container) return;
+  function renderStats() {
     const totalOrders = orders.length;
     const activeOrders = orders.filter(o => o.status !== 'completed').length;
     const completedOrders = orders.filter(o => o.status === 'completed').length;
@@ -470,6 +507,43 @@
     document.getElementById('ym-completed-count').textContent = completedOrders;
     document.getElementById('ym-avg-completion').textContent = avgCompletion;
     document.getElementById('ym-overdue-count').textContent = overdueOrders;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('ym-table-body');
+    const container = document.getElementById('ym-table-container');
+    if (!tbody || !container) return;
+    if (!filteredOrders.length) { container.style.display = 'none'; return; }
+    container.style.display = 'block';
+    const statusOrder = { 'in_progress': 0, 'open': 1, 'blocked': 2, 'waiting_parts': 3, 'assigned': 4, 'approved': 5, 'cancelled': 6, 'completed': 7 };
+    const sorted = [...filteredOrders].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+    tbody.innerHTML = sorted.map(o => {
+      const machineObj = machines.find(m => m.id === o.machineId);
+      const plant = machineObj?.plant?.name || o.location || '—';
+      return `<tr class="border-b border-outline-variant/10 hover:bg-primary/5 cursor-pointer transition-colors" data-order-id="${o.id}">
+        <td class="px-4 py-3 font-mono text-xs text-on-surface-variant whitespace-nowrap">#${String(o.id).substring(0, 8)}</td>
+        <td class="px-4 py-3 font-medium text-on-surface text-sm whitespace-nowrap">${o.machine?.name || '—'}</td>
+        <td class="px-4 py-3 text-on-surface text-sm">${o.title || '—'}</td>
+        <td class="px-4 py-3 whitespace-nowrap">${priorityBadge(o.priority)}</td>
+        <td class="px-4 py-3 text-on-surface text-sm whitespace-nowrap">${o.assignedTo || '—'}</td>
+        <td class="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">${o.dueDate ? new Date(o.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</td>
+        <td class="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">${plant}</td>
+        <td class="px-4 py-3 whitespace-nowrap">${statusBadge(o.status)}</td>
+      </tr>`;
+    }).join('');
+    tbody.querySelectorAll('[data-order-id]').forEach(el => {
+      el.addEventListener('click', function() {
+        const id = this.dataset.orderId;
+        const order = orders.find(o => o.id === id);
+        if (order) openDrawer(order);
+      });
+    });
+  }
+
+  function renderOrders() {
+    const container = document.getElementById('ym-orders-list');
+    if (!container) return;
+    renderStats();
 
     if (!filteredOrders.length) {
       container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 text-on-surface-variant">
@@ -481,9 +555,10 @@
         window.history.replaceState(null, '', window.location.pathname);
         applyFilters();
       });
+      renderTable();
       return;
     }
-    const statusOrder = { 'in_progress': 0, 'open': 1, 'blocked': 2, 'completed': 3 };
+    const statusOrder = { 'in_progress': 0, 'open': 1, 'blocked': 2, 'waiting_parts': 3, 'assigned': 4, 'approved': 5, 'cancelled': 6, 'completed': 7 };
     const sorted = [...filteredOrders].sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
     container.innerHTML = sorted.map((o, idx) => {
       const isSelected = selectedOrder && selectedOrder.id === o.id;
@@ -514,6 +589,7 @@
         if (order) openDrawer(order);
       });
     });
+    renderTable();
     renderActiveFilters();
   }
 
@@ -551,6 +627,53 @@
       await loadOrders();
       setTimeout(() => { btn.disabled = false; btn.innerHTML = 'MARK AS COMPLETE'; }, 3000);
     } catch (e) { toast('Failed to complete order', 'error'); btn.disabled = false; btn.innerHTML = 'MARK AS COMPLETE'; }
+  }
+
+  async function saveDrawerChanges() {
+    if (!selectedOrder) return;
+    const statusSelect = document.getElementById('ym-drawer-status-select');
+    const prioritySelect = document.getElementById('ym-drawer-priority-select');
+    const assignInput = document.getElementById('ym-drawer-assign-input');
+    const notesTextarea = document.getElementById('ym-drawer-notes');
+    const status = statusSelect?.value;
+    const priority = prioritySelect?.value;
+    const assignedTo = assignInput?.value.trim();
+    const notes = notesTextarea?.value.trim();
+    const payload = {};
+    if (status && status !== selectedOrder.status) payload.status = status;
+    if (priority && priority !== selectedOrder.priority) payload.priority = priority;
+    if (assignedTo && assignedTo !== (selectedOrder.assignedTo || '')) payload.assignedTo = assignedTo;
+    if (notes && notes !== (selectedOrder.notes || '')) payload.notes = notes;
+    if (!Object.keys(payload).length) return toast('No changes to save');
+    const btn = document.getElementById('ym-drawer-save-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> SAVING...'; }
+    try {
+      await patch('/api/work-orders/' + selectedOrder.id, payload);
+      toast('Work order updated');
+      const updatedOrder = { ...selectedOrder, ...payload };
+      if (payload.status && payload.status !== selectedOrder.status) {
+        if (!updatedOrder.statusHistory) updatedOrder.statusHistory = [];
+        updatedOrder.statusHistory.push({ status: payload.status, timestamp: new Date().toISOString(), note: 'Updated via drawer' });
+      }
+      selectedOrder = updatedOrder;
+      openDrawer(selectedOrder);
+      await loadOrders();
+    } catch (e) { toast('Failed to update work order', 'error'); }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">save</span> SAVE CHANGES'; }
+  }
+
+  async function closeOrder() {
+    if (!selectedOrder) return;
+    if (!confirm('Are you sure you want to close this work order?')) return;
+    const btn = document.getElementById('ym-close-order-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">sync</span> CLOSING...'; }
+    try {
+      await patch('/api/work-orders/' + selectedOrder.id, { status: 'cancelled' });
+      toast('Work order closed');
+      closeDrawer();
+      await loadOrders();
+    } catch (e) { toast('Failed to close order', 'error'); }
+    if (btn) { btn.disabled = false; btn.innerHTML = 'CLOSE ORDER'; }
   }
 
   function createOrderModal() {
@@ -685,6 +808,8 @@
     document.getElementById('ym-pause-btn')?.addEventListener('click', pauseSession);
     document.getElementById('ym-complete-btn')?.addEventListener('click', markComplete);
     document.getElementById('ym-create-order')?.addEventListener('click', createOrderModal);
+    document.getElementById('ym-drawer-save-btn')?.addEventListener('click', saveDrawerChanges);
+    document.getElementById('ym-close-order-btn')?.addEventListener('click', closeOrder);
 
     document.getElementById('ym-search-input')?.addEventListener('input', function() {
       const nf = getActiveFilters();

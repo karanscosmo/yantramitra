@@ -15,6 +15,14 @@
     energy: { min: 2, max: 15, default: 65, unit: '', label: 'Energy Cost' },
   };
 
+  const presets = {
+    balanced: { label: 'Balanced', speed: 85, delay: 12, power: 420, quality: 98, operators: 12, material: 85, temp: 32, energy: 65 },
+    'energy-saver': { label: 'Energy Saver', speed: 60, delay: 8, power: 250, quality: 95, operators: 8, material: 80, temp: 28, energy: 35 },
+    'max-output': { label: 'Maximum Output', speed: 100, delay: 4, power: 800, quality: 90, operators: 20, material: 95, temp: 38, energy: 80 },
+    'maintenance': { label: 'Maintenance Mode', speed: 40, delay: 48, power: 300, quality: 96, operators: 6, material: 70, temp: 30, energy: 50 },
+  };
+  let activePreset = 'balanced';
+
   function get(path) { return fetch(path, { credentials: 'same-origin' }).then(r => { if (!r.ok) throw new Error(); return r.json(); }); }
 
   function toast(msg, type) {
@@ -243,6 +251,8 @@
       el.value = sliderConfig[key].default;
       document.getElementById('slider-' + key).textContent = formatSliderValue(key, sliderConfig[key].default);
     });
+    activePreset = 'balanced';
+    renderPresets();
     renderAll();
     document.getElementById('ym-prediction-text').innerHTML = '<p class="text-white/70" style="font-size:14px;line-height:1.6">Adjust parameters and run to generate AI prediction.</p>';
   }
@@ -332,6 +342,35 @@
     }
   }
 
+  function applyPreset(name) {
+    const preset = presets[name];
+    if (!preset) return;
+    activePreset = name;
+    Object.keys(sliderConfig).forEach(key => {
+      const el = document.querySelector('#ym-sliders input[data-slider="' + key + '"]');
+      if (el) {
+        el.value = preset[key];
+        document.getElementById('slider-' + key).textContent = formatSliderValue(key, preset[key]);
+      }
+    });
+    document.querySelectorAll('#ym-presets button').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.preset === name);
+    });
+    renderAll();
+    updateSceneEffects(getSliderValues());
+  }
+
+  function renderPresets() {
+    const container = document.getElementById('ym-presets');
+    if (!container) return;
+    container.innerHTML = Object.entries(presets).map(([key, p]) =>
+      '<button class="ym-preset-btn' + (key === activePreset ? ' active' : '') + '" data-preset="' + key + '">' + p.label + '</button>'
+    ).join('');
+    container.querySelectorAll('.ym-preset-btn').forEach(btn => {
+      btn.addEventListener('click', function() { applyPreset(this.dataset.preset); });
+    });
+  }
+
   function setupSliders() {
     document.querySelectorAll('#ym-sliders input[type="range"]').forEach(el => {
       el.addEventListener('input', function() {
@@ -370,6 +409,7 @@
     if (!user) return;
 
     setupSliders();
+    renderPresets();
     await loadData();
 
     document.getElementById('ym-sim-run')?.addEventListener('click', runSimulation);

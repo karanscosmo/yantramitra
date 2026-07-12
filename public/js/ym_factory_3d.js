@@ -10,6 +10,29 @@
     floor: 0xf8f7ff
   };
 
+  const _beltCanvas = document.createElement('canvas');
+  _beltCanvas.width = 128;
+  _beltCanvas.height = 32;
+  const _beltCtx = _beltCanvas.getContext('2d');
+  _beltCtx.fillStyle = '#ffffff';
+  _beltCtx.fillRect(0, 0, 128, 32);
+  _beltCtx.fillStyle = '#cccccc';
+  for (let i = 0; i < 128; i += 24) _beltCtx.fillRect(i, 0, 12, 32);
+  const _beltTex = new THREE.CanvasTexture(_beltCanvas);
+  _beltTex.wrapS = THREE.RepeatWrapping;
+  _beltTex.wrapT = THREE.RepeatWrapping;
+  _beltTex.repeat.set(6, 1);
+
+  const _sensorCanvas = document.createElement('canvas');
+  _sensorCanvas.width = 16;
+  _sensorCanvas.height = 16;
+  const _sCtx = _sensorCanvas.getContext('2d');
+  _sCtx.fillStyle = '#ffffff';
+  _sCtx.beginPath();
+  _sCtx.arc(8, 8, 4, 0, Math.PI * 2);
+  _sCtx.fill();
+  const _sensorTex = new THREE.CanvasTexture(_sensorCanvas);
+
   function includes(machine, words) {
     const haystack = `${machine.name || ''} ${machine.type || ''} ${machine.location || ''}`.toLowerCase();
     return words.some(word => haystack.includes(word));
@@ -61,7 +84,11 @@
   }
 
   function addConveyor(group, length = 5.2, z = 0, color = PALETTE.primary) {
-    group.add(box(length, 0.22, 0.8, color, 0, 0.28, z, { emissive: 0x15115d, emissiveIntensity: 0.1 }));
+    const belt = box(length, 0.22, 0.8, color, 0, 0.28, z, { emissive: 0x15115d, emissiveIntensity: 0.1 });
+    belt.material.map = _beltTex;
+    belt.material.needsUpdate = true;
+    belt.userData.isBelt = true;
+    group.add(belt);
     for (let i = -2; i <= 2; i += 1) {
       group.add(cyl(0.16, 0.16, 0.9, PALETTE.steel, i * (length / 5), 0.48, z, { rotation: [Math.PI / 2, 0, 0], metalness: 0.45 }));
     }
@@ -72,6 +99,10 @@
     group.add(cyl(0.45, 0.6, 0.38, PALETTE.primary, x, 0.19, z, { metalness: 0.35 }));
     const shoulder = cyl(0.15, 0.15, 2.0, baseColor, x + 0.45, 1.05, z, { rotation: [0, 0, -0.72], emissive: 0x003a35, emissiveIntensity: 0.12 });
     const forearm = cyl(0.13, 0.13, 1.8, baseColor, x + 1.25, 1.85, z, { rotation: [0, 0, 0.92], emissive: 0x003a35, emissiveIntensity: 0.12 });
+    shoulder.userData.isArm = true;
+    shoulder.userData._armBaseRot = -0.72;
+    forearm.userData.isArm = true;
+    forearm.userData._armBaseRot = 0.92;
     group.add(shoulder, forearm);
     group.add(cyl(0.24, 0.24, 0.32, PALETTE.teal, x + 0.9, 1.65, z, { rotation: [Math.PI / 2, 0, 0] }));
     group.add(box(0.7, 0.12, 0.45, PALETTE.ink, x + 1.85, 1.45, z));
@@ -215,7 +246,22 @@
     label.position.set(0, 3.45, 0);
     group.add(label);
 
-    group.position.set(machine.posX ?? 0, 0, machine.posZ ?? 0);
+    const indicatorMat = new THREE.MeshStandardMaterial({ color: 0x5efae4, emissive: 0x5efae4, emissiveIntensity: 0.5 });
+    const indicator = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), indicatorMat);
+    indicator.position.set(0, 3.1, 0.55);
+    indicator.userData.isIndicator = true;
+    group.add(indicator);
+
+    for (let i = 0; i < 4; i++) {
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: _sensorTex, color: 0x5efae4, transparent: true, opacity: 0.3, depthWrite: false }));
+      const angle = (i / 4) * Math.PI * 2;
+      sprite.position.set(Math.cos(angle) * 2.2, 0.4 + Math.random() * 1.2, Math.sin(angle) * 2.2);
+      sprite.userData.isSensor = true;
+      sprite.userData._sIdx = i;
+      group.add(sprite);
+    }
+
+    group.position.set((machine.posX ?? 0) * 1.3, 0, (machine.posZ ?? 0) * 1.3);
     group.rotation.y = machine.rotation || 0;
     group.userData.machine = machine;
     group.traverse(child => { child.userData.machine = machine; });
@@ -223,25 +269,25 @@
   }
 
   function addFactoryShell(scene, plant, machines) {
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(50, 32), material(PALETTE.floor, { roughness: 0.82, metalness: 0 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(65, 42), material(PALETTE.floor, { roughness: 0.82, metalness: 0 }));
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
-    const grid = new THREE.GridHelper(50, 25, 0xc7c4d7, 0xe7e5f6);
+    const grid = new THREE.GridHelper(65, 32, 0xc7c4d7, 0xe7e5f6);
     grid.position.y = 0.015;
     scene.add(grid);
-    scene.add(box(50, 0.2, 0.25, 0xd9d8ee, 0, 0.1, -16));
-    scene.add(box(50, 0.2, 0.25, 0xd9d8ee, 0, 0.1, 16));
-    scene.add(box(0.25, 0.2, 32, 0xd9d8ee, -25, 0.1, 0));
-    scene.add(box(0.25, 0.2, 32, 0xd9d8ee, 25, 0.1, 0));
+    scene.add(box(65, 0.2, 0.25, 0xd9d8ee, 0, 0.1, -21));
+    scene.add(box(65, 0.2, 0.25, 0xd9d8ee, 0, 0.1, 21));
+    scene.add(box(0.25, 0.2, 42, 0xd9d8ee, -32.5, 0.1, 0));
+    scene.add(box(0.25, 0.2, 42, 0xd9d8ee, 32.5, 0.1, 0));
 
     const aisleColor = (plant?.domain || '').toLowerCase().includes('logistics') ? 0xffba4b : PALETTE.teal;
-    scene.add(box(46, 0.04, 0.18, aisleColor, 0, 0.035, -5.8, { emissive: aisleColor, emissiveIntensity: 0.28 }));
-    scene.add(box(46, 0.04, 0.18, aisleColor, 0, 0.035, 5.8, { emissive: aisleColor, emissiveIntensity: 0.28 }));
-    scene.add(box(0.18, 0.04, 28, aisleColor, -9.5, 0.035, 0, { emissive: aisleColor, emissiveIntensity: 0.18 }));
+    scene.add(box(60, 0.04, 0.18, aisleColor, 0, 0.035, -7.5, { emissive: aisleColor, emissiveIntensity: 0.28 }));
+    scene.add(box(60, 0.04, 0.18, aisleColor, 0, 0.035, 7.5, { emissive: aisleColor, emissiveIntensity: 0.28 }));
+    scene.add(box(0.18, 0.04, 36, aisleColor, -12, 0.035, 0, { emissive: aisleColor, emissiveIntensity: 0.18 }));
 
     const plantLabel = labelSprite(`${plant?.name || 'Plant'} · ${machines.length} machines`, '#413fd6');
-    plantLabel.position.set(-14, 4.2, -13.2);
-    plantLabel.scale.set(6.8, 1.6, 1);
+    plantLabel.position.set(-18, 5.5, -17);
+    plantLabel.scale.set(8.8, 2.1, 1);
     scene.add(plantLabel);
   }
 
@@ -259,7 +305,7 @@
     scene.fog = new THREE.Fog(0xf4f2ff, 40, 95);
 
     const camera = new THREE.PerspectiveCamera(options.fov || 48, 1, 0.1, 1000);
-    camera.position.set(options.cameraX ?? 18, options.cameraY ?? 24, options.cameraZ ?? 28);
+    camera.position.set(options.cameraX ?? 18, options.cameraY ?? 16, options.cameraZ ?? 28);
     camera.lookAt(0, 0, 0);
 
     scene.add(new THREE.HemisphereLight(0xffffff, 0xc4c1ff, 1.8));
@@ -329,9 +375,24 @@
       tooltip.classList.remove('hidden');
     });
     renderer.domElement.addEventListener('pointerleave', () => tooltip.classList.add('hidden'));
+    let sceneObj = null;
+    let clickTimer = null;
     renderer.domElement.addEventListener('click', event => {
-      const hit = pick(event);
-      if (hit && typeof options.onSelect === 'function') options.onSelect(hit.object.userData.machine);
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        const hit = pick(event);
+        if (hit && sceneObj && typeof sceneObj.flyTo === 'function') {
+          const m = hit.object.userData.machine;
+          sceneObj.flyTo((m.posX ?? 0) * 1.3, (m.posZ ?? 0) * 1.3);
+        }
+      } else {
+        clickTimer = setTimeout(() => {
+          clickTimer = null;
+          const hit = pick(event);
+          if (hit && typeof options.onSelect === 'function') options.onSelect(hit.object.userData.machine);
+        }, 280);
+      }
     });
     renderer.domElement.addEventListener('wheel', event => {
       event.preventDefault();
@@ -343,15 +404,48 @@
       renderPlantFloor._frames.set(host, frame);
       const sceneData = renderPlantFloor._scenes.get(host);
       if (sceneData) sceneData._tickFly();
-      const radius = (options.radius || 34) * zoom;
+      const radius = (options.radius || 22) * zoom;
       camera.position.x = Math.sin(angle) * radius;
       camera.position.z = Math.cos(angle) * radius;
-      camera.position.y = (options.cameraY ?? 24) * zoom;
+      camera.position.y = (options.cameraY ?? 16) * zoom;
       camera.lookAt(0, 0, 0);
       group.children.forEach((machineGroup, index) => {
         const machine = machineGroup.userData.machine || {};
         if (machine.status !== 'running') machineGroup.rotation.y += 0.006;
         machineGroup.position.y = Math.sin(Date.now() * 0.0015 + index) * 0.035;
+      });
+      _beltTex.offset.x += 0.004;
+      group.children.forEach(mg => {
+        const m = mg.userData.machine || {};
+        if (includes(m, ['robot', 'weld', 'welder'])) {
+          mg.traverse(child => {
+            if (child.userData.isArm) {
+              child.rotation.z = child.userData._armBaseRot + Math.sin(Date.now() * 0.002 + child.id) * 0.12;
+            }
+          });
+        }
+      });
+      group.children.forEach((mg, i) => {
+        const m = mg.userData.machine || {};
+        if (includes(m, ['agv'])) {
+          const t = Date.now() * 0.0005 + i;
+          mg.position.x = (m.posX ?? 0) * 1.3 + Math.sin(t) * 0.5;
+          mg.position.z = (m.posZ ?? 0) * 1.3 + Math.cos(t) * 0.5;
+        }
+      });
+      group.children.forEach(mg => {
+        mg.traverse(child => {
+          if (child.userData.isIndicator) {
+            child.material.emissiveIntensity = 0.3 + Math.sin(Date.now() * 0.003 + child.id) * 0.2;
+          }
+        });
+      });
+      group.children.forEach(mg => {
+        mg.traverse(child => {
+          if (child.userData.isSensor) {
+            child.material.opacity = 0.2 + Math.sin(Date.now() * 0.004 + (child.userData._sIdx || 0)) * 0.15;
+          }
+        });
       });
       renderer.render(scene, camera);
     }
@@ -362,11 +456,11 @@
     resize();
     animate();
 
-    const defaultRadius = options.radius || 34;
-    const defaultCamY = options.cameraY ?? 24;
+    const defaultRadius = options.radius || 22;
+    const defaultCamY = options.cameraY ?? 16;
     let targetZoom = 1, flyTarget = null, flyProgress = 0;
 
-    const sceneObj = {
+    sceneObj = {
       renderer, scene, camera, group,
       flyTo(x, z) {
         const targetAngle = Math.atan2(x, z);
