@@ -1,10 +1,25 @@
-<svg width="236" height="44" viewBox="0 0 236 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="YantraMitra">
-  <rect x="1.5" y="5.5" width="33" height="33" rx="16.5" fill="#F7F6FF" stroke="#C7C4D7"/>
-  <path d="M18 11.5C23.799 11.5 28.5 16.201 28.5 22C28.5 27.799 23.799 32.5 18 32.5" stroke="#413FD6" stroke-width="3" stroke-linecap="round"/>
-  <path d="M18 16.5C21.038 16.5 23.5 18.962 23.5 22C23.5 25.038 21.038 27.5 18 27.5" stroke="#5EFAE4" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="10.5" cy="22" r="3" fill="#413FD6"/>
-  <text x="45" y="28" font-family="Inter, Geist, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="0" fill="#413FD6">Yantra</text>
-  <text x="124" y="28" font-family="Inter, Geist, Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="0" fill="#15D8C3">Mitra</text>
-  <path d="M46 35.5H202" stroke="#C1C1FF" stroke-width="2" stroke-linecap="round"/>
-  <path d="M46 35.5H105" stroke="#5EFAE4" stroke-width="2" stroke-linecap="round"/>
+<svg width="278" height="44" viewBox="0 0 278 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="YantraMitra - Factory ka AI Saathi">
+  <defs>
+    <linearGradient id="ym-ring" x1="0" y1="0" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F0EEFF"/>
+    </linearGradient>
+    <filter id="ym-soft-shadow" x="-8" y="-8" width="56" height="56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#413FD6" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#ym-soft-shadow)">
+    <rect x="1.5" y="3.5" width="36" height="36" rx="18" fill="url(#ym-ring)" stroke="#C7C4D7"/>
+    <path d="M19.5 9C25.8513 9 31 14.1487 31 20.5C31 26.8513 25.8513 32 19.5 32" stroke="#413FD6" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M19.5 14.25C22.9518 14.25 25.75 17.0482 25.75 20.5C25.75 23.9518 22.9518 26.75 19.5 26.75" stroke="#5EFAE4" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="11.25" cy="20.5" r="3.25" fill="#413FD6"/>
+    <circle cx="19.5" cy="20.5" r="2" fill="#5EFAE4"/>
+  </g>
+
+  <text x="50" y="21.5" font-family="Inter, Geist, Arial, sans-serif" font-size="23" font-weight="900" letter-spacing="0" fill="#413FD6">Yantra</text>
+  <text x="126" y="21.5" font-family="Inter, Geist, Arial, sans-serif" font-size="23" font-weight="900" letter-spacing="0" fill="#15D8C3">Mitra</text>
+  <path d="M51 28.5H204" stroke="#C1C1FF" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M51 28.5H115" stroke="#5EFAE4" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="51" y="40" font-family="Inter, Geist, Arial, sans-serif" font-size="8.7" font-weight="900" letter-spacing="1.7" fill="#464555">FACTORY KA AI SAATHI</text>
 </svg>
