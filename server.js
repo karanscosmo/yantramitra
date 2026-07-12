@@ -191,7 +191,7 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     uptime: process.uptime(),
     prisma: prisma ? 'connected' : 'unavailable',
-    openai: !!process.env.OPENAI_API_KEY,
+    groq: !!process.env.GROQ_API_KEY,
     vercel: isVercel,
     memory: process.memoryUsage().rss
   });
@@ -282,7 +282,7 @@ app.get('/sitemap', (req, res) => {
   res.send(infoPage('Sitemap', '<p><a class="text-[#413fd6] font-semibold" href="/">Home</a></p><p><a class="text-[#413fd6] font-semibold" href="/about">About</a></p><p><a class="text-[#413fd6] font-semibold" href="/help">Help</a></p><p><a class="text-[#413fd6] font-semibold" href="/contact">Contact</a></p><p><a class="text-[#413fd6] font-semibold" href="/documentation">Documentation</a></p><p><a class="text-[#413fd6] font-semibold" href="/privacy">Privacy</a></p><p><a class="text-[#413fd6] font-semibold" href="/terms">Terms</a></p><p><a class="text-[#413fd6] font-semibold" href="/api-status">API Status</a></p>'));
 });
 app.get('/api-status', (req, res) => {
-  res.send(infoPage('API Status', `<p><strong>Status:</strong> Operational</p><p><strong>Runtime:</strong> Node.js / Express</p><p><strong>Uptime:</strong> ${Math.round(process.uptime())} seconds</p><p><strong>AI assistant:</strong> ${process.env.OPENAI_API_KEY ? 'Configured' : 'Needs OPENAI_API_KEY'}</p>`));
+   res.send(infoPage('API Status', `<p><strong>Status:</strong> Operational</p><p><strong>Runtime:</strong> Node.js / Express</p><p><strong>Uptime:</strong> ${Math.round(process.uptime())} seconds</p><p><strong>AI assistant:</strong> ${process.env.GROQ_API_KEY ? 'Configured (Groq)' : 'Needs GROQ_API_KEY'}</p>`));
 });
 
 // All /api routes below require the database
@@ -947,27 +947,22 @@ app.get('/api/onboarding/status', authApi, async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
-// YantraNklan AI Chat — powered by OpenAI
+// YantraNklan AI Chat — powered by Groq (Llama 3)
 // ──────────────────────────────────────────────
-function normalizeLookupText(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+
+const GROQ_BASE_URL = 'https://api.groq.com/openai/v1';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyPrefix: 'ai-chat' }), async (req, res) => {
   try {
     const { message, conversationId, history, attachmentContext } = req.body;
     if (!message) return res.status(400).json({ error: 'Message is required' });
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return res.status(503).json({ error: 'api_key_missing', message: 'OPENAI_API_KEY environment variable is not configured. Set it to enable AI chat.' });
+      return res.status(503).json({ error: 'api_key_missing', message: 'GROQ_API_KEY environment variable is not configured. Set it to enable AI chat.' });
     }
 
-    // Pull relevant context from the database
     const [machines, alarms, plants, agents, workOrders, plans, incidents] = await Promise.all([
       prisma.machine.findMany({
         include: {
@@ -987,41 +982,9 @@ app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyP
       prisma.operationalIncident.findMany({ include: { machine: { select: { name: true } } }, orderBy: { updatedAt: 'desc' }, take: 10 }),
     ]);
 
-    const contextSummary = {
-      plants: plants.map(p => ({ id: p.id, name: p.name, location: p.location, status: p.status, oee: p.oee, energyUsage: p.energyUsage, co2Tonnes: p.co2Tonnes, utilization: p.utilization, lat: p.lat, lng: p.lng })),
-      machines: machines.map(m => ({
-        id: m.id,
-        name: m.name,
-        serial: m.serial,
-        type: m.type,
-        status: m.status,
-        health: m.health,
-        oee: m.oee,
-        failureProbability: m.failureProbability,
-        remainingUsefulLife: m.remainingUsefulLife,
-        hierarchy: [m.plant?.name, m.productionLine?.building?.name, m.productionLine?.name].filter(Boolean).join(' / '),
-        plant: m.plant?.name,
-        sensors: m.sensors.map(s => ({ tag: s.tag, metric: s.metric, status: s.status })),
-        components: m.components.map(c => ({ name: c.name, health: c.health })),
-        inventoryParts: m.inventoryParts.map(p => ({ sku: p.sku, name: p.name, quantity: p.quantity, reorderAt: p.reorderAt })),
-        maintenanceHistory: m.maintenanceEvents.map(e => ({ title: e.title, performedBy: e.performedBy, performedAt: e.performedAt })),
-        aiSummary: m.aiSummary
-      })),
-      activeAlarms: alarms.map(a => ({ id: a.id, severity: a.severity, title: a.title, message: a.message, machine: a.machine?.name, status: a.status })),
-      agents: agents.map(a => ({ id: a.id, name: a.name, type: a.type, status: a.status, mission: a.mission, progress: a.progress, successRate: a.successRate, memory: a.memory, recentActions: a.recentActions })),
-      workOrders: workOrders.map(w => ({ id: w.id, title: w.title, status: w.status, priority: w.priority, machine: w.machine?.name, assignedTo: w.assignedTo })),
-      plans: plans.map(p => ({ id: p.id, title: p.title, type: p.type, status: p.status, priority: p.priority })),
-      incidents: incidents.map(i => ({ id: i.id, title: i.title, severity: i.severity, stage: i.stage, status: i.status, rootCause: i.rootCause, impactCost: i.impactCost, machine: i.machine?.name, timeline: i.timeline })),
-    };
-
-    // Conversation memory
     if (conversationId) {
-      if (!aiConversations.has(conversationId)) {
-        aiConversations.set(conversationId, { messages: [], created: Date.now() });
-      }
-      if (history && Array.isArray(history)) {
-        aiConversations.get(conversationId).messages = history.slice(-30);
-      }
+      if (!aiConversations.has(conversationId)) aiConversations.set(conversationId, { messages: [], created: Date.now() });
+      if (history && Array.isArray(history)) aiConversations.get(conversationId).messages = history.slice(-30);
     }
 
     const plantList = plants.map(p => `- ${p.name} (${p.location}): ${p.status}, OEE ${p.oee || 'N/A'}%, Energy ${p.energyUsage || 'N/A'} MWh, CO2 ${p.co2Tonnes || 'N/A'}t, Lat ${p.lat}, Lng ${p.lng}`).join('\n');
@@ -1086,7 +1049,7 @@ Include clickable links like: [View Work Orders](/work-orders) or [Pune Plant De
 - No signature blocks. No preamble about being an AI.`;
 
     const OpenAI = require('openai');
-    const openai = new OpenAI({ apiKey });
+    const groq = new OpenAI({ apiKey, baseURL: GROQ_BASE_URL });
 
     try {
       const messages = [
@@ -1095,8 +1058,8 @@ Include clickable links like: [View Work Orders](/work-orders) or [Pune Plant De
         { role: 'user', content: message }
       ];
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+      const completion = await groq.chat.completions.create({
+        model: GROQ_MODEL,
         messages,
         max_tokens: 700,
         temperature: 0.7,
@@ -1107,9 +1070,9 @@ Include clickable links like: [View Work Orders](/work-orders) or [Pune Plant De
         const conv = aiConversations.get(conversationId);
         if (conv) { conv.messages.push({ role: 'user', content: message }, { role: 'assistant', content: reply }); }
       }
-      res.json({ reply, model: 'gpt-4o-mini' });
+      res.json({ reply, model: GROQ_MODEL });
     } catch (e) {
-      console.error('AI provider error:', e.message);
+      console.error('AI provider error:', { message: e.message, status: e.status, code: e.code });
       throw e;
     }
   } catch (e) {
@@ -1134,9 +1097,9 @@ app.post('/api/ai-upload', authApi, upload.array('files', 5), async (req, res) =
       try { fs.unlinkSync(file.path); } catch {}
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return res.status(503).json({ error: 'api_key_missing', message: 'OPENAI_API_KEY not configured' });
+      return res.status(503).json({ error: 'api_key_missing', message: 'GROQ_API_KEY not configured' });
     }
 
     const [plants, machines, alarms] = await Promise.all([
@@ -1149,29 +1112,25 @@ app.post('/api/ai-upload', authApi, upload.array('files', 5), async (req, res) =
     const systemPrompt = `You are YantraNklan, YantraMitra's industrial AI copilot. The user has uploaded files with the following content:\n\n${fileContext}\n\n## Operational Context\nPlants: ${plants.map(p => p.name).join(', ')}\nMachines: ${machines.map(m => `${m.name} (${m.plant?.name})`).join(', ')}\nActive Alarms: ${alarms.length}\n\nAnalyze the uploaded files in context of plant operations. Use markdown formatting. Be specific and actionable.${message ? `\n\n## User Message\n${message}` : ''}`;
 
     const OpenAI = require('openai');
-    const openai = new OpenAI({ apiKey });
-    const completion = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }], max_tokens: 700, temperature: 0.7 });
+    const groq = new OpenAI({ apiKey, baseURL: GROQ_BASE_URL });
+    const completion = await groq.chat.completions.create({ model: GROQ_MODEL, messages: [{ role: 'system', content: systemPrompt }], max_tokens: 700, temperature: 0.7 });
     const reply = completion.choices[0]?.message?.content || 'Files processed. What would you like to know?';
-    res.json({ reply, model: 'gpt-4o-mini' });
+    res.json({ reply, model: GROQ_MODEL });
   } catch (e) {
     console.error('Upload error:', e.message);
     res.status(500).json({ error: 'Upload failed', message: e.message });
   }
 });
 
-// Streaming AI chat endpoint
+// Streaming AI chat endpoint with auto-fallback to non-streaming
 app.post('/api/ai-chat/stream', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyPrefix: 'ai-chat-stream' }), async (req, res) => {
+  const { message, conversationId, history, attachmentContext } = req.body;
+  if (!message) return res.status(400).json({ error: 'Message is required' });
+
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return res.status(503).json({ error: 'api_key_missing', message: 'GROQ_API_KEY not configured. Set it in your environment to enable AI chat.' });
+
   try {
-    const { message, conversationId, history, attachmentContext } = req.body;
-    if (!message) return res.status(400).json({ error: 'Message is required' });
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(503).json({ error: 'api_key_missing' });
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
     const [machines, alarms, plants, agents, workOrders, plans, incidents] = await Promise.all([
       prisma.machine.findMany({ include: { plant: { select: { name: true, location: true, oee: true, energyUsage: true, co2Tonnes: true } }, sensors: { take: 4 }, components: { take: 2 } } }),
       prisma.alarm.findMany({ where: { status: 'active' }, include: { machine: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 15 }),
@@ -1193,26 +1152,69 @@ app.post('/api/ai-chat/stream', authApi, rateLimit({ windowMs: 60 * 1000, max: 2
     const systemPrompt = `You are YantraNklan, YantraMitra's industrial AI copilot.\n\n## LIVE DATA\nPlants:\n${plantList}\n\nMachines:\n${machineSummary}\n\nUse markdown. Include links like [View](/plant/{id}). Never say you lack data. Be specific.${attachmentContext ? `\n\n## FILE ATTACHMENT\n${attachmentContext.slice(0, 3000)}` : ''}`;
 
     const OpenAI = require('openai');
-    const openai = new OpenAI({ apiKey });
+    const groq = new OpenAI({ apiKey, baseURL: GROQ_BASE_URL });
     const messages = [{ role: 'system', content: systemPrompt }, ...(aiConversations.get(conversationId)?.messages || []).slice(-20), { role: 'user', content: message }];
 
-    const stream = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages, max_tokens: 700, temperature: 0.7, stream: true });
+    // Try streaming first
+    try {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
 
-    let fullReply = '';
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) { fullReply += content; res.write('data: ' + JSON.stringify({ content }) + '\n\n'); }
-    }
+      const stream = await groq.chat.completions.create({ model: GROQ_MODEL, messages, max_tokens: 700, temperature: 0.7, stream: true });
 
-    if (conversationId) {
-      const conv = aiConversations.get(conversationId);
-      if (conv) conv.messages.push({ role: 'user', content: message }, { role: 'assistant', content: fullReply });
+      let fullReply = '';
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) { fullReply += content; res.write('data: ' + JSON.stringify({ content }) + '\n\n'); }
+      }
+
+      if (conversationId) {
+        const conv = aiConversations.get(conversationId);
+        if (conv) conv.messages.push({ role: 'user', content: message }, { role: 'assistant', content: fullReply });
+      }
+      res.write('data: [DONE]\n\n');
+      res.end();
+    } catch (streamError) {
+      console.error('AI stream provider error:', {
+        message: streamError.message,
+        status: streamError.status,
+        code: streamError.code || streamError.type || 'unknown',
+        type: streamError.constructor?.name,
+        stack: (streamError.stack || '').split('\n').slice(0, 5).join('\n')
+      });
+
+      if (res.headersSent) {
+        res.write('data: ' + JSON.stringify({ error: streamError.message, code: streamError.status || 'stream_error' }) + '\n\n');
+        res.write('data: [DONE]\n\n');
+        return res.end();
+      }
+
+      console.log('Stream failed, falling back to non-streaming completion. Reason:', streamError.message);
+      try {
+        const completion = await groq.chat.completions.create({ model: GROQ_MODEL, messages, max_tokens: 700, temperature: 0.7, stream: false });
+        const reply = completion.choices[0]?.message?.content || '';
+        if (conversationId) {
+          const conv = aiConversations.get(conversationId);
+          if (conv) conv.messages.push({ role: 'user', content: message }, { role: 'assistant', content: reply });
+        }
+        res.type('json');
+        return res.json({ reply, model: GROQ_MODEL, fallback: true, fallbackReason: streamError.message });
+      } catch (fallbackError) {
+        console.error('AI fallback also failed:', {
+          message: fallbackError.message,
+          status: fallbackError.status,
+          code: fallbackError.code || fallbackError.type || 'unknown',
+          stack: (fallbackError.stack || '').split('\n').slice(0, 5).join('\n')
+        });
+        res.type('json');
+        if (!res.headersSent) return res.status(500).json({ error: fallbackError.message || 'AI service unavailable', code: fallbackError.status || 'ai_error' });
+      }
     }
-    res.write('data: [DONE]\n\n');
-    res.end();
   } catch (e) {
-    console.error('Stream error:', e.message);
-    if (!res.headersSent) return res.status(500).json({ error: 'stream_error' });
+    console.error('Stream setup error:', { message: e.message, stack: (e.stack || '').split('\n').slice(0, 5).join('\n') });
+    res.type('json');
+    if (!res.headersSent) return res.status(500).json({ error: e.message || 'stream_error', code: 'stream_setup_failed' });
     res.write('data: ' + JSON.stringify({ error: e.message }) + '\n\n');
     res.end();
   }

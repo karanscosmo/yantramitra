@@ -164,7 +164,7 @@
         document.getElementById('ym-file-preview').classList.add('hidden');
         if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Upload failed' })); addMessage(err.error || 'Upload failed. Please try again.', false, { model: 'error' }); return; }
         const data = await resp.json();
-        if (data.reply) { addMessage(data.reply, false, { model: data.model || 'gpt-4o-mini' }); chatHistory.push({ role: 'assistant', content: data.reply }); saveHistory(); }
+        if (data.reply) { addMessage(data.reply, false, { model: data.model || 'llama-3.3-70b-versatile' }); chatHistory.push({ role: 'assistant', content: data.reply }); saveHistory(); }
         return;
       }
 
@@ -177,15 +177,16 @@
 
         if (!resp.ok) {
           setLoading(false);
-          const err = await resp.json().catch(() => ({ error: 'Request failed' }));
-          if (err.error === 'api_key_missing') { addMessage('OPENAI_API_KEY is not configured. Set it in your environment to enable AI chat.', false, { model: 'offline' }); return; }
-          addMessage(err.error || 'Request failed. Please try again.', false, { model: 'error' });
+          const err = await resp.json().catch(() => ({ error: 'Request failed. Please try again.', code: 'unknown' }));
+          if (err.error === 'api_key_missing') { addMessage(err.message || 'OPENAI_API_KEY is not configured. Set it in your environment to enable AI chat.', false, { model: 'offline' }); return; }
+          const userMsg = err.code === 'stream_setup_failed' ? (err.error || 'Chat service unavailable.') : (err.error || 'Request failed. Please try again.');
+          addMessage(userMsg, false, { model: 'error' });
           return;
         }
 
         const contentType = resp.headers.get('content-type') || '';
         if (contentType.includes('text/event-stream')) {
-          const wrapper = addMessage('', false, { id: 'ai_' + Date.now(), model: 'gpt-4o-mini', streaming: true });
+          const wrapper = addMessage('', false, { id: 'ai_' + Date.now(), model: 'llama-3.3-70b-versatile', streaming: true });
           const contentDiv = wrapper ? wrapper.querySelector('.ai-response') : null;
           let fullText = '';
           let hasContent = false;
@@ -236,7 +237,7 @@
     } catch (err) {
       setLoading(false);
       if (err.name === 'AbortError') { addMessage('Response cancelled.', false, { model: 'cancelled' }); }
-      else { addMessage('Connection error. Please check your network and try again.', false, { model: 'error' }); }
+      else { addMessage(err.message || 'Connection error. Please check your network and try again.', false, { model: 'error' }); }
     }
   }
 
@@ -248,22 +249,23 @@
       });
       setLoading(false);
       if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: 'Request failed' }));
-        if (err.error === 'api_key_missing') { addMessage('OPENAI_API_KEY is not configured. Set it to enable AI chat.', false, { model: 'offline' }); return; }
-        addMessage(err.error || 'Request failed.', false, { model: 'error' });
+        setLoading(false);
+        const err = await resp.json().catch(() => ({ error: 'Request failed. Please try again.', code: 'unknown' }));
+        if (err.error === 'api_key_missing') { addMessage(err.message || 'OPENAI_API_KEY is not configured. Set it to enable AI chat.', false, { model: 'offline' }); return; }
+        addMessage(err.message || err.error || 'Request failed. Please try again.', false, { model: 'error' });
         return;
       }
       const data = await resp.json();
       handleResponse(data);
     } catch (err) {
       setLoading(false);
-      if (err.name !== 'AbortError') addMessage('Connection error. Please try again.', false, { model: 'error' });
+      if (err.name !== 'AbortError') addMessage(err.message || 'Connection error. Please try again.', false, { model: 'error' });
     }
   }
 
   function handleResponse(data) {
     if (data.reply) {
-      addMessage(data.reply, false, { model: data.model || 'gpt-4o-mini', fallback: data.fallback });
+      addMessage(data.reply, false, { model: data.model || 'llama-3.3-70b-versatile', fallback: data.fallback });
       chatHistory.push({ role: 'assistant', content: data.reply });
       saveHistory();
       addActionsToLastMessage();
@@ -402,7 +404,7 @@
     container.innerHTML = '';
     for (const msg of chatHistory) {
       if (msg.role === 'user') addMessage(msg.content, true, { id: 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 4) });
-      else if (msg.role === 'assistant') addMessage(msg.content, false, { id: 'ai_' + Date.now() + '_' + Math.random().toString(36).slice(2, 4), model: 'gpt-4o-mini' });
+      else if (msg.role === 'assistant') addMessage(msg.content, false, { id: 'ai_' + Date.now() + '_' + Math.random().toString(36).slice(2, 4), model: 'llama-3.3-70b-versatile' });
     }
     if (!chatHistory.length) showWelcome();
   }
