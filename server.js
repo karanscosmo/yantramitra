@@ -152,21 +152,53 @@ function infoPage(title, content) {
 </head>
 <body class="min-h-screen bg-[#fbf8ff] text-[#191a28]">
   <main class="mx-auto max-w-3xl px-6 py-12">
-    <a href="/" class="inline-flex items-center gap-2 text-[#413fd6] font-semibold mb-8">YantraMitra</a>
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <a href="/" class="inline-flex items-center gap-2 text-[#413fd6] font-semibold">YantraMitra</a>
+      <button onclick="history.length > 1 ? history.back() : location.assign('/')" class="rounded-full border border-[#c7c4d7] bg-white px-4 py-2 text-sm font-bold text-[#413fd6]">Go Back</button>
+    </div>
     <section class="rounded-lg border border-[#c7c4d7] bg-white p-8 shadow-sm">
       <h1 class="text-3xl font-bold mb-4">${title}</h1>
       <div class="space-y-4 text-base leading-7 text-[#464555]">${content}</div>
       <div class="mt-8 flex flex-wrap gap-3 text-sm">
-        <a class="text-[#413fd6] font-semibold" href="/dashboard">Dashboard</a>
-        <a class="text-[#413fd6] font-semibold" href="/assets">Assets</a>
-        <a class="text-[#413fd6] font-semibold" href="/agents">Agents</a>
-        <a class="text-[#413fd6] font-semibold" href="/ai-console">YantraNklan</a>
+        <a class="text-[#413fd6] font-semibold" href="/">Home</a>
+        <a class="text-[#413fd6] font-semibold" href="/about">About</a>
+        <a class="text-[#413fd6] font-semibold" href="/help">Help</a>
+        <a class="text-[#413fd6] font-semibold" href="/contact">Contact</a>
+        <a class="text-[#413fd6] font-semibold" href="/documentation">Documentation</a>
       </div>
     </section>
   </main>
 </body>
 </html>`;
 }
+
+const publicFacilities = {
+  'pune-automotive': {
+    title: 'Pune Automotive Components',
+    image: '/images/home-pune-automotive.jpg',
+    body: '<p><strong>Company unit:</strong> Automotive components and powertrain machining.</p><p>The Pune facility represents robotic welding, CNC cells, AGV material movement, line-level telemetry, and high-throughput component production. YantraMitra tracks machine health, OEE, alarms, and maintenance readiness for this plant.</p><p><strong>What the product demonstrates:</strong> asset health, digital-twin drilldown, predictive maintenance planning, and work-order execution.</p>'
+  },
+  'ahmedabad-process': {
+    title: 'Ahmedabad Textile & Chemical Process Lines',
+    image: '/images/home-ahmedabad-process.jpg',
+    body: '<p><strong>Company unit:</strong> Textile finishing, dyeing, and controlled chemical process operations.</p><p>The Ahmedabad facility focuses on process tanks, fabric rollers, quality labs, dosing systems, and environmental process monitoring. It shows how YantraMitra handles continuous process context instead of only discrete manufacturing.</p><p><strong>What the product demonstrates:</strong> process visibility, quality risk, alarm triage, and plant-aware agent explanations.</p>'
+  },
+  'chennai-electronics': {
+    title: 'Chennai Electronics Assembly',
+    image: '/images/home-chennai-electronics.jpg',
+    body: '<p><strong>Company unit:</strong> SMT assembly, AOI inspection, reflow, and board testing.</p><p>The Chennai site models clean electronics production where throughput, inspection quality, thermal process stability, and downtime risk matter minute by minute.</p><p><strong>What the product demonstrates:</strong> line monitoring, sensor history, anomaly context, and technician-ready work orders.</p>'
+  },
+  'bengaluru-precision': {
+    title: 'Bengaluru Precision Engineering',
+    image: '/images/home-bengaluru-precision.jpg',
+    body: '<p><strong>Company unit:</strong> Micro-machining, metrology, calibration, and additive manufacturing.</p><p>The Bengaluru facility is a precision lab-factory hybrid. It highlights machine tolerances, CMM inspection, calibration risk, and high-value asset reliability.</p><p><strong>What the product demonstrates:</strong> reliability forecasting, component context, maintenance planning, and AI-assisted diagnostics.</p>'
+  },
+  'nagpur-logistics': {
+    title: 'Nagpur Warehouse & Logistics Hub',
+    image: '/images/home-nagpur-logistics.jpg',
+    body: '<p><strong>Company unit:</strong> Automated warehouse, ASRS, sortation, AGVs, and dock flow.</p><p>The Nagpur hub shows material movement, automated storage, charging flows, dock operations, and logistics execution. It rounds out YantraMitra as a full operations platform, not only a factory dashboard.</p><p><strong>What the product demonstrates:</strong> facility flow, uptime, incident visibility, and cross-site command center reporting.</p>'
+  }
+};
 
 app.get('/', authOptional, servePage('yantramitra_home'));
 app.get('/login', servePage('login_yantramitra_polished'));
@@ -199,6 +231,11 @@ app.get('/contact', (req, res) => {
 });
 app.get('/documentation', (req, res) => {
   res.send(infoPage('Documentation', '<p>The project overview PDF below explains the YantraMitra scenario, feature map, operating flow, and release notes.</p><p><a class="text-[#413fd6] font-semibold" href="/docs/yantramitra-project-overview.pdf">Open PDF in a new tab</a></p><iframe title="YantraMitra Project Overview PDF" src="/docs/yantramitra-project-overview.pdf" style="width:100%;height:72vh;border:1px solid #c7c4d7;border-radius:14px;background:#fff"></iframe>'));
+});
+app.get('/facilities/:slug', (req, res) => {
+  const facility = publicFacilities[req.params.slug];
+  if (!facility) return res.status(404).send(infoPage('Facility Not Found', '<p>That public facility overview does not exist.</p>'));
+  res.send(infoPage(facility.title, `<img src="${facility.image}" alt="${facility.title}" class="mb-6 h-72 w-full rounded-xl object-cover border border-[#c7c4d7]">${facility.body}`));
 });
 app.get('/privacy', (req, res) => {
   res.send(infoPage('Privacy', '<p>YantraMitra is designed for company-controlled operational data. Production deployments should connect only approved databases, restrict user access, and configure OpenAI keys under the company account.</p><p>This demo build does not sell personal data. Profile and operations data are used to provide dashboards, work order workflows, and YantraNklan AI responses.</p>'));

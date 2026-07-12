@@ -1,7 +1,14 @@
 (function() {
   async function post(path, body) {
-    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    return { status: r.status, data: await r.json() };
+    const r = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body)
+    });
+    let data = {};
+    try { data = await r.json(); } catch {}
+    return { status: r.status, data };
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -40,7 +47,9 @@
       if (status === 200) {
         window.location.href = '/onboarding';
       } else {
-        errorEl.textContent = data.error || 'Signup failed';
+        errorEl.innerHTML = data.error === 'Email already registered'
+          ? 'This email already has an account. <a class="font-bold underline" href="/login">Sign in instead</a>.'
+          : (data.error || 'Signup failed. Please check the form and try again.');
         errorEl.classList.remove('hidden');
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'Create Account';

@@ -274,6 +274,25 @@
       }
       .ym-home-auth .ym-login { color: #413fd6; background: rgba(65, 63, 214, .09); }
       .ym-home-auth .ym-signup { color: #fff; background: #413fd6; box-shadow: 0 10px 24px rgba(65, 63, 214, .25); }
+      .ym-auth-back {
+        position: fixed;
+        left: 18px;
+        top: 18px;
+        z-index: 90;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(199,196,215,.72);
+        border-radius: 9999px;
+        background: rgba(255,255,255,.86);
+        color: #413fd6;
+        padding: 9px 13px;
+        box-shadow: 0 12px 30px rgba(65,63,214,.12);
+        font: 800 13px/1 Inter, system-ui, sans-serif;
+        backdrop-filter: blur(14px);
+        cursor: pointer;
+      }
+      .ym-auth-back .material-symbols-outlined { font-size: 18px; }
       @media (max-width: 900px) {
         .ym-shell-rail { right: 8px; top: auto; left: 8px; bottom: 8px; width: auto; height: 64px; flex-direction: row; border-radius: 9999px; overflow-x: auto; overflow-y: hidden; }
         .ym-ask-yantranklan { right: 14px; bottom: 84px; }
@@ -354,6 +373,44 @@
       headerInner.appendChild(auth);
     }
 
+  }
+
+  function wireLogoAndBackNavigation() {
+    const logo = document.querySelector('img[src="/logo.svg"]');
+    const isAuthPath = authPaths.includes(currentPath) || currentPath === '/onboarding';
+
+    if (logo) {
+      const anchor = logo.closest('a');
+      if (currentPath === '/') {
+        if (anchor) anchor.setAttribute('href', '#top');
+      } else if (isAuthPath) {
+        if (anchor) {
+          anchor.setAttribute('href', '/');
+        } else {
+          logo.style.cursor = 'pointer';
+          logo.addEventListener('click', () => { window.location.href = '/'; });
+        }
+      } else if (!shellExcludedPaths.includes(currentPath)) {
+        if (anchor) {
+          anchor.setAttribute('href', '/dashboard');
+        } else {
+          logo.style.cursor = 'pointer';
+          logo.addEventListener('click', () => { window.location.href = '/dashboard'; });
+        }
+      }
+    }
+
+    if (isAuthPath && !document.querySelector('.ym-auth-back')) {
+      const back = document.createElement('button');
+      back.className = 'ym-auth-back';
+      back.type = 'button';
+      back.innerHTML = '<span class="material-symbols-outlined">arrow_back</span><span>Go Back</span>';
+      back.addEventListener('click', () => {
+        if (history.length > 1) history.back();
+        else window.location.href = '/';
+      });
+      document.body.appendChild(back);
+    }
   }
 
   function wireKnownButtons() {
@@ -655,6 +712,7 @@
     injectStyles();
     normalizeRightRail();
     addYantraNklanEntry();
+    wireLogoAndBackNavigation();
     addHomeAuthActions();
     wireKnownButtons();
     addRunDemoButtons();

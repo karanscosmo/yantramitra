@@ -81,7 +81,7 @@
 <body class="font-body text-ink overflow-x-hidden gradient-mesh">
 <header class="fixed top-0 left-0 right-0 z-50 border-b border-line/40 bg-white/82 backdrop-blur-xl shadow-[0_8px_32px_rgba(65,63,214,.08)]">
   <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-5 px-5">
-    <a href="/" class="flex items-center gap-3" aria-label="YantraMitra home">
+    <a href="#top" class="flex items-center gap-3" aria-label="YantraMitra home">
       <img src="/logo.svg" alt="YantraMitra" class="h-9"/>
     </a>
     <nav class="hidden items-center gap-7 text-sm font-extrabold text-muted md:flex" aria-label="Home sections">
@@ -91,14 +91,14 @@
       <a class="hover:text-primary" href="#workflows">Workflows</a>
       <a class="hover:text-primary" href="/documentation">Docs</a>
     </nav>
-    <div class="flex items-center gap-2">
+    <div class="ym-home-auth flex items-center gap-2">
       <a class="rounded-full bg-primary/10 px-4 py-2 text-sm font-extrabold text-primary" href="/login">Login</a>
       <a class="rounded-full bg-primary px-4 py-2 text-sm font-extrabold text-white shadow-lg shadow-primary/20" href="/signup">Sign Up</a>
     </div>
   </div>
 </header>
 
-<main class="pt-20">
+<main id="top" class="pt-20">
   <section class="relative mx-auto mb-16 grid max-w-7xl items-center gap-10 overflow-hidden rounded-[36px] px-5 py-10 lg:grid-cols-[1.02fr_.98fr] lg:px-8">
     <div class="ym-motion-field" aria-hidden="true"></div>
     <div class="relative z-10 space-y-7">
@@ -115,20 +115,23 @@
         <div><p class="font-monohead text-[11px] font-black uppercase text-muted">Sensors live</p><p class="font-monohead text-3xl font-black text-amber"><span data-ym-count="sensors">174</span></p></div>
         <p class="col-span-3 text-sm font-semibold text-muted">Live-feeling counts come from the same seeded operating model used inside the product.</p>
       </div>
-      <div class="flex flex-wrap gap-4">
-        <a href="/signup" class="rounded-full bg-primary px-8 py-4 text-lg font-black text-white shadow-xl shadow-primary/25">Request Demo</a>
-        <button data-contact-sales class="rounded-full border border-line bg-white/80 px-8 py-4 text-lg font-black text-ink">Contact Sales</button>
-        <button data-watch-demo class="rounded-full bg-ink px-8 py-4 text-lg font-black text-white"><span class="material-symbols-outlined align-middle">play_circle</span> Watch Demo</button>
+      <div class="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
+        <a href="/signup" class="rounded-full bg-primary px-6 py-4 text-center text-base font-black text-white shadow-xl shadow-primary/25">Request Demo</a>
+        <button data-contact-sales class="rounded-full border border-line bg-white/80 px-6 py-4 text-base font-black text-ink">Contact Sales</button>
+        <button data-watch-demo class="rounded-full bg-ink px-6 py-4 text-base font-black text-white"><span class="material-symbols-outlined align-middle">play_circle</span> Watch Demo</button>
       </div>
     </div>
     <div class="relative z-10">
       <div class="glass-card overflow-hidden rounded-[28px] p-3">
-        <img src="/images/home-pune-automotive.jpg" alt="Pune automotive plant with robotic welding and CNC cells" class="h-72 w-full rounded-2xl object-cover"/>
+        <a href="/facilities/pune-automotive" class="group relative block overflow-hidden rounded-2xl">
+          <img src="/images/home-pune-automotive.jpg" alt="Pune automotive plant with robotic welding and CNC cells" class="h-72 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"/>
+          <span class="absolute left-8 top-8 rounded-full bg-white/88 px-4 py-2 text-sm font-black text-primary shadow-lg">Pune Automotive · Robotic welding and CNC</span>
+        </a>
         <div class="grid grid-cols-2 gap-3 pt-3">
-          <img src="/images/home-ahmedabad-process.jpg" alt="Ahmedabad textile and chemical process facility" class="h-36 w-full rounded-xl object-cover"/>
-          <img src="/images/home-chennai-electronics.jpg" alt="Chennai electronics SMT and inspection line" class="h-36 w-full rounded-xl object-cover"/>
-          <img src="/images/home-bengaluru-precision.jpg" alt="Bengaluru precision metrology and machining lab" class="h-36 w-full rounded-xl object-cover"/>
-          <img src="/images/home-nagpur-logistics.jpg" alt="Nagpur automated warehouse and logistics hub" class="h-36 w-full rounded-xl object-cover"/>
+          <a href="/facilities/ahmedabad-process" class="group relative block overflow-hidden rounded-xl"><img src="/images/home-ahmedabad-process.jpg" alt="Ahmedabad textile and chemical process facility" class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"/><span class="absolute inset-x-2 bottom-2 rounded-lg bg-white/86 px-2 py-1 text-xs font-black text-ink">Ahmedabad Process</span></a>
+          <a href="/facilities/chennai-electronics" class="group relative block overflow-hidden rounded-xl"><img src="/images/home-chennai-electronics.jpg" alt="Chennai electronics SMT and inspection line" class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"/><span class="absolute inset-x-2 bottom-2 rounded-lg bg-white/86 px-2 py-1 text-xs font-black text-ink">Chennai Electronics</span></a>
+          <a href="/facilities/bengaluru-precision" class="group relative block overflow-hidden rounded-xl"><img src="/images/home-bengaluru-precision.jpg" alt="Bengaluru precision metrology and machining lab" class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"/><span class="absolute inset-x-2 bottom-2 rounded-lg bg-white/86 px-2 py-1 text-xs font-black text-ink">Bengaluru Precision</span></a>
+          <a href="/facilities/nagpur-logistics" class="group relative block overflow-hidden rounded-xl"><img src="/images/home-nagpur-logistics.jpg" alt="Nagpur automated warehouse and logistics hub" class="h-36 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"/><span class="absolute inset-x-2 bottom-2 rounded-lg bg-white/86 px-2 py-1 text-xs font-black text-ink">Nagpur Logistics</span></a>
         </div>
       </div>
     </div>
@@ -157,13 +160,13 @@
       <p class="max-w-xl text-lg font-medium leading-8 text-muted">Each plant has distinct machines, sensors, incidents, and workflows, so demos do not feel like a generic factory shell.</p>
     </div>
     <div class="grid gap-5 lg:grid-cols-5">
-      <article class="glass-card overflow-hidden rounded-2xl lg:col-span-3"><img src="/images/home-pune-automotive.jpg" class="h-72 w-full object-cover" alt="Pune automotive plant"/><div class="p-6"><h3 class="text-2xl font-black">Pune Automotive Components</h3><p class="mt-3 leading-7 text-muted">Robotic welding, CNC cells, AGV material flow, powertrain components, and line-level reliability telemetry.</p></div></article>
+      <a href="/facilities/pune-automotive" class="glass-card block overflow-hidden rounded-2xl lg:col-span-3"><img src="/images/home-pune-automotive.jpg" class="h-72 w-full object-cover" alt="Pune automotive plant"/><div class="p-6"><h3 class="text-2xl font-black">Pune Automotive Components</h3><p class="mt-3 leading-7 text-muted">Robotic welding, CNC cells, AGV material flow, powertrain components, and line-level reliability telemetry.</p><p class="mt-4 font-black text-primary">Open public facility profile</p></div></a>
       <div class="grid gap-5 lg:col-span-2">
-        <article class="glass-card overflow-hidden rounded-2xl"><img src="/images/home-ahmedabad-process.jpg" class="h-40 w-full object-cover" alt="Ahmedabad textile chemical plant"/><div class="p-5"><h3 class="text-xl font-black">Ahmedabad Process Lines</h3><p class="mt-2 text-sm leading-6 text-muted">Textile finishing, dye tanks, process control, and chemical quality context.</p></div></article>
-        <article class="glass-card overflow-hidden rounded-2xl"><img src="/images/home-chennai-electronics.jpg" class="h-40 w-full object-cover" alt="Chennai electronics plant"/><div class="p-5"><h3 class="text-xl font-black">Chennai Electronics</h3><p class="mt-2 text-sm leading-6 text-muted">SMT placement, AOI inspection, reflow ovens, boards, and test benches.</p></div></article>
+        <a href="/facilities/ahmedabad-process" class="glass-card block overflow-hidden rounded-2xl"><img src="/images/home-ahmedabad-process.jpg" class="h-40 w-full object-cover" alt="Ahmedabad textile chemical plant"/><div class="p-5"><h3 class="text-xl font-black">Ahmedabad Process Lines</h3><p class="mt-2 text-sm leading-6 text-muted">Textile finishing, dye tanks, process control, and chemical quality context.</p></div></a>
+        <a href="/facilities/chennai-electronics" class="glass-card block overflow-hidden rounded-2xl"><img src="/images/home-chennai-electronics.jpg" class="h-40 w-full object-cover" alt="Chennai electronics plant"/><div class="p-5"><h3 class="text-xl font-black">Chennai Electronics</h3><p class="mt-2 text-sm leading-6 text-muted">SMT placement, AOI inspection, reflow ovens, boards, and test benches.</p></div></a>
       </div>
-      <article class="glass-card overflow-hidden rounded-2xl lg:col-span-2"><img src="/images/home-bengaluru-precision.jpg" class="h-52 w-full object-cover" alt="Bengaluru precision engineering"/><div class="p-6"><h3 class="text-2xl font-black">Bengaluru Precision Engineering</h3><p class="mt-3 leading-7 text-muted">Micro-machining, CMM inspection, metrology, calibration, and additive manufacturing cells.</p></div></article>
-      <article class="glass-card overflow-hidden rounded-2xl lg:col-span-3"><img src="/images/home-nagpur-logistics.jpg" class="h-52 w-full object-cover" alt="Nagpur warehouse logistics"/><div class="p-6"><h3 class="text-2xl font-black">Nagpur Warehouse & Logistics Hub</h3><p class="mt-3 leading-7 text-muted">ASRS aisles, sorters, dock flow, charging bays, AGVs, and live material movement visibility.</p></div></article>
+      <a href="/facilities/bengaluru-precision" class="glass-card block overflow-hidden rounded-2xl lg:col-span-2"><img src="/images/home-bengaluru-precision.jpg" class="h-52 w-full object-cover" alt="Bengaluru precision engineering"/><div class="p-6"><h3 class="text-2xl font-black">Bengaluru Precision Engineering</h3><p class="mt-3 leading-7 text-muted">Micro-machining, CMM inspection, metrology, calibration, and additive manufacturing cells.</p></div></a>
+      <a href="/facilities/nagpur-logistics" class="glass-card block overflow-hidden rounded-2xl lg:col-span-3"><img src="/images/home-nagpur-logistics.jpg" class="h-52 w-full object-cover" alt="Nagpur warehouse logistics"/><div class="p-6"><h3 class="text-2xl font-black">Nagpur Warehouse & Logistics Hub</h3><p class="mt-3 leading-7 text-muted">ASRS aisles, sorters, dock flow, charging bays, AGVs, and live material movement visibility.</p></div></a>
     </div>
   </section>
 
