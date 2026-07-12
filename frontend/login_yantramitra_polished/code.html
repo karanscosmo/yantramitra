@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Login | YantraMitra Ops Intel</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@600;700&amp;family=Geist:wght@700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -186,6 +187,43 @@
             0%, 100% { transform: translate(0, 0); }
             50% { transform: translate(100px, 50px); }
         }
+
+        .ym-auth-motion {
+            position: absolute;
+            inset: -12%;
+            pointer-events: none;
+            opacity: 0.78;
+            background-image:
+                radial-gradient(circle at 16% 26%, rgba(94, 250, 228, 0.55) 0 2px, transparent 3px),
+                radial-gradient(circle at 48% 64%, rgba(193, 193, 255, 0.45) 0 2px, transparent 3px),
+                radial-gradient(circle at 78% 34%, rgba(255, 186, 75, 0.32) 0 1px, transparent 3px),
+                linear-gradient(135deg, rgba(65, 63, 214, 0.28), rgba(0, 107, 95, 0.18), transparent 70%);
+            background-size: 210px 210px, 260px 260px, 180px 180px, 100% 100%;
+            animation: ymAuthDrift 30s linear infinite;
+            mix-blend-mode: screen;
+        }
+
+        .ym-plant-ribbon {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+        }
+
+        @keyframes ymAuthDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 210px 120px, -260px 140px, 180px -80px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-auth-motion,
+            .floating-orb,
+            .shimmer-bg {
+                animation: none !important;
+            }
+            .ym-auth-motion {
+                opacity: 0.24;
+            }
+        }
     </style>
 </head>
 <body class="font-body-md text-on-surface min-h-screen flex items-stretch">
@@ -267,9 +305,17 @@
 <div class="absolute inset-0">
 <img alt="An expansive, high-tech industrial assembly line with advanced robotic arms and automated conveyors. The factory floor is bathed in a soft, ethereal ambient glow with highlights of electric indigo and teal. Multiple stations with precision machinery are visible, showcasing a futuristic, clean manufacturing environment. The perspective is a grand, high-angle overview of the intricate technological ecosystem." class="w-full h-full object-cover grayscale-[0.2] brightness-110" src="/images/ym-hero-control-room.jpg"/>
 </div>
+<div class="ym-auth-motion z-10" aria-hidden="true"></div>
 <!-- Atmospheric Overlay -->
 <div class="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent"></div>
 <div class="absolute inset-0 bg-primary/5 mix-blend-overlay"></div>
+<div class="absolute left-xl top-xl z-20 grid grid-cols-5 gap-xs ym-plant-ribbon rounded-2xl p-xs max-w-xl">
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-pune-auto.svg" alt="Pune automotive facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-ahmedabad-textile.svg" alt="Ahmedabad textile chemical facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-chennai-electronics.svg" alt="Chennai electronics facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-bengaluru-precision.svg" alt="Bengaluru precision facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-nagpur-logistics.svg" alt="Nagpur warehouse facility"/>
+</div>
 <!-- Animated Data Stream Overlay (Subtle CSS) -->
 <div class="absolute top-xl right-xl w-64 h-96 glass-card rounded-2xl p-sm hidden xl:block opacity-80 border-white/20">
 <div class="flex items-center space-x-xs mb-sm">

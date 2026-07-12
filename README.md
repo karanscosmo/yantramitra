@@ -33,6 +33,12 @@ The seeded demo is now an India-first industrial scenario: Pune automotive compo
 
 The Digital Twin page uses Three.js to render clickable machine geometry. Faulted machines are shown in red with a visible warning glow. The inspector panel shows hierarchy, live seeded readings, OEE, RUL, sensors, components, spare parts, maintenance timeline, and can create a real work order or deep-link to YantraNklan with machine context.
 
+## Screenshots / Visual Notes
+
+The home and auth flow now present the real five-facility Indian demo company rather than generic factory stock art. The landing hero shows Pune automotive, Ahmedabad textile/chemical, Chennai electronics, Bengaluru precision engineering, and Nagpur warehouse visuals, plus a live-feeling operations widget seeded at 5 facilities, 29 machines, and 174 monitored sensors. When a user is signed in, the widget refreshes from the database APIs; logged-out visitors only see Login and Sign Up in the home header.
+
+Home, login, signup, reset password, and onboarding share a subtle indigo/teal motion treatment that respects `prefers-reduced-motion`. The favicon is derived from the simplified YantraMitra logo mark for legible browser-tab rendering.
+
 ## Connected Operating Workflow
 
 Phase 2 adds a persisted lifecycle backbone:

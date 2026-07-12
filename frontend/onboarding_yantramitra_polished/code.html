@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>YantraMitra | Onboarding</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@600;700&amp;family=Geist:wght@700&amp;display=swap" rel="stylesheet"/>
 <!-- Material Symbols -->
@@ -155,9 +156,36 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
+
+        .ym-onboarding-motion {
+            position: fixed;
+            inset: -12%;
+            pointer-events: none;
+            opacity: 0.45;
+            background-image:
+                radial-gradient(circle at 18% 26%, rgba(94, 250, 228, 0.38) 0 2px, transparent 3px),
+                radial-gradient(circle at 54% 70%, rgba(65, 63, 214, 0.25) 0 2px, transparent 3px),
+                radial-gradient(circle at 82% 34%, rgba(255, 186, 75, 0.22) 0 1px, transparent 3px),
+                linear-gradient(135deg, rgba(65, 63, 214, 0.08), rgba(0, 107, 95, 0.06), transparent 68%);
+            background-size: 210px 210px, 260px 260px, 180px 180px, 100% 100%;
+            animation: ymOnboardingDrift 30s linear infinite;
+            z-index: -9;
+        }
+
+        @keyframes ymOnboardingDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 210px 120px, -260px 140px, 180px -80px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-onboarding-motion {
+                animation: none !important;
+                opacity: 0.16;
+            }
+        }
     </style>
 </head>
-<body class="font-body-md text-on-surface flex flex-col items-center justify-center p-md overflow-x-hidden"><div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none"><div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div><div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] rounded-full bg-secondary/5 blur-[100px]"></div><div class="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] rounded-full bg-primary/5 blur-[120px]"></div></div>
+<body class="font-body-md text-on-surface flex flex-col items-center justify-center p-md overflow-x-hidden"><div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none"><div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]"></div><div class="absolute top-[20%] -right-[5%] w-[30%] h-[30%] rounded-full bg-secondary/5 blur-[100px]"></div><div class="absolute -bottom-[10%] left-[20%] w-[35%] h-[35%] rounded-full bg-primary/5 blur-[120px]"></div></div><div class="ym-onboarding-motion" aria-hidden="true"></div>
 <!-- Subtle Background Animation -->
 <!-- Header / Brand (Suppressed Nav Shell as per Task-Focused Journey) -->
 <header class="fixed top-0 w-full h-16 flex items-center justify-center z-50">
@@ -175,6 +203,13 @@
 <div class="text-center mb-xl">
 <h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Who are you?</h1>
 <p class="font-body-md text-on-surface-variant max-w-md mx-auto">Select the role that best matches your daily operations to tailor your industrial intelligence experience.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-5 gap-xs w-full px-md mb-lg">
+<img class="h-24 w-full object-cover rounded-xl border border-outline-variant/40 bg-white/70" src="/images/plant-pune-auto.svg" alt="Pune automotive onboarding context"/>
+<img class="h-24 w-full object-cover rounded-xl border border-outline-variant/40 bg-white/70" src="/images/plant-ahmedabad-textile.svg" alt="Ahmedabad process onboarding context"/>
+<img class="h-24 w-full object-cover rounded-xl border border-outline-variant/40 bg-white/70" src="/images/plant-chennai-electronics.svg" alt="Chennai electronics onboarding context"/>
+<img class="h-24 w-full object-cover rounded-xl border border-outline-variant/40 bg-white/70" src="/images/plant-bengaluru-precision.svg" alt="Bengaluru precision onboarding context"/>
+<img class="h-24 w-full object-cover rounded-xl border border-outline-variant/40 bg-white/70" src="/images/plant-nagpur-logistics.svg" alt="Nagpur warehouse onboarding context"/>
 </div>
 <!-- Role Selection Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter w-full px-md" id="role-grid">
@@ -237,7 +272,7 @@
 <section class="max-w-4xl w-full px-md mt-sm">
 <div class="glass-tile p-md rounded-xl border-dashed border-outline-variant/50 flex items-center space-x-md">
 <div class="w-16 h-16 rounded-lg bg-surface-container shrink-0 flex items-center justify-center overflow-hidden">
-<img class="w-full h-full object-cover" data-alt="A macro photograph of high-tech machine sensors glowing with soft indigo and teal light. The industrial components are arranged with geometric precision against a blurred, airy factory floor background. The lighting is ethereal and high-end, evoking a sense of advanced digital surveillance and efficiency." src="/images/ym-hero-control-room.jpg"/>
+<img class="w-full h-full object-cover" data-alt="A compact overview of the Pune automotive plant digital twin with monitored production lines." src="/images/plant-pune-auto.svg"/>
 </div>
 <div>
 <p class="font-label-caps text-primary mb-1">PRO TIP</p>

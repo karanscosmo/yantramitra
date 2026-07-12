@@ -3,6 +3,8 @@
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up | YantraMitra</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
@@ -61,6 +63,43 @@
             filter: blur(80px);
             z-index: -1;
             opacity: 0.4;
+        }
+
+        .ym-auth-motion {
+            position: absolute;
+            inset: -12%;
+            pointer-events: none;
+            opacity: 0.75;
+            background-image:
+                radial-gradient(circle at 18% 28%, rgba(94, 250, 228, 0.5) 0 2px, transparent 3px),
+                radial-gradient(circle at 54% 68%, rgba(193, 193, 255, 0.48) 0 2px, transparent 3px),
+                radial-gradient(circle at 82% 32%, rgba(255, 186, 75, 0.34) 0 1px, transparent 3px),
+                linear-gradient(135deg, rgba(65, 63, 214, 0.3), rgba(0, 107, 95, 0.18), transparent 68%);
+            background-size: 210px 210px, 260px 260px, 180px 180px, 100% 100%;
+            animation: ymAuthDrift 30s linear infinite;
+            mix-blend-mode: screen;
+            z-index: 12;
+        }
+
+        .ym-plant-ribbon {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+        }
+
+        @keyframes ymAuthDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 210px 120px, -260px 140px, 180px -80px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-auth-motion,
+            .primary-gradient:hover::after {
+                animation: none !important;
+            }
+            .ym-auth-motion {
+                opacity: 0.24;
+            }
         }
     </style>
 <script id="tailwind-config">
@@ -256,9 +295,19 @@
 <!-- RIGHT PANEL: 60% Visual Context -->
 <section class="hidden md:block md:w-[60%] h-full relative overflow-hidden">
 <!-- Background Visual with Placeholder -->
-<div class="absolute inset-0 z-0 scale-105" data-alt="A wide-angle, high-fidelity aerial view of a state-of-the-art smart factory floor. The environment is bathed in soft, ethereal atmospheric lighting with cool blue and white tones, creating a dreamy industrial aesthetic. Automated robotic arms, CNC machines, and glass-encased conveyor systems are seamlessly interconnected with glowing digital data overlays and holograms. Pristine white concrete floors and glass partitions reflect the sophisticated technological environment. The atmosphere is quiet, powerful, and highly futuristic, matching a premium SaaS brand identity." style="background-image: url('/images/factory.svg')"></div>
+<div class="absolute inset-0 z-0 scale-105 bg-[#191a28]">
+<img class="absolute inset-0 w-full h-full object-cover opacity-90" src="/images/plant-bengaluru-precision.svg" alt="Bengaluru precision engineering facility"/>
+</div>
+<div class="ym-auth-motion" aria-hidden="true"></div>
 <!-- Glass Overlay for Texture -->
 <div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px] z-10 mix-blend-overlay"></div>
+<div class="absolute left-md bottom-md z-20 grid grid-cols-5 gap-xs ym-plant-ribbon rounded-2xl p-xs max-w-xl">
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-pune-auto.svg" alt="Pune automotive facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-ahmedabad-textile.svg" alt="Ahmedabad textile chemical facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-chennai-electronics.svg" alt="Chennai electronics facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-bengaluru-precision.svg" alt="Bengaluru precision facility"/>
+<img class="h-16 w-20 rounded-lg object-cover" src="/images/plant-nagpur-logistics.svg" alt="Nagpur warehouse facility"/>
+</div>
 <!-- Floating Data Widgets for depth -->
 <div class="absolute top-1/4 right-md z-20 glass-surface p-md rounded-xl inner-glow shadow-xl border border-outline-variant/30">
 <div class="grid grid-cols-2 gap-md">

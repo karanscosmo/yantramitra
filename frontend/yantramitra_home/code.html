@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>YantraMitra | Ops Intel &amp; Machine Agency</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@600;700&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -63,6 +64,51 @@
             background-image: 
                 radial-gradient(at 0% 0%, rgba(91, 91, 240, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(0, 107, 95, 0.1) 0px, transparent 50%);
+        }
+
+        .ym-motion-field {
+            position: absolute;
+            inset: -10%;
+            pointer-events: none;
+            opacity: 0.72;
+            background-image:
+                radial-gradient(circle at 12% 20%, rgba(94, 250, 228, 0.34) 0 2px, transparent 3px),
+                radial-gradient(circle at 34% 66%, rgba(65, 63, 214, 0.28) 0 2px, transparent 3px),
+                radial-gradient(circle at 62% 28%, rgba(255, 186, 75, 0.22) 0 1px, transparent 3px),
+                radial-gradient(circle at 78% 74%, rgba(94, 250, 228, 0.26) 0 2px, transparent 3px),
+                linear-gradient(120deg, rgba(65, 63, 214, 0.08), rgba(94, 250, 228, 0.05), transparent 62%);
+            background-size: 220px 220px, 260px 260px, 180px 180px, 300px 300px, 100% 100%;
+            animation: ymParticleDrift 28s linear infinite;
+            transform: translateZ(0);
+        }
+
+        .ym-motion-field::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 45%, transparent 0 34%, rgba(251, 248, 255, 0.7) 72%);
+        }
+
+        .ym-facility-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(199, 196, 215, 0.58);
+            box-shadow: 0 16px 42px rgba(65, 63, 214, 0.12);
+        }
+
+        @keyframes ymParticleDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 220px 110px, -260px 160px, 180px -90px, -300px -160px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-motion-field,
+            .glow-pulse {
+                animation: none !important;
+            }
+            .ym-motion-field {
+                opacity: 0.28;
+            }
         }
     </style>
 <script id="tailwind-config">
@@ -165,7 +211,7 @@
 <div class="flex items-center gap-xs">
 <img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 </div>
-<nav class="hidden md:flex items-center space-x-md">
+<nav id="ym-home-app-nav" class="hidden md:flex items-center space-x-md" hidden>
 <a class="text-primary font-bold border-b-2 border-primary py-1 font-body-md text-body-md" href="/dashboard">Dashboard</a>
 <a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="/assets">Assets</a>
 <a class="text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-3 py-1 rounded font-body-md text-body-md" href="/agents">Agents</a>
@@ -218,14 +264,30 @@
 </aside>
 <main class="pt-24 pb-12">
 <!-- Hero Section -->
-<section class="max-w-7xl mx-auto px-md grid lg:grid-cols-2 gap-xl items-center mb-xl">
+<section class="max-w-7xl mx-auto px-md grid lg:grid-cols-2 gap-xl items-center mb-xl relative overflow-hidden rounded-[36px]">
+<div class="ym-motion-field" aria-hidden="true"></div>
 <div class="space-y-md">
 <h1 class="font-display-hero text-display-hero text-on-surface leading-tight">
                     Ask Your Machines Anything — and <span class="text-primary">act on the answer.</span>
 </h1>
 <p class="text-on-surface-variant text-xl max-w-xl leading-relaxed">
-                    Unify operational intelligence with generative AI agents. Monitor, diagnose, and optimize your entire factory floor through a conversational interface built for heavy industry.
+                    Unify operational intelligence with generative AI agents across Pune automotive, Ahmedabad process lines, Chennai electronics, Bengaluru precision engineering, and Nagpur logistics.
                 </p>
+<div id="ym-live-stats" class="glass-card rounded-2xl p-sm max-w-xl grid grid-cols-3 gap-sm" aria-label="Live operations coverage">
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Facilities</p>
+<p class="font-kpi-numeric text-primary text-2xl"><span data-ym-count="facilities">5</span></p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Machines</p>
+<p class="font-kpi-numeric text-secondary text-2xl"><span data-ym-count="machines">29</span></p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant uppercase">Sensors Live</p>
+<p class="font-kpi-numeric text-tertiary text-2xl"><span data-ym-count="sensors">174</span></p>
+</div>
+<p class="col-span-3 text-xs text-on-surface-variant">Live seeded operating model updates automatically after sign-in.</p>
+</div>
 <div class="flex flex-wrap gap-md pt-md">
 <a href="/signup" class="shimmer-btn bg-gradient-to-r from-[#5B5BF0] to-[#7C7CFA] text-on-primary font-body-md text-lg px-xl py-4 rounded-full shadow-[0_0_15px_rgba(91,91,240,0.4)] hover:shadow-[0_0_25px_rgba(91,91,240,0.6)] transition-all inline-block">
                         Request Demo
@@ -239,7 +301,31 @@
 <div class="relative">
 <div class="absolute -inset-10 bg-gradient-to-br from-primary/10 to-secondary/10 blur-[100px] rounded-full z-0"></div>
 <div class="relative z-10 rounded-3xl overflow-hidden glass-card glow-pulse border border-outline-variant/50">
-<img class="w-full h-auto object-cover transform scale-105 hover:scale-100 transition-transform duration-700" src="/images/ym-hero-control-room.jpg"/>
+<div class="grid grid-cols-2 gap-sm p-sm bg-white/40">
+<div class="ym-facility-card rounded-2xl overflow-hidden col-span-2">
+<img class="w-full h-56 object-cover transform scale-105 hover:scale-100 transition-transform duration-700" src="/images/plant-pune-auto.svg" alt="Pune automotive components facility digital twin"/>
+<div class="p-sm flex items-center justify-between">
+<span class="font-label-caps text-primary">Pune Automotive</span>
+<span class="text-xs text-on-surface-variant">7 machines</span>
+</div>
+</div>
+<div class="ym-facility-card rounded-xl overflow-hidden">
+<img class="w-full h-28 object-cover" src="/images/plant-ahmedabad-textile.svg" alt="Ahmedabad textile chemical processing facility"/>
+<p class="p-xs font-label-caps text-[10px] text-on-surface">Ahmedabad Process</p>
+</div>
+<div class="ym-facility-card rounded-xl overflow-hidden">
+<img class="w-full h-28 object-cover" src="/images/plant-chennai-electronics.svg" alt="Chennai electronics assembly facility"/>
+<p class="p-xs font-label-caps text-[10px] text-on-surface">Chennai Electronics</p>
+</div>
+<div class="ym-facility-card rounded-xl overflow-hidden">
+<img class="w-full h-28 object-cover" src="/images/plant-bengaluru-precision.svg" alt="Bengaluru precision engineering facility"/>
+<p class="p-xs font-label-caps text-[10px] text-on-surface">Bengaluru Precision</p>
+</div>
+<div class="ym-facility-card rounded-xl overflow-hidden">
+<img class="w-full h-28 object-cover" src="/images/plant-nagpur-logistics.svg" alt="Nagpur warehouse and logistics hub"/>
+<p class="p-xs font-label-caps text-[10px] text-on-surface">Nagpur Warehouse</p>
+</div>
+</div>
 </div>
 </div>
 </section>
@@ -372,6 +458,42 @@
                 card.style.borderColor = '#E7E9F5';
             });
         });
+    </script>
+<script>
+        (function () {
+            const nav = document.getElementById('ym-home-app-nav');
+            const setCount = (name, value) => {
+                const node = document.querySelector(`[data-ym-count="${name}"]`);
+                if (node && Number.isFinite(Number(value))) node.textContent = Number(value).toLocaleString();
+            };
+
+            fetch('/api/auth/me', { credentials: 'same-origin' })
+                .then((res) => {
+                    if (!res.ok) throw new Error('logged-out');
+                    if (nav) {
+                        nav.hidden = false;
+                        nav.classList.remove('hidden');
+                    }
+                    return Promise.all([
+                        fetch('/api/plants', { credentials: 'same-origin' }).then((r) => r.ok ? r.json() : []),
+                        fetch('/api/machines', { credentials: 'same-origin' }).then((r) => r.ok ? r.json() : []),
+                    ]);
+                })
+                .then(([plants, machines]) => {
+                    setCount('facilities', Array.isArray(plants) ? plants.length : 5);
+                    setCount('machines', Array.isArray(machines) ? machines.length : 29);
+                    const sensorTotal = Array.isArray(machines)
+                        ? machines.reduce((sum, machine) => sum + (Array.isArray(machine.sensors) ? machine.sensors.length : 0), 0)
+                        : 174;
+                    setCount('sensors', sensorTotal || 174);
+                })
+                .catch(() => {
+                    if (nav) {
+                        nav.hidden = true;
+                        nav.classList.add('hidden');
+                    }
+                });
+        })();
     </script>
 <script src="/js/yantramitra_home.js" defer></script>
 <script src="/js/app_shell_yantramitra.js" defer></script>

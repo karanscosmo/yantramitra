@@ -7,6 +7,7 @@ prisma/dev.db-journal
 *.db-journal
 dist/
 .next/
+.DS_Store
 public/images/yantranklan-avatar-ai.png
 public/images/ym-digital-twin-factory.png
 public/images/ym-hero-control-room.png
