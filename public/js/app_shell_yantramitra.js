@@ -62,7 +62,8 @@
         scrollbar-width: none;
       }
       .ym-shell-rail::-webkit-scrollbar { display: none; }
-      .ym-shell-rail a {
+      .ym-shell-rail a,
+      .ym-shell-rail button {
         width: 44px;
         height: 44px;
         flex: 0 0 44px;
@@ -71,10 +72,14 @@
         justify-content: center;
         border-radius: 9999px;
         color: #464555;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
         text-decoration: none;
         transition: transform .18s ease, background .18s ease, color .18s ease, box-shadow .18s ease;
       }
-      .ym-shell-rail a:hover {
+      .ym-shell-rail a:hover,
+      .ym-shell-rail button:hover {
         transform: translateY(-1px) scale(1.06);
         background: rgba(65, 63, 214, .10);
         color: #413fd6;
@@ -335,7 +340,13 @@
       return `<a href="${item.path}" title="${item.label}" aria-label="${item.label}" class="${active ? 'is-active' : ''}">
         <span class="material-symbols-outlined">${item.icon}</span>
       </a>`;
-    }).join('');
+    }).join('') + `<button type="button" class="ym-shell-logout" title="Log out" aria-label="Log out"><span class="material-symbols-outlined">logout</span></button>`;
+    rail.querySelector('.ym-shell-logout').addEventListener('click', async () => {
+      const ok = window.confirm('Log out of YantraMitra?');
+      if (!ok) return;
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+      window.location.href = '/login';
+    });
 
     existingRails.slice(1).forEach(el => { el.style.display = 'none'; });
     if (!rail.parentNode) document.body.appendChild(rail);
@@ -350,6 +361,29 @@
     link.className = 'ym-ask-yantranklan';
     link.innerHTML = '<img src="/images/yantranklan-avatar-ai.jpg" alt="YantraNklan"><span>Ask YantraNklan</span>';
     document.body.appendChild(link);
+  }
+
+  function wireHeaderShortcuts() {
+    if (shellExcludedPaths.includes(currentPath)) return;
+    document.querySelectorAll('header .material-symbols-outlined').forEach(icon => {
+      if (icon.textContent.trim() !== 'factory') return;
+      const target = icon.closest('a, button') || icon;
+      target.style.cursor = 'pointer';
+      if (target.tagName === 'A') {
+        target.setAttribute('href', '/map');
+      } else {
+        target.addEventListener('click', () => { window.location.href = '/map'; });
+      }
+    });
+    document.querySelectorAll('header img[src*="ym-operator-avatar"]').forEach(avatar => {
+      const target = avatar.closest('a, button') || avatar;
+      target.style.cursor = 'pointer';
+      if (target.tagName === 'A') {
+        target.setAttribute('href', '/settings');
+      } else {
+        target.addEventListener('click', () => { window.location.href = '/settings'; });
+      }
+    });
   }
 
   function addHomeAuthActions() {
@@ -712,6 +746,7 @@
     injectStyles();
     normalizeRightRail();
     addYantraNklanEntry();
+    wireHeaderShortcuts();
     wireLogoAndBackNavigation();
     addHomeAuthActions();
     wireKnownButtons();
