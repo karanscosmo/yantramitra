@@ -1,425 +1,142 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>YantraMitra | Global Plant Map</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Geist:wght@700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&family=Geist:wght@700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "surface-container-low": "#f4f2ff",
-                    "surface-variant": "#e2e1f4",
-                    "on-background": "#191a28",
-                    "on-secondary-fixed": "#00201c",
-                    "on-error": "#ffffff",
-                    "on-secondary": "#ffffff",
-                    "surface-container-lowest": "#ffffff",
-                    "primary-container": "#5b5bf0",
-                    "error": "#ba1a1a",
-                    "on-surface-variant": "#464555",
-                    "error-container": "#ffdad6",
-                    "on-surface": "#191a28",
-                    "tertiary": "#774f00",
-                    "surface-container-highest": "#e2e1f4",
-                    "tertiary-fixed": "#ffddb1",
-                    "on-secondary-container": "#007165",
-                    "surface-container": "#eeecff",
-                    "surface": "#fbf8ff",
-                    "primary-fixed": "#e1dfff",
-                    "inverse-on-surface": "#f1efff",
-                    "surface-tint": "#4948de",
-                    "secondary-fixed": "#5efae4",
-                    "tertiary-fixed-dim": "#ffba4b",
-                    "primary": "#413fd6",
-                    "on-primary-container": "#f6f2ff",
-                    "on-error-container": "#93000a",
-                    "primary-fixed-dim": "#c1c1ff",
-                    "on-primary-fixed": "#09006b",
-                    "background": "#fbf8ff",
-                    "on-tertiary": "#ffffff",
-                    "secondary-fixed-dim": "#36ddc8",
-                    "on-primary-fixed-variant": "#2e29c6",
-                    "surface-bright": "#fbf8ff",
-                    "inverse-primary": "#c1c1ff",
-                    "secondary-container": "#5efae4",
-                    "on-tertiary-container": "#fff2e5",
-                    "surface-container-high": "#e8e6fa",
-                    "tertiary-container": "#986500",
-                    "outline": "#767586",
-                    "secondary": "#006b5f",
-                    "on-tertiary-fixed-variant": "#624000",
-                    "inverse-surface": "#2e2f3e",
-                    "on-secondary-fixed-variant": "#005047",
-                    "outline-variant": "#c7c4d7",
-                    "surface-dim": "#d9d8ec",
-                    "on-tertiary-fixed": "#291800",
-                    "on-primary": "#ffffff"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
-            },
-            "spacing": {
-                    "xs": "8px",
-                    "sm": "16px",
-                    "md": "24px",
-                    "lg": "40px",
-                    "gutter": "24px",
-                    "nav-width": "72px",
-                    "base": "4px",
-                    "xl": "64px"
-            },
-            "fontFamily": {
-                    "body-md": ["Inter"],
-                    "headline-lg": ["Geist"],
-                    "label-caps": ["Space Grotesk"],
-                    "kpi-numeric": ["Space Grotesk"],
-                    "display-hero": ["Geist"]
-            },
-            "fontSize": {
-                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
-                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
-                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
-                    "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
-            }
-          },
-        },
-      }
-    </script>
+tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-low": "#f4f2ff","surface-variant": "#e2e1f4","on-background": "#191a28","on-secondary-fixed": "#00201c","on-error": "#ffffff","on-secondary": "#ffffff","surface-container-lowest": "#ffffff","primary-container": "#5b5bf0","error": "#ba1a1a","on-surface-variant": "#464555","error-container": "#ffdad6","on-surface": "#191a28","tertiary": "#774f00","surface-container-highest": "#e2e1f4","tertiary-fixed": "#ffddb1","on-secondary-container": "#007165","surface-container": "#eeecff","surface": "#fbf8ff","primary-fixed": "#e1dfff","inverse-on-surface": "#f1efff","surface-tint": "#4948de","secondary-fixed": "#5efae4","tertiary-fixed-dim": "#ffba4b","primary": "#413fd6","on-primary-container": "#f6f2ff","on-error-container": "#93000a","primary-fixed-dim": "#c1c1ff","on-primary-fixed": "#09006b","background": "#fbf8ff","on-tertiary": "#ffffff","secondary-fixed-dim": "#36ddc8","on-primary-fixed-variant": "#2e29c6","surface-bright": "#fbf8ff","inverse-primary": "#c1c1ff","secondary-container": "#5efae4","on-tertiary-container": "#fff2e5","surface-container-high": "#e8e6fa","tertiary-container": "#986500","outline": "#767586","secondary": "#006b5f","on-tertiary-fixed-variant": "#624000","inverse-surface": "#2e2f3e","on-secondary-fixed-variant": "#005047","outline-variant": "#c7c4d7","surface-dim": "#d9d8ec","on-tertiary-fixed": "#291800","on-primary": "#ffffff" }, "borderRadius": { "DEFAULT": "0.25rem","lg": "0.5rem","xl": "0.75rem","full": "9999px" }, "fontFamily": { "body-md": ["Inter"],"headline-lg": ["Geist"],"label-caps": ["Space Grotesk"],"kpi-numeric": ["Space Grotesk"],"display-hero": ["Geist"] }, "fontSize": { "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],"headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],"label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],"kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],"display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}] } }, }, }
+</script>
 <style>
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #E7E9F5;
-            box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.08);
-        }
-        .glow-indigo {
-            box-shadow: 0 0 15px rgba(65, 63, 214, 0.4);
-        }
-        .shimmer {
-            position: relative;
-            overflow: hidden;
-        }
-        .shimmer::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
-            transform: rotate(30deg);
-            transition: 0.5s;
-        }
-        .shimmer:hover::after {
-            left: 100%;
-        }
-        .map-container {
-            background: radial-gradient(circle at center, #fbf8ff 0%, #eeecff 100%);
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.33); opacity: 1; }
-            80%, 100% { opacity: 0; }
-        }
-        .pulse-marker::before {
-            content: '';
-            position: absolute;
-            left: -12px;
-            top: -12px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: #413fd6;
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-    </style>
+body { margin:0; padding:0; background:#fbf8ff; overflow:hidden; }
+.glass-panel { background:rgba(255,255,255,0.78); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid #E7E9F5; box-shadow:0 8px 32px 0 rgba(65,63,214,0.08); }
+.glass-panel-solid { background:rgba(255,255,255,0.92); backdrop-filter:blur(16px); border:1px solid #E7E9F5; }
+.shimmer-btn { position:relative; overflow:hidden; background:linear-gradient(135deg,#5B5BF0,#7C7CFA); transition:all .3s ease; }
+.shimmer-btn:hover::after { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(45deg,transparent,rgba(255,255,255,0.3),transparent); transform:rotate(45deg); animation:shimmer 1s ease-in-out; }
+@keyframes shimmer { 0% { transform:translate(-100%,-100%) rotate(45deg); } 100% { transform:translate(100%,100%) rotate(45deg); } }
+#ym-map { position:absolute; inset:72px 0 0 0; z-index:0; }
+.leaflet-popup-content-wrapper { border-radius:16px !important; box-shadow:0 18px 48px rgba(65,63,214,0.18) !important; }
+.leaflet-popup-content { margin:12px 16px; font-family:Inter,system-ui,sans-serif; min-width:280px; }
+.leaflet-popup-tip { box-shadow:none !important; }
+.ym-marker { width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 0 2px rgba(65,63,214,0.3),0 4px 12px rgba(0,0,0,0.2); cursor:pointer; transition:transform .2s; }
+.ym-marker:hover { transform:scale(1.2); }
+.ym-marker-pulse { animation:ym-pulse 2s infinite; }
+@keyframes ym-pulse { 0% { box-shadow:0 0 0 0 rgba(65,63,214,0.5); } 70% { box-shadow:0 0 0 12px rgba(65,63,214,0); } 100% { box-shadow:0 0 0 0 rgba(65,63,214,0); } }
+.ym-marker-healthy { background:#006b5f; }
+.ym-marker-warning { background:#774f00; }
+.ym-marker-critical { background:#ba1a1a; }
+.ym-connection-line { stroke:#413fd6; stroke-width:2; fill:none; opacity:0.35; stroke-dasharray:8 4; animation:ym-dash 1.5s linear infinite; }
+@keyframes ym-dash { to { stroke-dashoffset:-24; } }
+.ym-control-btn { width:40px; height:40px; border-radius:12px; border:1px solid rgba(199,196,215,0.5); background:rgba(255,255,255,0.92); color:#464555; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+.ym-control-btn:hover { background:#eeecff; color:#413fd6; border-color:#413fd6; }
+.ym-control-btn.is-active { background:#413fd6; color:white; border-color:#413fd6; }
+.ym-overlay-btn { padding:6px 14px; border-radius:999px; border:1px solid rgba(199,196,215,0.5); background:rgba(255,255,255,0.85); font:700 10px/1 Inter,system-ui,sans-serif; color:#464555; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.ym-overlay-btn:hover,.ym-overlay-btn.is-active { background:#413fd6; color:white; border-color:#413fd6; }
+.custom-scrollbar::-webkit-scrollbar { width:4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background:#c7c4d7; border-radius:10px; }
+.modal-backdrop { position:fixed; inset:0; z-index:1000; background:rgba(25,26,40,0.36); display:flex; align-items:center; justify-content:center; padding:18px; }
+.modal-card { width:min(700px,calc(100vw-32px)); max-height:min(80vh,700px); overflow-y:auto; border-radius:18px; border:1px solid rgba(199,196,215,0.72); background:rgba(255,255,255,0.98); box-shadow:0 30px 90px rgba(25,26,40,0.28); padding:24px; }
+.leaflet-control-zoom { display:none !important; }
+</style>
 </head>
-<body class="bg-background text-on-surface font-body-md overflow-hidden selection:bg-primary/20 selection:text-primary">
-<!-- TopNavBar Shell -->
-<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
+<body class="bg-background text-on-surface font-body-md">
+<header class="fixed top-0 w-full h-[72px] z-[500] bg-white/88 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
 <div class="flex items-center gap-sm">
-<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
-<div class="ml-lg relative group">
-<input id="ym-map-search" class="bg-surface-container/50 border border-outline-variant/30 rounded-full px-md py-1.5 w-64 text-sm focus:ring-2 focus:ring-primary/50 transition-all outline-none" placeholder="Search facilities (⌘K)" type="search"/>
+<img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9 cursor-pointer" onclick="window.location.href='/dashboard'"/>
+<div class="ml-lg relative">
+<input id="ym-map-search" class="bg-surface-container/50 border border-outline-variant/30 rounded-full px-md py-1.5 w-72 text-sm focus:ring-2 focus:ring-primary/50 transition-all outline-none" placeholder="Search plants, assets, agents... (⌘K)" type="search"/>
 <span class="material-symbols-outlined absolute right-3 top-2 text-outline-variant text-sm">search</span>
+<div id="ym-search-results" class="absolute top-full left-0 right-0 mt-1 rounded-xl bg-white border border-outline-variant/30 shadow-xl hidden max-h-64 overflow-y-auto z-50"></div>
 </div>
 </div>
 <div class="flex items-center gap-md">
-<button id="ym-map-notifications" class="material-symbols-outlined text-primary-fixed-dim hover:bg-primary/10 p-2 rounded-full transition-colors">notifications</button>
-<button id="ym-map-facilities" class="material-symbols-outlined text-primary-fixed-dim hover:bg-primary/10 p-2 rounded-full transition-colors">factory</button>
-<button id="ym-map-profile" class="rounded-full"><img class="w-8 h-8 rounded-full border border-primary/20" data-alt="Profile" src="/images/ym-operator-avatar.jpg"/></button>
+<button class="material-symbols-outlined text-primary-fixed-dim hover:bg-primary/10 p-2 rounded-full transition-colors" onclick="window.location.href='/anomaly'">notifications</button>
+<button class="material-symbols-outlined text-primary-fixed-dim hover:bg-primary/10 p-2 rounded-full transition-colors" onclick="window.location.href='/map'">factory</button>
+<img class="w-8 h-8 rounded-full border border-primary/20 cursor-pointer" onclick="window.location.href='/settings'" src="/images/ym-operator-avatar.jpg"/>
 </div>
 </header>
-<!-- SideNavBar Shell (Right Rail) -->
-<nav class="fixed right-4 top-24 bottom-24 w-[72px] rounded-full border border-outline-variant/30 bg-white/60 backdrop-blur-xl shadow-[0_0_20px_rgba(65,63,214,0.15)] flex flex-col items-center justify-center space-y-sm py-md z-50">
-<div class="flex-1 flex flex-col items-center justify-center space-y-6">
-<a class="text-on-surface-variant p-3 hover:scale-110 transition-transform" href="/dashboard"><span class="material-symbols-outlined">dashboard</span></a>
-<a class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] hover:scale-110 transition-transform" href="/assets"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span></a>
-<a class="text-on-surface-variant p-3 hover:scale-110 transition-transform" href="/agents"><span class="material-symbols-outlined">smart_toy</span></a>
-<a class="text-on-surface-variant p-3 hover:scale-110 transition-transform" href="/work-orders"><span class="material-symbols-outlined">build</span></a>
-<a class="text-on-surface-variant p-3 hover:scale-110 transition-transform" href="/settings"><span class="material-symbols-outlined">settings</span></a>
+<div id="ym-map"></div>
+<div id="ym-overlay-controls" class="fixed top-20 right-[104px] z-[490] flex items-center gap-2 glass-panel-solid rounded-2xl px-3 py-2 shadow-lg">
+<span class="ym-overlay-btn is-active" data-layer="plants"><span class="material-symbols-outlined text-sm" style="font-size:14px">precision_manufacturing</span> Plants</span>
+<span class="ym-overlay-btn" data-layer="health"><span class="material-symbols-outlined text-sm" style="font-size:14px">monitoring</span> Health</span>
+<span class="ym-overlay-btn" data-layer="network"><span class="material-symbols-outlined text-sm" style="font-size:14px">hub</span> Network</span>
+<span class="ym-overlay-btn" data-layer="energy"><span class="material-symbols-outlined text-sm" style="font-size:14px">bolt</span> Energy</span>
+<span class="ym-overlay-btn" data-layer="logistics"><span class="material-symbols-outlined text-sm" style="font-size:14px">local_shipping</span> Logistics</span>
+<div class="w-px h-5 bg-outline-variant/30 mx-1"></div>
+<span class="ym-overlay-btn" data-layer="heatmap"><span class="material-symbols-outlined text-sm" style="font-size:14px">thermostat</span> Heatmap</span>
 </div>
-<div class="pb-sm border-t border-outline-variant/20 pt-sm">
-<a class="text-on-surface-variant p-3 hover:scale-110 transition-transform" href="/ai-console"><span class="material-symbols-outlined">help</span></a>
+<div id="ym-map-controls" class="fixed top-20 right-[104px] z-[490] flex items-center gap-1 glass-panel-solid rounded-2xl px-2 py-1.5 shadow-lg" style="display:none">
+<button class="ym-control-btn" data-style="standard" title="Standard"><span class="material-symbols-outlined" style="font-size:18px">map</span></button>
+<button class="ym-control-btn" data-style="satellite" title="Satellite"><span class="material-symbols-outlined" style="font-size:18px">satellite</span></button>
+<button class="ym-control-btn" data-style="dark" title="Dark"><span class="material-symbols-outlined" style="font-size:18px">dark_mode</span></button>
+<button class="ym-control-btn" data-style="blueprint" title="Industrial Blueprint"><span class="material-symbols-outlined" style="font-size:18px">grid_view</span></button>
 </div>
-</nav>
-<!-- Main Canvas (Full Bleed Map) -->
-<main class="h-screen w-screen map-container relative overflow-hidden pt-16">
-<!-- Background Map Visualization (High-end Geo Viz) -->
-<div class="absolute inset-0 z-0">
-<div class="w-full h-full opacity-95 bg-[radial-gradient(circle_at_55%_46%,rgba(94,250,228,.18),transparent_28%),radial-gradient(circle_at_50%_45%,rgba(91,91,240,.14),transparent_42%),linear-gradient(rgba(65,63,214,.06)_1px,transparent_1px),linear-gradient(90deg,rgba(65,63,214,.06)_1px,transparent_1px)] bg-[size:auto,auto,32px_32px,32px_32px]">
-<svg viewBox="0 0 1000 1000" class="absolute inset-0 h-full w-full" aria-label="India operations map" role="img" preserveAspectRatio="xMidYMid meet">
-<defs>
-<linearGradient id="ym-land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4c8"/><stop offset=".45" stop-color="#c8fff7"/><stop offset="1" stop-color="#d9d8ff"/></linearGradient>
-<filter id="ym-map-shadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#413fd6" flood-opacity=".12"/></filter>
-</defs>
-<rect width="1000" height="1000" fill="rgba(255,255,255,.14)"/>
-<g filter="url(#ym-map-shadow)">
-<path d="M466 86 540 111 604 143 647 198 691 246 674 316 712 371 682 428 724 484 670 548 655 628 609 690 585 768 539 856 499 933 466 806 423 719 374 678 337 590 355 512 326 428 351 351 327 274 390 210Z" fill="url(#ym-land)" stroke="#413fd6" stroke-width="5" opacity=".88"/>
-<path d="M390 210 470 250 604 143 647 198 560 285 458 286Z" fill="#ffe6a9" opacity=".72"/>
-<path d="M351 351 458 286 560 285 674 316 636 410 492 400 385 430Z" fill="#bffff5" opacity=".72"/>
-<path d="M385 430 492 400 636 410 682 428 626 535 490 525 355 512Z" fill="#d8d7ff" opacity=".72"/>
-<path d="M355 512 490 525 626 535 655 628 585 768 499 933 466 806 374 678 337 590Z" fill="#d8fff8" opacity=".72"/>
-<path d="M470 250 500 322 492 400 490 525 466 806" fill="none" stroke="#8b89f6" stroke-width="2" opacity=".5"/>
-<path d="M351 351 636 410M355 512 626 535M374 678 609 690" fill="none" stroke="#8b89f6" stroke-width="2" opacity=".45"/>
-</g>
-<g fill="none" stroke="#c1c1ff" stroke-width="1" opacity=".38">
-<path d="M0 250H1000M0 500H1000M0 750H1000"/>
-<path d="M250 0V1000M500 0V1000M750 0V1000"/>
-</g>
-</svg>
-</div>
-<!-- Interactive Map Pins -->
-<div id="pins-container"><!-- Global Network Lines -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none z-0" preserveaspectratio="none" viewbox="0 0 1000 1000">
-<path d="M 220 350 Q 450 200 680 520" fill="none" opacity="0.3" stroke="#413fd6" stroke-width="1"></path>
-<path d="M 680 520 Q 750 550 820 580" fill="none" opacity="0.3" stroke="#413fd6" stroke-width="1"></path>
-<path d="M 320 650 Q 500 600 680 520" fill="none" opacity="0.3" stroke="#413fd6" stroke-width="1"></path>
-<path d="M 220 350 Q 350 320 480 320" fill="none" opacity="0.3" stroke="#413fd6" stroke-width="1"></path>
-</svg>
-<!-- Central Hub Pin -->
-<div class="absolute top-[45%] left-[50%] z-10 group cursor-pointer">
-<div class="w-4 h-4 bg-primary rounded-full pulse-marker relative shadow-[0_0_15px_rgba(65,63,214,0.8)]"></div>
-</div>
-<!-- Pune Pin -->
-<div class="absolute top-[35%] left-[22%] z-10 group cursor-pointer">
-<div class="w-2.5 h-2.5 bg-primary rounded-full pulse-marker relative shadow-[0_0_8px_rgba(65,63,214,0.8)]"></div>
-<!-- Tooltip Card -->
-<div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-48">
-<div class="glass-panel p-sm rounded-xl border border-white/50 text-xs">
-<h4 class="font-label-caps text-primary mb-1">DETROIT PLANT</h4>
-<div class="flex justify-between mb-1"><span class="text-on-surface-variant">Machines</span><span class="font-kpi-numeric text-primary">124</span></div>
-<div class="flex justify-between"><span class="text-on-surface-variant">Alerts</span><span class="text-error font-semibold">2 Critical</span></div>
-</div>
-</div>
-</div>
-<!-- Nagpur Pin -->
-<div class="absolute top-[65%] left-[32%] z-10 group cursor-pointer">
-<div class="w-2.5 h-2.5 bg-secondary-fixed-dim rounded-full pulse-marker relative shadow-[0_0_8px_rgba(54,221,200,0.8)]" style="background-color: #36ddc8;"></div>
-</div>
-<!-- Chennai Pin -->
-<div class="absolute top-[32%] left-[48%] z-10 group cursor-pointer">
-<div class="w-2.5 h-2.5 bg-primary rounded-full pulse-marker relative shadow-[0_0_8px_rgba(65,63,214,0.8)]"></div>
-</div>
-<!-- Ahmedabad Pin -->
-<div class="absolute top-[52%] left-[68%] z-10 group cursor-pointer">
-<div class="w-2.5 h-2.5 bg-primary rounded-full pulse-marker relative shadow-[0_0_8px_rgba(65,63,214,0.8)]"></div>
-<!-- Tooltip Card -->
-<div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none w-48">
-<div class="glass-panel p-sm rounded-xl border border-white/50 text-xs">
-<h4 class="font-label-caps text-primary mb-1">MUMBAI PLANT</h4>
-<div class="flex justify-between mb-1"><span class="text-on-surface-variant">Machines</span><span class="font-kpi-numeric text-primary">482</span></div>
-<div class="flex justify-between"><span class="text-on-surface-variant">Alerts</span><span class="text-secondary font-semibold">Operational</span></div>
-</div>
-</div>
-</div>
-<!-- Bengaluru Pin -->
-<div class="absolute top-[58%] left-[82%] z-10 group cursor-pointer">
-<div class="w-2.5 h-2.5 bg-secondary-fixed-dim rounded-full pulse-marker relative shadow-[0_0_8px_rgba(54,221,200,0.8)]" style="background-color: #36ddc8;"></div>
-</div>
-</div>
-</div>
-<!-- Left Sidebar Floating List -->
-<aside class="absolute left-md top-lg bottom-lg w-80 glass-panel rounded-3xl z-20 flex flex-col p-sm overflow-hidden">
-<div class="px-sm py-4 border-b border-outline-variant/20">
+<aside class="fixed left-md top-[92px] bottom-[96px] w-80 z-[490] flex flex-col pointer-events-none" id="ym-sidebar">
+<div class="glass-panel-solid rounded-3xl flex flex-col overflow-hidden pointer-events-auto h-full shadow-xl">
+<div class="px-sm py-3 border-b border-outline-variant/20 shrink-0">
+<div class="flex items-center justify-between">
 <h2 class="font-headline-lg text-section-header text-primary">Plant Network</h2>
+<button class="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full font-bold" id="ym-ai-summary-btn">AI Summary</button>
+</div>
 <p class="font-label-caps text-on-surface-variant text-[10px]">REAL-TIME OPERATIONAL INTELLIGENCE</p>
 </div>
-<div class="flex-1 overflow-y-auto space-y-3 p-1 custom-scrollbar mt-4">
-<!-- Plant Card: Pune -->
-<div class="glass-panel p-sm rounded-2xl hover:border-primary/40 transition-all group cursor-pointer border-transparent bg-white/40">
-<div class="flex justify-between items-start mb-2">
-<div>
-<h3 class="font-semibold text-on-surface text-lg">Pune</h3>
-<span class="font-label-caps text-[10px] text-on-surface-variant">MAHARASHTRA</span>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2" id="ym-plant-list"></div>
+<div class="p-2 shrink-0 border-t border-outline-variant/10">
+<button id="ym-add-facility" class="w-full shimmer-btn text-on-primary py-2.5 rounded-2xl font-label-caps text-xs flex items-center justify-center gap-2 shadow-lg">
+<span class="material-symbols-outlined text-sm">add_location_alt</span> ADD NEW FACILITY
+</button>
 </div>
-<div class="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Attention</div>
-</div>
-<div class="grid grid-cols-2 gap-2 mt-4">
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Health</p>
-<p class="font-kpi-numeric text-error">72%</p>
-</div>
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Uptime</p>
-<p class="font-kpi-numeric text-primary">94.8%</p>
-</div>
-</div>
-</div>
-<!-- Plant Card: Ahmedabad -->
-<div class="glass-panel p-sm rounded-2xl hover:border-primary/40 transition-all group cursor-pointer border-transparent bg-white/40">
-<div class="flex justify-between items-start mb-2">
-<div>
-<h3 class="font-semibold text-on-surface text-lg">Ahmedabad</h3>
-<span class="font-label-caps text-[10px] text-on-surface-variant">GUJARAT</span>
-</div>
-<div class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Optimized</div>
-</div>
-<div class="grid grid-cols-2 gap-2 mt-4">
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Health</p>
-<p class="font-kpi-numeric text-secondary">98%</p>
-</div>
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Uptime</p>
-<p class="font-kpi-numeric text-primary">99.9%</p>
-</div>
-</div>
-</div>
-<!-- Plant Card: Chennai -->
-<div class="glass-panel p-sm rounded-2xl hover:border-primary/40 transition-all group cursor-pointer border-transparent bg-white/40">
-<div class="flex justify-between items-start mb-2">
-<div>
-<h3 class="font-semibold text-on-surface text-lg">Chennai</h3>
-<span class="font-label-caps text-[10px] text-on-surface-variant">TAMIL NADU</span>
-</div>
-<div class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Operational</div>
-</div>
-<div class="grid grid-cols-2 gap-2 mt-4">
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Health</p>
-<p class="font-kpi-numeric text-primary">89%</p>
-</div>
-<div class="bg-surface-container-low/50 p-2 rounded-xl">
-<p class="text-[10px] text-on-surface-variant uppercase font-bold">Uptime</p>
-<p class="font-kpi-numeric text-primary">97.2%</p>
-</div>
-</div>
-</div>
-<!-- Plant Card: Bengaluru -->
-<div class="glass-panel p-sm rounded-2xl hover:border-primary/40 transition-all group cursor-pointer border-transparent bg-white/40">
-<div class="flex justify-between items-start mb-2">
-<div>
-<h3 class="font-semibold text-on-surface text-lg">Bengaluru</h3>
-<span class="font-label-caps text-[10px] text-on-surface-variant">KARNATAKA</span>
-</div>
-<div class="bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Optimized</div>
-</div>
-</div>
-<!-- Plant Card: Nagpur -->
-<div class="glass-panel p-sm rounded-2xl hover:border-primary/40 transition-all group cursor-pointer border-transparent bg-white/40">
-<div class="flex justify-between items-start mb-2">
-<div>
-<h3 class="font-semibold text-on-surface text-lg">Nagpur</h3>
-<span class="font-label-caps text-[10px] text-on-surface-variant">VIDARBHA LOGISTICS</span>
-</div>
-<div class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Operational</div>
-</div>
-</div>
-</div>
-<div class="p-sm pt-4 mt-auto">
-<button id="ym-add-facility" class="w-full bg-primary text-on-primary py-3 rounded-2xl font-label-caps shimmer flex items-center justify-center gap-2 glow-indigo">
-<span class="material-symbols-outlined text-sm">add_location_alt</span>
-                    ADD NEW FACILITY
-                </button>
 </div>
 </aside>
-<!-- KPI Bottom Strip -->
-<div class="absolute bottom-md left-[340px] right-32 h-20 glass-panel rounded-3xl flex items-center justify-between px-lg animate-fade-in z-20">
-<div class="flex items-center gap-md">
-<div class="flex flex-col relative"><svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewbox="0 0 100 40">
-<path d="M0 35 L20 30 L40 32 L60 25 L80 28 L100 20" fill="none" stroke="#413fd6" stroke-width="2"></path>
-</svg>
-<span class="text-[10px] font-label-caps text-on-surface-variant">GLOBAL HEALTH</span>
-<div class="flex items-center gap-2">
-<span class="font-display-hero text-kpi-numeric text-primary leading-none">92.4</span>
-<span class="text-secondary text-xs">▲ 0.8%</span>
+<div id="ym-status-bar" class="fixed bottom-0 left-0 right-0 z-[490] pointer-events-none" style="padding-left:340px;padding-right:104px">
+<div class="glass-panel-solid rounded-t-3xl flex items-center justify-between px-lg py-3 pointer-events-auto shadow-[0_-4px_20px_rgba(65,63,214,0.06)]">
+<div class="flex items-center gap-md flex-1 overflow-x-auto custom-scrollbar" id="ym-kpi-strip"></div>
+<div class="flex gap-2 shrink-0 ml-4">
+<button id="ym-view-analytics" class="bg-surface-container-low border border-outline-variant/30 text-on-surface-variant px-3 py-1.5 rounded-full font-label-caps text-[10px] hover:bg-primary/5 transition-all">VIEW ANALYTICS</button>
+<button id="ym-export-report" class="bg-surface-container-low border border-outline-variant/30 text-on-surface-variant px-3 py-1.5 rounded-full font-label-caps text-[10px] hover:bg-primary/5 transition-all">EXPORT REPORT</button>
 </div>
 </div>
-<div class="w-px h-8 bg-outline-variant/30"></div>
-<div class="flex flex-col relative"><svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewbox="0 0 100 40">
-<path d="M0 30 L25 35 L50 25 L75 30 L100 15" fill="none" stroke="#413fd6" stroke-width="2"></path>
-</svg>
-<span class="text-[10px] font-label-caps text-on-surface-variant">ACTIVE AGENTS</span>
-<span class="font-display-hero text-kpi-numeric text-on-surface leading-none">1,482</span>
 </div>
-<div class="w-px h-8 bg-outline-variant/30"></div>
-<div class="flex flex-col relative"><svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewbox="0 0 100 40">
-<path d="M0 20 L30 25 L60 15 L100 35" fill="none" stroke="#ba1a1a" stroke-width="2"></path>
-</svg>
-<span class="text-[10px] font-label-caps text-on-surface-variant">PENDING ALERTS</span>
-<span class="font-display-hero text-kpi-numeric text-error leading-none">14</span>
+<div id="ym-facility-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-on-surface/40 p-md" role="dialog">
+<div class="glass-panel-solid w-full max-w-lg rounded-2xl p-lg space-y-sm">
+<div class="flex items-center justify-between">
+<div><h2 class="font-section-header font-bold text-lg">Add New Facility</h2><p class="text-xs text-on-surface-variant mt-1">Register a new plant in the operations network.</p></div>
+<button type="button" data-close-facility class="material-symbols-outlined p-2 hover:bg-primary/10 rounded-full">close</button>
 </div>
-</div>
-<div class="flex gap-sm">
-<button id="ym-view-analytics" class="bg-surface-container-low border border-outline-variant/30 text-on-surface-variant px-sm py-2 rounded-full font-label-caps text-[10px] hover:bg-primary/5 transition-all">VIEW ANALYTICS</button>
-<button id="ym-export-report" class="bg-surface-container-low border border-outline-variant/30 text-on-surface-variant px-sm py-2 rounded-full font-label-caps text-[10px] hover:bg-primary/5 transition-all">EXPORT REPORT</button>
-</div>
-</div>
-<!-- Atmospheric Element: Gradient Overlay -->
-<div class="absolute inset-0 pointer-events-none z-[1] bg-[radial-gradient(circle_at_top_right,rgba(91,91,240,0.05),transparent)]"></div>
-</main>
-<!-- Footer Shell -->
-<footer class="hidden fixed bottom-0 w-full bg-transparent border-t border-outline-variant/20 z-40">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md py-4">
-<p class="font-body-md text-on-surface-variant text-xs">© 2024 YantraMitra Platform. All rights reserved.</p>
-<div class="flex gap-md mt-2 md:mt-0">
-<a class="text-on-surface-variant text-xs hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
-<a class="text-on-surface-variant text-xs hover:text-primary transition-colors" href="/privacy">Privacy</a>
-<a class="text-on-surface-variant text-xs hover:text-primary transition-colors" href="/terms">Terms</a>
-<a class="text-on-surface-variant text-xs hover:text-primary transition-colors" href="/api-status">API Status</a>
-</div>
-</div>
-</footer>
-<div id="ym-facility-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-on-surface/40 p-md" role="dialog" aria-modal="true" aria-labelledby="ym-facility-title">
-<form id="ym-facility-form" class="glass-panel w-full max-w-lg rounded-2xl p-lg space-y-sm">
-<div class="flex items-center justify-between"><div><h2 id="ym-facility-title" class="font-section-header">Add facility</h2><p class="text-xs text-on-surface-variant">Add a live location to the operations network.</p></div><button type="button" data-close-facility class="material-symbols-outlined p-2" aria-label="Close">close</button></div>
-<div class="grid grid-cols-2 gap-sm"><label class="text-xs font-bold">Facility name<input name="name" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Industry<input name="industry" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">City<input name="city" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Plant manager<input name="plantManager" class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Latitude<input name="latitude" type="number" step="any" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Longitude<input name="longitude" type="number" step="any" required class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Machine count<input name="machineCount" type="number" min="0" class="mt-1 w-full rounded-lg border-outline-variant/40"/></label><label class="text-xs font-bold">Status<select name="status" class="mt-1 w-full rounded-lg border-outline-variant/40"><option value="operational">Operational</option><option value="optimized">Optimized</option><option value="attention">Attention</option></select></label></div>
-<p id="ym-facility-error" class="hidden text-sm text-error" role="alert"></p><button class="w-full rounded-xl bg-primary py-3 font-label-caps text-on-primary">SAVE FACILITY</button>
+<form id="ym-facility-form" class="grid grid-cols-2 gap-3 mt-4">
+<label class="text-xs font-bold col-span-2">Plant Name<input name="name" required class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Industry<input name="industry" required class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">City<input name="city" required class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">State<input name="state" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Plant Manager<input name="plantManager" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Latitude<input name="latitude" type="number" step="any" required class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Longitude<input name="longitude" type="number" step="any" required class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Buildings<input name="buildings" type="number" min="0" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Lines<input name="lines" type="number" min="0" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Machines<input name="machineCount" type="number" min="0" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"/></label>
+<label class="text-xs font-bold">Status<select name="status" class="mt-1 w-full rounded-lg border border-outline-variant/40 px-3 py-2 text-sm"><option value="operational">Operational</option><option value="optimized">Optimized</option><option value="attention">Attention</option><option value="warning">Warning</option></select></label>
+<p id="ym-facility-error" class="hidden text-sm text-error col-span-2"></p>
+<button type="submit" class="col-span-2 shimmer-btn text-on-primary py-3 rounded-xl font-label-caps text-sm">SAVE FACILITY</button>
 </form>
 </div>
-<script>
-        // Micro-interactions for map pins and plant cards
-        document.querySelectorAll('.glass-panel').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-2px)';
-                card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-            });
-        });
-
-        // Search shortcut listener
-        window.addEventListener('keydown', (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                document.querySelector('input').focus();
-            }
-        });
-    </script>
+</div>
+<div id="ym-ai-modal" class="fixed inset-0 z-[1000] hidden items-center justify-center bg-on-surface/40 p-md" role="dialog">
+<div class="glass-panel-solid w-full max-w-lg rounded-2xl p-lg" id="ym-ai-modal-content">
+<div class="flex items-center justify-between mb-4">
+<h2 class="font-section-header font-bold text-lg">AI Plant Summary</h2>
+<button type="button" data-close-ai class="material-symbols-outlined p-2 hover:bg-primary/10 rounded-full">close</button>
+</div>
+<div id="ym-ai-body" class="text-sm text-on-surface-variant space-y-3">
+<p>Select a plant marker on the map to generate an AI-powered operational summary.</p>
+</div>
+</div>
+</div>
 <script src="/js/global_operations_map_yantramitra_polished.js" defer></script>
 <script src="/js/app_shell_yantramitra.js" defer></script>
 </body></html>
