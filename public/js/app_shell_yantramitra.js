@@ -62,21 +62,37 @@
         scrollbar-width: none;
         transition: transform .22s ease, opacity .22s ease, box-shadow .22s ease;
       }
+      .ym-shell-rail-toggle {
+        position: fixed;
+        right: 16px;
+        top: 88px;
+        z-index: 80;
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba(199, 196, 215, .72);
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, .96);
+        color: #413fd6;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 32px rgba(65, 63, 214, .20);
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: 900;
+        line-height: 1;
+      }
+      .ym-shell-rail-toggle:hover {
+        background: rgba(65, 63, 214, .10);
+      }
       body.ym-rail-collapsed .ym-shell-rail {
-        transform: translateX(62px);
-        opacity: .78;
+        transform: translateX(86px);
+        opacity: .28;
       }
       body.ym-rail-collapsed .ym-shell-rail a,
-      body.ym-rail-collapsed .ym-shell-rail button:not(.ym-shell-toggle) {
+      body.ym-rail-collapsed .ym-shell-rail button:not(.ym-shell-logout) {
         opacity: 0;
         pointer-events: none;
-      }
-      body.ym-rail-collapsed .ym-shell-toggle {
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        transform: translateX(-58px);
-        background: #fff !important;
-        box-shadow: 0 12px 32px rgba(65, 63, 214, .20);
       }
       body.ym-rail-collapsed main {
         margin-right: 24px !important;
@@ -510,7 +526,7 @@
     const rail = existingRails[0] || document.createElement('aside');
     rail.className = 'ym-shell-rail';
     rail.setAttribute('aria-label', 'YantraMitra app navigation');
-    rail.innerHTML = `<button type="button" class="ym-shell-toggle" title="Collapse sidebar" aria-label="Collapse sidebar">‹</button>` + navItems.map(item => {
+    rail.innerHTML = navItems.map(item => {
       const active = currentPath === item.path || (item.path !== '/dashboard' && currentPath.startsWith(item.path + '/'));
       return `<a href="${item.path}" title="${item.label}" aria-label="${item.label}" class="${active ? 'is-active' : ''}">
         <span class="material-symbols-outlined">${item.icon}</span>
@@ -522,7 +538,13 @@
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
       window.location.href = '/login';
     });
-    const toggle = rail.querySelector('.ym-shell-toggle');
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'ym-shell-rail-toggle';
+    toggle.title = 'Hide sidebar';
+    toggle.setAttribute('aria-label', 'Hide sidebar');
+    toggle.textContent = '‹';
     const setRailState = () => {
       const collapsed = document.body.classList.contains('ym-rail-collapsed');
       toggle.title = collapsed ? 'Open sidebar' : 'Hide sidebar';
@@ -539,6 +561,7 @@
 
     existingRails.slice(1).forEach(el => { el.style.display = 'none'; });
     if (!rail.parentNode) document.body.appendChild(rail);
+    if (!toggle.parentNode) document.body.appendChild(toggle);
   }
 
   function pageTitle() {
