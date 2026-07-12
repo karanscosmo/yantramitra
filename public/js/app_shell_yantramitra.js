@@ -45,22 +45,22 @@
         right: 16px;
         top: 88px;
         bottom: 24px;
-        width: 72px;
+        width: 280px;
         z-index: 70;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         gap: 8px;
         padding: 14px 8px;
         border: 1px solid rgba(199, 196, 215, .6);
-        border-radius: 9999px;
+        border-radius: 28px;
         background: rgba(255, 255, 255, .78);
         backdrop-filter: blur(18px);
         box-shadow: 0 18px 48px rgba(65, 63, 214, .18);
         overflow-y: auto;
         pointer-events: auto;
         scrollbar-width: none;
-        transition: transform .22s ease, opacity .22s ease, box-shadow .22s ease;
+        transition: width .3s ease, transform .3s ease, opacity .3s ease, box-shadow .3s ease;
       }
       .ym-shell-rail-toggle {
         position: fixed;
@@ -81,27 +81,41 @@
         font-size: 20px;
         font-weight: 900;
         line-height: 1;
+        transition: right .3s ease, transform .3s ease;
       }
       .ym-shell-rail-toggle:hover {
         background: rgba(65, 63, 214, .10);
       }
       body.ym-rail-collapsed .ym-shell-rail {
-        transform: translateX(86px);
-        opacity: .28;
+        width: 88px;
+        transform: translateX(0);
+        opacity: 1;
       }
       body.ym-rail-collapsed .ym-shell-rail a,
       body.ym-rail-collapsed .ym-shell-rail button:not(.ym-shell-logout) {
-        opacity: 0;
-        pointer-events: none;
+        justify-content: center;
+        padding-inline: 0;
+      }
+      body.ym-rail-collapsed .ym-shell-rail .ym-shell-label,
+      body.ym-rail-collapsed .ym-shell-rail .ym-shell-pill {
+        display: none;
       }
       body.ym-rail-collapsed main {
-        margin-right: 24px !important;
-        padding-right: 28px !important;
-        max-width: calc(100vw - 24px);
+        margin-right: 104px !important;
+        padding-right: 16px !important;
+        max-width: calc(100vw - 104px);
       }
       body.ym-in-app main {
-        margin-right: 128px !important;
-        max-width: calc(100vw - 128px);
+        margin-right: 328px !important;
+        max-width: calc(100vw - 328px);
+        transition: margin-right .3s ease, max-width .3s ease, padding-right .3s ease;
+        width: auto !important;
+        box-sizing: border-box;
+      }
+      body.ym-in-app .ym-page-content {
+        width: 100%;
+        max-width: 100%;
+        transition: width .3s ease, max-width .3s ease, padding .3s ease;
       }
       .ym-standard-topbar {
         position: fixed;
@@ -186,12 +200,14 @@
       .ym-shell-rail::-webkit-scrollbar { display: none; }
       .ym-shell-rail a,
       .ym-shell-rail button {
-        width: 44px;
-        height: 44px;
-        flex: 0 0 44px;
+        width: 100%;
+        min-height: 44px;
+        flex: 0 0 auto;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 0 12px;
         border-radius: 9999px;
         color: #464555;
         border: 0;
@@ -202,9 +218,24 @@
       }
       .ym-shell-rail a:hover,
       .ym-shell-rail button:hover {
-        transform: translateY(-1px) scale(1.06);
+        transform: translateY(-1px) scale(1.01);
         background: rgba(65, 63, 214, .10);
         color: #413fd6;
+      }
+      .ym-shell-label {
+        font: 700 12px/1 Inter, system-ui, sans-serif;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .ym-shell-pill {
+        margin-left: auto;
+        padding: 3px 7px;
+        border-radius: 999px;
+        background: rgba(65, 63, 214, .10);
+        color: #413fd6;
+        font: 900 9px/1 Space Grotesk, Inter, system-ui, sans-serif;
+        letter-spacing: .08em;
       }
       .ym-shell-toggle {
         margin-bottom: 4px;
@@ -263,21 +294,29 @@
         height: calc(100vh - 72px) !important;
         padding-top: 0 !important;
       }
-      body.ym-page-work-orders main,
-      body.ym-page-plans main,
-      body.ym-page-anomaly main {
-        padding-right: 148px !important;
+      body.ym-page-content main {
+        padding-right: 0 !important;
+        width: 100% !important;
       }
-      body.ym-page-work-orders .glass-drawer,
-      body.ym-page-work-orders div.fixed.right-0 {
-        right: 104px !important;
-        width: min(440px, calc(100vw - 720px)) !important;
+      .ym-page-detail-drawer {
+        position: fixed;
+        top: 72px;
+        right: 104px;
+        bottom: 0;
+        width: min(460px, calc(100vw - 420px));
         min-width: 360px;
         z-index: 62 !important;
+        transition: right .3s ease, width .3s ease;
       }
-      body.ym-rail-collapsed.ym-page-work-orders .glass-drawer,
-      body.ym-rail-collapsed.ym-page-work-orders div.fixed.right-0 {
+      body.ym-rail-collapsed .ym-page-detail-drawer {
         right: 24px !important;
+      }
+      @media (max-width: 1024px) {
+        .ym-page-detail-drawer { width: 400px !important; }
+      }
+      @media (max-width: 768px) {
+        .ym-page-detail-drawer { width: 100% !important; right: 0 !important; }
+        body.ym-rail-collapsed .ym-page-detail-drawer { right: 0 !important; }
       }
       body.ym-digital-twin .ym-shell-rail {
         z-index: 80;
@@ -523,10 +562,13 @@
     rail.setAttribute('aria-label', 'YantraMitra app navigation');
     rail.innerHTML = navItems.map(item => {
       const active = currentPath === item.path || (item.path !== '/dashboard' && currentPath.startsWith(item.path + '/'));
+      const pill = item.path === '/ai-console' ? '<span class="ym-shell-pill">AI</span>' : '';
       return `<a href="${item.path}" title="${item.label}" aria-label="${item.label}" class="${active ? 'is-active' : ''}">
         <span class="material-symbols-outlined">${item.icon}</span>
+        <span class="ym-shell-label">${item.label}</span>
+        ${pill}
       </a>`;
-    }).join('') + `<button type="button" class="ym-shell-logout" title="Log out" aria-label="Log out"><span class="material-symbols-outlined">logout</span></button>`;
+    }).join('') + `<button type="button" class="ym-shell-logout" title="Log out" aria-label="Log out"><span class="material-symbols-outlined">logout</span><span class="ym-shell-label">Log out</span></button>`;
     rail.querySelector('.ym-shell-logout').addEventListener('click', async () => {
       const ok = window.confirm('Log out of YantraMitra?');
       if (!ok) return;
@@ -763,9 +805,30 @@
         button.addEventListener('click', openCompareModal);
         return;
       }
-      if (/details|open/i.test(text) && !/open\s+maintenance/i.test(lower)) {
+      if (/details/i.test(text) && !/open\s+maintenance/i.test(lower)) {
         button.dataset.ymWired = 'true';
-        button.addEventListener('click', openDetailsModal);
+        button.addEventListener('click', async function() {
+          const card = this.closest('[id^="plan-"]');
+          if (card) {
+            card.classList.toggle('expanded');
+            const chevron = card.querySelector('.chevron');
+            if (chevron) chevron.style.transform = card.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+          } else {
+            openDetailsModal();
+          }
+        });
+        return;
+      }
+      if (/open/i.test(text) && !/open\s+maintenance/i.test(lower) && button.closest('.plan-card, [id^="plan-"]')) {
+        button.dataset.ymWired = 'true';
+        button.addEventListener('click', function() {
+          const card = this.closest('[id^="plan-"]');
+          if (card) {
+            card.classList.toggle('expanded');
+            const chevron = card.querySelector('.chevron');
+            if (chevron) chevron.style.transform = card.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+          }
+        });
         return;
       }
       if (/approve/i.test(text)) {
@@ -778,9 +841,14 @@
         button.addEventListener('click', () => showModal('Decision Logged', '<p class="text-on-surface-variant">Rejection recorded in the review workflow. A revised plan can be generated from the incident replay.</p>'));
         return;
       }
-      if (/schedule|create order|new mission|schedule task|deploy scenario|restart|advance state|auto-resolve|re-scan|latest snapshot|clear filters|save changes|pause session|mark as complete|override/i.test(text)) {
+      if (/create order|new mission|deploy scenario|advance state|auto-resolve|re-scan|latest snapshot|clear filters|save changes|restart/i.test(text)) {
         button.dataset.ymWired = 'true';
-        button.addEventListener('click', () => showModal('Action Registered', `<p class="text-on-surface-variant">YantraMitra recorded <strong>${text || 'this action'}</strong> in the live operations workflow.</p>`));
+        button.addEventListener('click', () => {
+          if (/create order/i.test(text)) { window.location.href = '/work-orders'; return; }
+          if (/new mission/i.test(text)) { window.location.href = '/agents'; return; }
+          if (/deploy scenario/i.test(text)) { window.location.href = '/simulator'; return; }
+          showModal('Action Registered', `<p class="text-on-surface-variant">YantraMitra recorded <strong>${text || 'this action'}</strong> in the live operations workflow.</p>`);
+        });
         return;
       }
       const match = routeByText.find(([pattern]) => pattern.test(text));

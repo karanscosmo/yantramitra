@@ -14,6 +14,7 @@
 
     const forgotLink = document.querySelector('a[href="#"]');
     if (forgotLink) {
+      forgotLink.setAttribute('href', '/reset-password');
       forgotLink.addEventListener('click', e => {
         e.preventDefault();
         window.location.href = '/reset-password';

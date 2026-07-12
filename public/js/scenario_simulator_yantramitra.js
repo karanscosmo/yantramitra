@@ -1,224 +1,314 @@
 (function() {
-  const plantImages = {
-    'pune-auto': '/images/home-pune-automotive.jpg',
-    'ahmedabad-textiles': '/images/home-ahmedabad-process.jpg',
-    'chennai-electronics': '/images/home-chennai-electronics.jpg',
-    'bengaluru-fab': '/images/home-bengaluru-precision.jpg',
-    'nagpur-logistics': '/images/home-nagpur-logistics.jpg'
-  };
+  const API = { base: '' };
+  async function get(path) { const r = await fetch(path, { credentials: 'same-origin' }); if (!r.ok) throw new Error(path); return r.json(); }
+  async function post(path, body) { const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body) }); if (!r.ok) throw new Error(path); return r.json(); }
 
-  const dotPositions = [
-    { left: 28, top: 38 }, { left: 42, top: 28 }, { left: 58, top: 43 },
-    { left: 68, top: 60 }, { left: 36, top: 68 }, { left: 52, top: 72 }
-  ];
+  let plants = [];
+  let machines = [];
+  let currentPlant = null;
+  let simRunning = false;
+  let simPaused = false;
+  let simIteration = 0;
+  let simTimer = null;
+  let baselineData = null;
+  let historyData = [];
+  let sceneInitialized = false;
+  let threeScene = null;
 
-  async function get(path) {
-    const response = await fetch(path, { credentials: 'same-origin' });
-    if (!response.ok) throw new Error(path);
-    return response.json();
+  function toast(msg) {
+    const el = document.getElementById('ym-toast');
+    if (!el) return;
+    document.getElementById('ym-toast-msg').textContent = msg;
+    el.classList.remove('translate-y-32', 'opacity-0');
+    setTimeout(() => el.classList.add('translate-y-32', 'opacity-0'), 2500);
   }
 
-  async function post(path, body) {
-    const response = await fetch(path, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+  function openModal(title, body) {
+    document.querySelector('.modal-backdrop')?.remove();
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:14px">
+        <h2 style="font:900 24px/1.2 Inter,system-ui,sans-serif;color:#191a28">${title}</h2>
+        <button class="ym-close-modal" style="border:0;background:#eeecff;border-radius:999px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div>${body}</div>
+    </div>`;
+    wrap.addEventListener('click', e => { if (e.target === wrap || e.target.closest('.ym-close-modal')) wrap.remove(); });
+    document.body.appendChild(wrap);
+  }
+
+  function getSliderValues() {
+    const sliders = document.querySelectorAll('[data-slider]');
+    const vals = {};
+    sliders.forEach(s => { vals[s.dataset.slider] = parseFloat(s.value); });
+    return vals;
+  }
+
+  function updateSliderDisplays() {
+    document.querySelectorAll('[data-slider]').forEach(s => {
+      const id = 'slider-' + s.dataset.slider;
+      const el = document.getElementById(id);
+      if (!el) return;
+      const val = s.value;
+      const unit = s.dataset.unit || '';
+      const labels = { speed: val + unit, delay: val + unit, power: val + unit, quality: val + unit, operators: val, material: val + unit, temp: val + unit, energy: '₹' + (val / 10).toFixed(1) + '/kWh' };
+      el.textContent = labels[s.dataset.slider] || val + unit;
     });
-    if (!response.ok) throw new Error(path);
-    return response.json();
   }
 
-  function injectStyles() {
-    if (document.getElementById('ym-scenario-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'ym-scenario-styles';
-    style.textContent = `
-      #ym-scenario-plants { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:18px; }
-      .ym-scenario-plant { text-align:left; border:1px solid rgba(199,196,215,.55); border-radius:16px; padding:10px 12px; background:rgba(255,255,255,.72); transition:.18s ease; }
-      .ym-scenario-plant:hover, .ym-scenario-plant.is-active { border-color:#413fd6; box-shadow:0 12px 28px rgba(65,63,214,.14); transform:translateY(-1px); }
-      .ym-scenario-plant strong { display:block; font:900 12px/1.15 Inter,system-ui,sans-serif; color:#191a28; }
-      .ym-scenario-plant span { display:block; margin-top:3px; font:800 10px/1.15 Inter,system-ui,sans-serif; color:#6f6d7d; text-transform:uppercase; letter-spacing:.08em; }
-      #ym-scenario-overlay { position:absolute; inset:0; z-index:3; pointer-events:none; background:linear-gradient(135deg,rgba(65,63,214,.08),rgba(94,250,228,.06)); }
-      .ym-scenario-dot { position:absolute; transform:translate(-50%,-50%); pointer-events:auto; }
-      .ym-scenario-dot button { display:flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.55); border-radius:999px; background:rgba(255,255,255,.84); color:#191a28; padding:7px 10px; font:900 10px/1 Inter,system-ui,sans-serif; box-shadow:0 12px 30px rgba(0,0,0,.18); }
-      .ym-scenario-dot i { width:10px; height:10px; border-radius:999px; background:#5efae4; box-shadow:0 0 0 8px rgba(94,250,228,.16); }
-      .ym-scenario-dot.is-risk i { background:#c61c1c; box-shadow:0 0 0 8px rgba(198,28,28,.14); }
-      .ym-scenario-dot.is-applied i { background:#087b6f; box-shadow:0 0 0 10px rgba(8,123,111,.16); }
-      .ym-scenario-banner { position:absolute; left:28px; right:28px; top:86px; z-index:4; border-radius:18px; border:1px solid rgba(94,250,228,.35); background:rgba(255,255,255,.84); backdrop-filter:blur(18px); padding:14px 16px; box-shadow:0 18px 46px rgba(65,63,214,.18); }
-      .ym-scenario-banner strong { display:block; color:#087b6f; font-weight:900; }
-      .ym-scenario-banner span { color:#464555; font-size:13px; }
-      .ym-scenario-chart { transform-origin:bottom; transition:clip-path .25s ease, opacity .25s ease; }
-      @media (max-width:900px) { #ym-scenario-plants { grid-template-columns:1fr; } }
-    `;
-    document.head.appendChild(style);
+  function computeKPIs(vals) {
+    const speed = vals.speed || 85;
+    const delay = vals.delay || 12;
+    const power = vals.power || 420;
+    const quality = vals.quality || 98;
+    const operators = vals.operators || 12;
+    const material = vals.material || 85;
+    const temp = vals.temp || 32;
+    const energy = vals.energy || 65;
+
+    const throughput = Math.round((speed * 0.6 + operators * 1.2 + material * 0.3 - delay * 0.5 - temp * 0.2) * (Math.random() * 0.1 + 0.95));
+    const oee = Math.min(100, Math.round((speed / 100 * 35 + quality / 100 * 35 + (100 - delay) / 100 * 30) * (Math.random() * 0.08 + 0.96)));
+    const energyUsage = Math.round(power * (1 + temp / 200) * (Math.random() * 0.05 + 0.975));
+    const downtime = Math.max(0, Math.round((delay * 0.8 + (100 - speed) * 0.3 + (100 - material) * 0.2 + temp * 0.1) * (Math.random() * 0.1 + 0.95)));
+    const maintCost = Math.round((delay * 15 + (100 - quality) * 20 + power * 0.5) * (Math.random() * 0.1 + 0.95));
+    const profit = Math.round((throughput * 50 - maintCost - energyUsage * 2) * (Math.random() * 0.05 + 0.975));
+    const qualityLoss = Math.max(0, Math.round((100 - quality) * (1 + temp / 100) * (Math.random() * 0.1 + 0.95)));
+    const carbonEmission = Math.round(energyUsage * 0.45 * (Math.random() * 0.05 + 0.975));
+
+    return { throughput, oee, energyUsage, downtime, maintCost, profit, qualityLoss, carbonEmission };
   }
 
-  function imageFor(plant) {
-    return plantImages[plant.id] || plant.imageUrl || '/images/ym-digital-twin-factory.jpg';
-  }
-
-  function yieldGain() {
-    const speed = Number(document.querySelector('input[type="range"][max="100"]')?.value || 85);
-    const delay = Number(document.querySelector('input[type="range"][max="50"]')?.value || 12);
-    const power = Number(document.querySelector('input[type="range"][max="1000"]')?.value || 420);
-    return Math.max(2.8, Math.min(18.5, (speed - 70) * 0.38 + (power - 350) * 0.018 - delay * 0.08)).toFixed(1);
-  }
-
-  function setViewMode(mode) {
-    const three = document.getElementById('view-3d');
-    const two = document.getElementById('view-2d');
-    const overlay = document.getElementById('ym-scenario-overlay');
-    if (!three || !two) return;
-    three.classList.toggle('bg-primary', mode === '3d');
-    three.classList.toggle('text-white', mode === '3d');
-    two.classList.toggle('bg-primary', mode === '2d');
-    two.classList.toggle('text-white', mode === '2d');
-    two.classList.toggle('text-on-surface-variant', mode !== '2d');
-    if (overlay) overlay.style.background = mode === '2d'
-      ? 'repeating-linear-gradient(0deg,rgba(65,63,214,.12) 0 1px,transparent 1px 44px),repeating-linear-gradient(90deg,rgba(65,63,214,.12) 0 1px,transparent 1px 44px),linear-gradient(135deg,rgba(94,250,228,.08),rgba(65,63,214,.08))'
-      : 'linear-gradient(135deg,rgba(65,63,214,.08),rgba(94,250,228,.06))';
-  }
-
-  function updateRecommendation(plant) {
-    const gain = yieldGain();
-    const power = document.getElementById('power-val')?.textContent || '420 kW';
-    const card = Array.from(document.querySelectorAll('h4')).find(node => node.textContent.includes('Increase Load'));
-    const desc = card?.nextElementSibling;
-    if (card) card.textContent = `Tune ${plant.name.split(' ')[0]} load to ${power}`;
-    if (desc) desc.textContent = `Simulation predicts a ${gain}% yield improvement using ${plant.location.split(',')[0]} asset telemetry. Deploy to update the plant 3D map.`;
-    const chart = document.querySelector('.area-chart-simulated');
-    if (chart) {
-      chart.classList.add('ym-scenario-chart');
-      chart.style.clipPath = `polygon(0 ${82 - Number(gain) * 2}%, 22% 62%, 44% ${58 - Number(gain)}%, 66% 42%, 100% 26%, 100% 100%, 0 100%)`;
-    }
-  }
-
-  function renderOverlay(plant, machines, applied) {
-    const leftPane = document.querySelector('main > section:first-child');
-    if (!leftPane) return;
-    let overlay = document.getElementById('ym-scenario-overlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'ym-scenario-overlay';
-      leftPane.appendChild(overlay);
-    }
-    const plantMachines = machines.filter(machine => machine.plantId === plant.id).slice(0, 6);
-    const rows = (plantMachines.length ? plantMachines : [{ name: plant.name + ' primary line', status: plant.status }]).map((machine, index) => {
-      const pos = dotPositions[index % dotPositions.length];
-      const risky = /critical|warning|attention|fault/i.test(machine.status || plant.status || '') || index === 1;
-      return `<div class="ym-scenario-dot ${applied ? 'is-applied' : risky ? 'is-risk' : ''}" style="left:${pos.left}%;top:${pos.top}%">
-        <button type="button" title="${machine.name}">
-          <i></i><span>${machine.name}</span>
-        </button>
+  function renderCharts(kpi) {
+    const grid = document.getElementById('ym-charts-grid');
+    if (!grid) return;
+    const charts = [
+      { label: 'Throughput', value: kpi.throughput, max: 200, unit: 'u/hr', color: '#413fd6' },
+      { label: 'OEE', value: kpi.oee, max: 100, unit: '%', color: '#006b5f' },
+      { label: 'Energy', value: kpi.energyUsage, max: 1200, unit: 'kWh', color: '#774f00' },
+      { label: 'Downtime', value: kpi.downtime, max: 100, unit: 'min', color: '#ba1a1a' },
+      { label: 'Maint Cost', value: kpi.maintCost, max: 5000, unit: '₹', color: '#413fd6' },
+      { label: 'Profit', value: kpi.profit, max: 10000, unit: '₹', color: '#006b5f' },
+      { label: 'Quality Loss', value: kpi.qualityLoss, max: 50, unit: 'u', color: '#774f00' },
+      { label: 'Carbon', value: kpi.carbonEmission, max: 500, unit: 'kg', color: '#ba1a1a' }
+    ];
+    grid.innerHTML = charts.map(c => {
+      const pct = Math.min(100, (c.value / c.max) * 100);
+      return `<div class="glass-panel rounded-lg p-2 border border-outline-variant/20">
+        <p class="text-[9px] font-bold text-on-surface-variant uppercase">${c.label}</p>
+        <p class="font-kpi-numeric text-sm" style="color:${c.color}">${c.value} <span class="text-[9px] text-on-surface-variant font-normal">${c.unit}</span></p>
+        <div class="w-full h-1.5 bg-outline-variant/20 rounded-full mt-1 overflow-hidden">
+          <div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${c.color}"></div>
+        </div>
       </div>`;
     }).join('');
-    overlay.innerHTML = `
-      ${applied ? `<div class="ym-scenario-banner"><strong>Scenario deployed to ${plant.name}</strong><span>3D twin now reflects ${yieldGain()}% projected yield lift, safer load balancing, and updated machine risk states.</span></div>` : ''}
-      ${rows}
-    `;
   }
 
-  function renderPlantSwitcher(plants, selected, onSelect) {
-    const header = document.querySelector('main > section:last-child header');
-    if (!header) return;
-    let switcher = document.getElementById('ym-scenario-plants');
-    if (!switcher) {
-      switcher = document.createElement('div');
-      switcher.id = 'ym-scenario-plants';
-      header.appendChild(switcher);
-    }
-    switcher.innerHTML = plants.map(plant => `
-      <button type="button" class="ym-scenario-plant ${plant.id === selected.id ? 'is-active' : ''}" data-plant-id="${plant.id}">
-        <strong>${plant.name}</strong>
-        <span>${plant.location.split(',')[0]} · OEE ${plant.oee || 'n/a'}%</span>
-      </button>
-    `).join('');
-    switcher.querySelectorAll('[data-plant-id]').forEach(button => {
-      button.addEventListener('click', () => onSelect(plants.find(plant => plant.id === button.dataset.plantId)));
+  function generatePrediction(vals, kpi) {
+    const changes = [];
+    if (kpi.throughput > 150) changes.push('Production increases by ' + ((kpi.throughput - 100) * 0.1).toFixed(1) + '%');
+    if (kpi.energyUsage > 600) changes.push('Power rises ' + Math.round((kpi.energyUsage - 400) / 4) + '%');
+    if (kpi.downtime > 30) changes.push('Failure probability +' + Math.min(15, Math.round(kpi.downtime * 0.15)) + '%');
+    if (kpi.oee > 85) changes.push('OEE improves by ' + Math.round((kpi.oee - 75) * 0.5) + '%');
+    if (changes.length === 0) changes.push('Production increases by ' + (Math.random() * 12 + 2).toFixed(1) + '%');
+    const maintenanceDue = Math.max(2, Math.round(20 - kpi.downtime * 0.3));
+    const confidence = Math.min(99, 85 + Math.round(Math.random() * 14));
+    return `<p class="text-white/90 text-sm mb-2">${changes.slice(0, 3).join(' · ')}</p>
+      <p class="text-white/80 text-xs">Maintenance due in <strong>${maintenanceDue} days</strong> · Confidence <strong>${confidence}%</strong></p>`;
+  }
+
+  function initScene(plant) {
+    const container = document.getElementById('ym-scene-bg');
+    if (!container) return;
+    const img = plant?.image || '/images/ym-digital-twin-factory.jpg';
+    container.innerHTML = `<img src="${img}" class="w-full h-full object-cover"/>`;
+    const overlay = container.querySelector('.scene-overlay') || document.createElement('div');
+    overlay.className = 'scene-overlay absolute inset-0';
+    container.appendChild(overlay);
+    sceneInitialized = true;
+  }
+
+  function updateSceneStats(plant, kpi) {
+    const switcher = document.getElementById('ym-plant-switcher');
+    if (!switcher || !plant) return;
+    switcher.innerHTML = `
+      <div class="glass-panel rounded-xl p-3 flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full ${simRunning ? 'bg-secondary animate-pulse' : 'bg-outline-variant'}"></span>
+          <span class="font-label-caps text-[10px]">${plant.name}</span>
+          <span class="text-[9px] text-on-surface-variant">${plant.location}</span>
+        </div>
+        <div class="flex gap-3 text-[10px]">
+          <span>OEE: <strong>${kpi?.oee || plant.oee || 0}%</strong></span>
+          <span>Throughput: <strong>${kpi?.throughput || '--'}</strong></span>
+          <span>Health: <strong>${Math.round((plant.machines || []).reduce((s,m) => s + m.health, 0) / Math.max((plant.machines || []).length, 1)) || 78}%</strong></span>
+        </div>
+      </div>`;
+  }
+
+  function runSimulation() {
+    if (simRunning && !simPaused) return;
+    if (simPaused) { simPaused = false; document.getElementById('ym-sim-status').textContent = 'SIMULATION RUNNING'; return; }
+    simRunning = true;
+    simPaused = false;
+    document.getElementById('ym-sim-status').textContent = 'SIMULATION RUNNING';
+    document.getElementById('ym-sim-indicator').className = 'w-2 h-2 rounded-full bg-secondary animate-pulse';
+    document.getElementById('ym-sim-run').innerHTML = '<span class="material-symbols-outlined text-sm">play_arrow</span><span>RUN</span>';
+
+    if (simTimer) clearInterval(simTimer);
+    simTimer = setInterval(() => {
+      if (simPaused) return;
+      simIteration++;
+      document.getElementById('ym-iteration').textContent = 'Iteration #' + simIteration;
+      const vals = getSliderValues();
+      const kpi = computeKPIs(vals);
+      renderCharts(kpi);
+      document.getElementById('ym-prediction-text').innerHTML = generatePrediction(vals, kpi);
+      updateSceneStats(currentPlant, kpi);
+      if (simIteration % 5 === 0) historyData.push({ iteration: simIteration, ...kpi });
+    }, 1200);
+  }
+
+  function pauseSimulation() {
+    simPaused = true;
+    document.getElementById('ym-sim-status').textContent = 'SIMULATION PAUSED';
+    document.getElementById('ym-sim-indicator').className = 'w-2 h-2 rounded-full bg-tertiary';
+  }
+
+  function resetSimulation() {
+    if (simTimer) clearInterval(simTimer);
+    simRunning = false;
+    simPaused = false;
+    simIteration = 0;
+    baselineData = null;
+    document.getElementById('ym-sim-status').textContent = 'SIMULATION READY';
+    document.getElementById('ym-sim-indicator').className = 'w-2 h-2 rounded-full bg-outline-variant';
+    document.getElementById('ym-iteration').textContent = 'Iteration #0';
+    document.getElementById('ym-prediction-text').innerHTML = '<p class="text-white/80 text-sm">Run simulation to generate AI prediction</p>';
+    document.querySelectorAll('input[type="range"]').forEach((s, i) => {
+      const defaults = [85, 12, 420, 98, 12, 85, 32, 65];
+      s.value = defaults[i] || 50;
     });
+    updateSliderDisplays();
+    const vals = getSliderValues();
+    renderCharts(computeKPIs(vals));
+    updateSceneStats(currentPlant, computeKPIs(vals));
+    toast('Simulation reset to defaults');
   }
 
-  function setPlant(plant, plants, machines, applied, onSelect) {
+  function compareBaseline() {
+    if (!baselineData) {
+      baselineData = getSliderValues();
+      toast('Baseline captured');
+      return;
+    }
+    const current = getSliderValues();
+    const diff = Object.keys(current).reduce((acc, k) => { acc[k] = ((current[k] - baselineData[k]) / baselineData[k] * 100).toFixed(1); return acc; }, {});
+    openModal('Baseline Comparison', `
+      <table class="w-full text-sm">
+        <thead><tr class="text-left border-b border-outline-variant/20"><th class="py-2">Parameter</th><th class="py-2">Baseline</th><th class="py-2">Current</th><th class="py-2">Change</th></tr></thead>
+        <tbody>${Object.keys(diff).map(k => `<tr class="border-b border-outline-variant/10"><td class="py-2 capitalize">${k}</td><td class="py-2">${baselineData[k]}</td><td class="py-2">${current[k]}</td><td class="py-2 font-bold ${diff[k] > 0 ? 'text-secondary' : 'text-error'}">${diff[k]}%</td></tr>`).join('')}</tbody>
+      </table>
+    `);
+  }
+
+  function exportData() {
+    const kpi = computeKPIs(getSliderValues());
+    const csv = 'Parameter,Value\n' + Object.entries(kpi).map(([k, v]) => `${k},${v}`).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'simulation-data-' + Date.now() + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Data exported');
+  }
+
+  function showHistory() {
+    if (!historyData.length) { toast('No simulation history yet'); return; }
+    openModal('Simulation History', `
+      <table class="w-full text-xs">
+        <thead><tr class="text-left border-b border-outline-variant/20"><th class="py-2">Iteration</th><th class="py-2">Throughput</th><th class="py-2">OEE</th><th class="py-2">Energy</th><th class="py-2">Downtime</th><th class="py-2">Maint Cost</th><th class="py-2">Profit</th></tr></thead>
+        <tbody>${historyData.slice(-20).map(h => `<tr class="border-b border-outline-variant/10"><td class="py-2">#${h.iteration}</td><td class="py-2">${h.throughput}</td><td class="py-2">${h.oee}%</td><td class="py-2">${h.energyUsage}</td><td class="py-2">${h.downtime}</td><td class="py-2">₹${h.maintCost}</td><td class="py-2">₹${h.profit}</td></tr>`).join('')}</tbody>
+      </table>
+      <p class="text-xs text-on-surface-variant mt-2">Showing last ${Math.min(historyData.length, 20)} entries</p>
+    `);
+  }
+
+  function loadPlantScene(plant) {
     if (!plant) return;
-    const image = document.querySelector('img[alt="Factory Digital Twin"]');
-    if (image) image.src = imageFor(plant);
-    renderPlantSwitcher(plants, plant, onSelect);
-    renderOverlay(plant, machines, applied);
-    updateRecommendation(plant);
+    currentPlant = plant;
+    initScene(plant);
+    const vals = getSliderValues();
+    const kpi = computeKPIs(vals);
+    renderCharts(kpi);
+    updateSceneStats(plant, kpi);
+    document.getElementById('ym-iteration').textContent = 'Iteration #0';
   }
 
   async function checkAuth() {
-    try {
-      const me = await get('/api/auth/me');
-      if (!me || !me.id) window.location.href = '/login';
-      return me;
-    } catch {
-      window.location.href = '/login';
-      return null;
-    }
+    try { const me = await get('/api/auth/me'); if (!me || !me.id) window.location.href = '/login'; return me; }
+    catch { window.location.href = '/login'; return null; }
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    injectStyles();
     const user = await checkAuth();
     if (!user) return;
 
-    const [plants, machines] = await Promise.all([
-      get('/api/plants').catch(() => []),
-      get('/api/machines').catch(() => [])
-    ]);
-    if (!plants.length) return;
+    try {
+      plants = await get('/api/plants');
+      machines = await get('/api/machines');
+    } catch (e) { console.error('Failed to load data', e); }
+    if (!plants.length) { document.getElementById('ym-scene-bg').innerHTML = '<div class="flex items-center justify-center h-full text-on-surface-variant">No plant data available</div>'; return; }
 
-    let current = plants[0];
-    let applied = false;
-    const selectPlant = plant => {
-      current = plant || current;
-      applied = false;
-      setPlant(current, plants, machines, applied, selectPlant);
-    };
-    setPlant(current, plants, machines, applied, selectPlant);
+    currentPlant = plants[0];
+    loadPlantScene(currentPlant);
 
-    document.getElementById('view-3d')?.addEventListener('click', () => setViewMode('3d'));
-    document.getElementById('view-2d')?.addEventListener('click', () => setViewMode('2d'));
-    document.querySelectorAll('input[type="range"]').forEach(input => {
-      input.addEventListener('input', () => {
-        applied = false;
-        renderOverlay(current, machines, applied);
-        updateRecommendation(current);
+    document.querySelectorAll('[data-toggle="plant"]').forEach(el => {
+      el.addEventListener('click', function() {
+        const id = this.dataset.plantId;
+        const plant = plants.find(p => p.id === id);
+        if (plant) {
+          if (simTimer) { clearInterval(simTimer); simRunning = false; }
+          simIteration = 0;
+          loadPlantScene(plant);
+          toast('Switched to ' + plant.name);
+        }
       });
     });
 
-    document.querySelectorAll('main > section:first-child button').forEach(button => {
-      if (button.id === 'view-3d' || button.id === 'view-2d') return;
-      button.title = button.title || (button.textContent.trim() || 'Toggle simulator layer');
-      button.addEventListener('click', () => {
-        const overlay = document.getElementById('ym-scenario-overlay');
-        if (overlay) overlay.classList.toggle('ring-4');
+    document.querySelectorAll('[data-slider]').forEach(s => {
+      s.addEventListener('input', function() {
+        updateSliderDisplays();
+        if (simRunning && !simPaused) return;
+        const vals = getSliderValues();
+        const kpi = computeKPIs(vals);
+        renderCharts(kpi);
+        updateSceneStats(currentPlant, kpi);
       });
     });
 
-    const deploy = Array.from(document.querySelectorAll('button')).find(button => /deploy scenario/i.test(button.textContent));
-    deploy?.addEventListener('click', async () => {
-      if (applied) {
-        window.location.href = `/digital-twin?plant=${encodeURIComponent(current.id)}`;
-        return;
-      }
-      const original = deploy.innerHTML;
-      deploy.disabled = true;
-      deploy.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span><span>Deploying to 3D twin...</span>';
-      await post('/api/plans', {
-        title: `${current.name} simulation deployment`,
-        description: `Scenario simulator applied ${yieldGain()}% projected yield lift to ${current.location}.`,
-        type: 'optimization',
-        status: 'pending',
-        priority: 'medium'
-      }).catch(() => {});
-      applied = true;
-      renderOverlay(current, machines, applied);
-      deploy.innerHTML = '<span class="material-symbols-outlined">check_circle</span><span>Applied — Open 3D Plant Map</span>';
-      deploy.disabled = false;
-      setTimeout(() => { if (deploy.innerHTML.includes('Applied')) deploy.innerHTML = original; }, 7000);
+    document.getElementById('ym-sim-run')?.addEventListener('click', runSimulation);
+    document.getElementById('ym-sim-pause')?.addEventListener('click', pauseSimulation);
+    document.getElementById('ym-sim-reset')?.addEventListener('click', resetSimulation);
+    document.getElementById('ym-sim-compare')?.addEventListener('click', compareBaseline);
+    document.getElementById('ym-sim-export')?.addEventListener('click', exportData);
+    document.getElementById('ym-sim-history')?.addEventListener('click', showHistory);
+
+    document.getElementById('ym-view-3d')?.addEventListener('click', function() {
+      this.classList.add('bg-primary', 'text-white');
+      document.getElementById('ym-view-2d')?.classList.remove('bg-primary', 'text-white');
+      document.getElementById('ym-scene-bg').style.background = 'transparent';
+      toast('3D view selected');
     });
+    document.getElementById('ym-view-2d')?.addEventListener('click', function() {
+      this.classList.add('bg-primary', 'text-white');
+      document.getElementById('ym-view-3d')?.classList.remove('bg-primary', 'text-white');
+      document.getElementById('ym-scene-bg').style.background = 'repeating-linear-gradient(0deg,rgba(65,63,214,0.12) 0 1px,transparent 1px 44px),repeating-linear-gradient(90deg,rgba(65,63,214,0.12) 0 1px,transparent 1px 44px)';
+      toast('2D schematic view selected');
+    });
+
+    updateSliderDisplays();
+    const vals = getSliderValues();
+    renderCharts(computeKPIs(vals));
   });
 })();

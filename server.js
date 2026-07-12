@@ -732,6 +732,37 @@ app.get('/api/executive/summary', authApi, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/timeline/event', authApi, async (req, res) => {
+  try {
+    const { orderId, event, actor } = req.body;
+    if (!orderId || !event) return res.status(400).json({ error: 'orderId and event are required' });
+    await prisma.auditLog.create({ data: { actorId: req.user.id, action: 'work_order.' + event, entity: 'WorkOrder', entityId: orderId, detail: { actor, event, timestamp: new Date().toISOString() } } });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/inventory/reserve', authApi, async (req, res) => {
+  try {
+    const { sku, orderId } = req.body;
+    if (!sku) return res.status(400).json({ error: 'sku is required' });
+    const part = await prisma.inventoryPart.findFirst({ where: { sku } });
+    if (!part) return res.status(404).json({ error: 'Part not found' });
+    if (part.quantity <= 0) return res.status(400).json({ error: 'Part out of stock' });
+    const updated = await prisma.inventoryPart.update({ where: { id: part.id }, data: { quantity: part.quantity - 1 } });
+    await createAudit(req.user.id, 'inventory.reserved', 'InventoryPart', part.id, { sku, orderId, previousQty: part.quantity, newQty: updated.quantity });
+    res.json({ ok: true, part: updated });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/dashboard/kpi', authApi, async (req, res) => {
+  try {
+    const { type, value } = req.body;
+    if (!type) return res.status(400).json({ error: 'type is required' });
+    await createAudit(req.user.id, 'dashboard.kpi_update', 'KPI', null, { type, value, timestamp: new Date().toISOString() });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/notifications', authApi, async (req, res) => {
   try {
     const notifications = await prisma.notification.findMany({
@@ -1024,19 +1055,70 @@ app.post('/api/ai-chat', authApi, rateLimit({ windowMs: 60 * 1000, max: 20, keyP
       });
     }
 
-    const systemPrompt = `You are YantraNklan, YantraMitra's operations AI assistant. You have access to real-time operational data.
+    const plantList = plants.map(p => `- ${p.name} (${p.location}): ${p.status}, OEE ${p.oee || 'N/A'}%, Energy ${p.energyUsage || 'N/A'} MWh, CO2 ${p.co2Tonnes || 'N/A'}t`).join('\n');
+    const machineSummary = machines.slice(0, 15).map(m => `- ${m.name} (${m.plant}): ${m.status}, health ${m.health}%, type ${m.type}, failure prob ${m.failureProbability || 'N/A'}, RUL ${m.remainingUsefulLife || 'N/A'}d`).join('\n');
+    const alarmSummary = alarms.slice(0, 10).map(a => `- [${a.severity}] ${a.title} on ${a.machine}: ${a.message}`).join('\n');
+    const workOrderSummary = workOrders.slice(0, 10).map(w => `- ${w.title}: ${w.status}, ${w.priority}, assigned to ${w.assignedTo || 'unassigned'}`).join('\n');
 
-Current operational context:
-${JSON.stringify(contextSummary, null, 2)}
+    const systemPrompt = `You are YantraNklan, YantraMitra's industrial operations AI copilot. You have permanent real-time access to the complete Yantra Manufacturing Technologies Pvt. Ltd. operational dataset.
 
-Guidelines:
-- Answer questions about specific machines, plants, alarms, and work orders using the provided data.
-- If asked about something not in the data, say you don't have that information.
-- Be concise, professional, and data-aware.
-- When referencing a machine or asset, include its health score and status if available.
-- For alarm questions, mention severity and which machine it's on.
-- For work orders, mention status, priority, and assignee.
-- Keep responses under 200 words.`;
+## DATABASE CONTEXT (Current Snapshot)
+
+### Plants (${plants.length} total):
+${plantList || 'No plant data available'}
+
+### Key Machines (${machines.length} total, showing top 15):
+${machineSummary || 'No machine data available'}
+
+### Active Alarms (${alarms.length} total):
+${alarmSummary || 'No active alarms'}
+
+### Recent Work Orders (${workOrders.length} total, showing top 10):
+${workOrderSummary || 'No work orders'}
+
+### Agents (${agents.length} total):
+${agents.slice(0, 5).map(a => `- ${a.name}: ${a.type}, ${a.status}, progress ${a.progress}%`).join('\n') || 'No agents'}
+
+### Plans (${plans.length} total):
+${plans.slice(0, 5).map(p => `- ${p.title}: ${p.status}, ${p.priority}, ${p.type}`).join('\n') || 'No plans'}
+
+## RESPONSE FORMAT REQUIREMENTS
+Always structure your answers professionally. When the question is about a specific machine, alarm, work order, or situation, format your response to include:
+
+1. **Summary** — A one-sentence overview of the situation.
+2. **Analysis** — Detailed breakdown using the available data.
+3. **Evidence** — Specific sensor readings, alarm data, or work order details that support the analysis.
+4. **Likely Cause** — The most probable root cause based on the evidence.
+5. **Risk Assessment** — Current risk level (Critical/High/Medium/Low) and why.
+6. **Recommendation** — Actionable next steps.
+7. **Affected Machines** — List of machines involved.
+8. **Suggested Work Order** — What kind of work order should be created.
+9. **Confidence** — How confident you are in the analysis (0-100%).
+
+## RESPONSE STYLE
+- Use markdown formatting (headings, lists, bold, tables) for readability.
+- Include specific data points from the context above.
+- Do NOT say you don't have access to data — you have the full dataset above.
+- If the user asks about something not in the data, use your general knowledge of industrial operations to provide helpful guidance.
+- Be comprehensive. Never answer in a single sentence.
+- For comparison questions, always include a table.
+- For prediction questions, explain your reasoning.
+- Sign off naturally — do not add signature blocks.
+- Maximum response length: 500 words unless the user asks for more detail.
+
+## EXAMPLE QUERIES YOU CAN HANDLE
+- "Why is CNC PN-102 overheating?"
+- "Show all critical alarms."
+- "Predict next bearing failure."
+- "Compare Pune and Chennai OEE."
+- "Generate maintenance plan for Turbine-7."
+- "Optimize energy usage across all plants."
+- "Explain downtime yesterday."
+- "Generate executive report."
+- "What is the current plant hierarchy?"
+- "How many machines are in warning state?"
+- "Which work orders are overdue?"
+- "What agents are active?"`;
 
     const OpenAI = require('openai');
     const openai = new OpenAI({ apiKey });

@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
 <title>YantraMitra | Work Orders Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&family=Geist:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
       tailwind.config = {
@@ -69,16 +67,6 @@
                     "xl": "0.75rem",
                     "full": "9999px"
             },
-            "spacing": {
-                    "nav-width": "72px",
-                    "lg": "40px",
-                    "gutter": "24px",
-                    "xl": "64px",
-                    "base": "4px",
-                    "sm": "16px",
-                    "xs": "8px",
-                    "md": "24px"
-            },
             "fontFamily": {
                     "display-hero": ["Geist"],
                     "section-header": ["Geist"],
@@ -114,7 +102,7 @@
             box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.05);
         }
         .glass-drawer {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(24px);
             border-left: 1px solid #E7E9F5;
         }
@@ -146,11 +134,32 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c4d7; border-radius: 10px; }
+
+        .drawer-enter { transform: translateX(100%); opacity: 0; }
+        .drawer-enter-active { transform: translateX(0); opacity: 1; transition: transform .3s ease, opacity .3s ease; }
+        .drawer-exit { transform: translateX(0); opacity: 1; }
+        .drawer-exit-active { transform: translateX(100%); opacity: 0; transition: transform .3s ease, opacity .3s ease; }
+        .drawer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(25,26,40,0.32); opacity: 0; transition: opacity .3s ease; }
+        .drawer-backdrop.open { opacity: 1; }
+
+        @media (max-width: 1024px) {
+            .glass-drawer { width: 400px !important; }
+        }
+        @media (max-width: 768px) {
+            .glass-drawer { width: 100% !important; right: 0 !important; }
+            body.ym-rail-collapsed .glass-drawer { right: 0 !important; }
+        }
+        .checklist-state { transition: all .2s ease; cursor: pointer; }
+        .checklist-state:hover { transform: translateX(2px); }
+
+        .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(25,26,40,0.36); display: flex; align-items: center; justify-content: center; padding: 18px; opacity: 0; transition: opacity .25s ease; }
+        .modal-backdrop.open { opacity: 1; }
+        .modal-card { width: min(600px, calc(100vw - 32px)); max-height: min(80vh, 600px); overflow-y: auto; border-radius: 18px; border: 1px solid rgba(199,196,215,0.72); background: rgba(255,255,255,0.96); box-shadow: 0 30px 90px rgba(25,26,40,0.28); padding: 20px; transform: scale(0.95); transition: transform .25s ease; }
+        .modal-backdrop.open .modal-card { transform: scale(1); }
     </style>
 </head>
 <body class="font-body-md text-on-surface">
-<!-- TopNavBar (Shared Component) -->
-<nav class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md dark:bg-surface/70 border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
+<nav class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
 <div class="flex items-center gap-sm">
 <img src="/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 <div class="hidden md:flex items-center gap-xs ml-md font-body-md text-body-md">
@@ -165,297 +174,117 @@
 <span class="material-symbols-outlined absolute left-3 top-1.5 text-on-surface-variant">search</span>
 </div>
 <div class="flex gap-sm">
-<button class="p-2 rounded-full hover:bg-primary/10 transition-colors">
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors ym-notif-btn">
 <span class="material-symbols-outlined text-primary">notifications</span>
 </button>
-<button class="p-2 rounded-full hover:bg-primary/10 transition-colors">
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors" onclick="window.location.href='/map'">
 <span class="material-symbols-outlined text-primary">factory</span>
 </button>
-<img class="w-8 h-8 rounded-full border border-primary/20" data-alt="A professional headshot of a senior operations manager in a high-tech industrial office. The lighting is crisp and cool-toned, reflecting a dreamy industrial aesthetic with subtle glass reflections in the background. The manager is wearing a modern dark blazer, looking confident and focused. High resolution and sophisticated corporate photography." src="/images/ym-operator-avatar.jpg"/>
+<img class="w-8 h-8 rounded-full border border-primary/20 cursor-pointer" onclick="window.location.href='/settings'" src="/images/ym-operator-avatar.jpg"/>
 </div>
 </div>
 </nav>
-<!-- SideNavBar (Shared Component - Floating Right Rail) -->
-<aside class="fixed right-4 top-24 bottom-24 w-[72px] rounded-full border border-outline-variant/30 bg-white/60 backdrop-blur-xl dark:bg-surface-container/60 shadow-[0_0_20px_rgba(65,63,214,0.15)] flex flex-col items-center justify-center space-y-sm py-md z-40">
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">dashboard</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">precision_manufacturing</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">smart_toy</span>
-</button>
-<button class="bg-primary text-on-primary rounded-full p-3 shadow-[0_0_15px_rgba(65,63,214,0.4)] hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">build</span>
-</button>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">settings</span>
-</button>
-<div class="flex-grow"></div>
-<button class="text-on-surface-variant p-3 hover:scale-110 transition-transform duration-200">
-<span class="material-symbols-outlined">help</span>
-</button>
-</aside>
-<!-- Main Content Canvas -->
-<main class="pt-24 pl-lg pr-[480px] pb-lg">
+<main class="pt-24 pl-lg pr-[360px] pb-lg transition-all duration-300 ease" id="ym-main-content">
 <header class="flex justify-between items-end mb-xl">
 <div>
 <h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Work Orders</h1>
 <p class="text-on-surface-variant">Manage active maintenance cycles and technician assignments.</p>
 </div>
-<button class="shimmer-btn px-6 py-2.5 rounded-full text-on-primary font-label-caps text-label-caps flex items-center gap-xs shadow-lg">
+<button class="shimmer-btn px-6 py-2.5 rounded-full text-on-primary font-label-caps text-label-caps flex items-center gap-xs shadow-lg" id="ym-create-order">
 <span class="material-symbols-outlined text-[20px]">add</span>
-                CREATE ORDER
-            </button>
+            CREATE ORDER
+        </button>
 </header>
-<!-- Stats Row -->
-<div class="grid grid-cols-4 gap-gutter mb-xl">
+<div class="grid grid-cols-4 gap-gutter mb-xl" id="ym-stats-row">
 <div class="glass-card rounded-xl p-md">
 <span class="text-on-surface-variant font-label-caps text-label-caps">ACTIVE ORDERS</span>
 <div class="flex items-baseline gap-xs mt-xs">
-<span class="font-kpi-numeric text-4xl text-primary">34</span>
-<span class="text-secondary text-sm font-medium">+12%</span>
+<span class="font-kpi-numeric text-4xl text-primary" id="ym-active-count">34</span>
 </div>
 </div>
 <div class="glass-card rounded-xl p-md">
-<span class="text-on-surface-variant font-label-caps text-label-caps">SYSTEM UPTIME</span>
+<span class="text-on-surface-variant font-label-caps text-label-caps">COMPLETED TODAY</span>
 <div class="flex items-baseline gap-xs mt-xs">
-<span class="font-kpi-numeric text-4xl text-on-surface">99.8</span>
+<span class="font-kpi-numeric text-4xl text-secondary" id="ym-completed-count">12</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-md">
+<span class="text-on-surface-variant font-label-caps text-label-caps">AVG COMPLETION</span>
+<div class="flex items-baseline gap-xs mt-xs">
+<span class="font-kpi-numeric text-4xl text-tertiary" id="ym-avg-completion">87</span>
 <span class="text-on-surface-variant text-sm">%</span>
 </div>
 </div>
 <div class="glass-card rounded-xl p-md">
-<span class="text-on-surface-variant font-label-caps text-label-caps">MTTR (AVG)</span>
+<span class="text-on-surface-variant font-label-caps text-label-caps">OVERDUE</span>
 <div class="flex items-baseline gap-xs mt-xs">
-<span class="font-kpi-numeric text-4xl text-tertiary">1.4</span>
-<span class="text-on-surface-variant text-sm">HRS</span>
-</div>
-</div>
-<div class="glass-card rounded-xl p-md">
-<span class="text-on-surface-variant font-label-caps text-label-caps">PENDING APPROVAL</span>
-<div class="flex items-baseline gap-xs mt-xs">
-<span class="font-kpi-numeric text-4xl text-on-surface">07</span>
+<span class="font-kpi-numeric text-4xl text-error" id="ym-overdue-count">07</span>
 </div>
 </div>
 </div>
-<!-- Work Orders List (8+ Orders) -->
-<div class="space-y-sm">
-<!-- Order Item 1 (Selected/Active) -->
-<div class="glass-card rounded-xl p-md flex items-center gap-md border-l-4 border-primary ring-2 ring-primary/20">
-<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-<span class="material-symbols-outlined text-primary">precision_manufacturing</span>
-</div>
-<div class="flex-grow">
-<div class="flex items-center gap-xs">
-<h3 class="font-semibold text-on-surface">WO-9302: Hydraulic Pump Recalibration</h3>
-<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-caps text-[10px] tracking-widest">URGENT</span>
-</div>
-<p class="text-sm text-on-surface-variant mt-1">Asset: RX-900 ARM • Bay 12</p>
-</div>
-<div class="flex -space-x-2">
-<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="Close up portrait of a technical specialist wearing cleanroom gear. Soft ethereal lighting with indigo and teal highlights. Minimalist composition, professional and high-performance feel." src="/images/ym-operator-avatar.jpg"/>
-<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-white flex items-center justify-center text-[10px] font-bold">+2</div>
-</div>
-<div class="text-right w-32">
-<div class="flex items-center justify-end gap-1.5 text-secondary">
-<div class="w-2 h-2 rounded-full bg-secondary status-glow-teal"></div>
-<span class="font-label-caps text-[11px]">IN PROGRESS</span>
-</div>
-<span class="text-xs text-on-surface-variant block mt-1">Due in 2h</span>
-</div>
-</div>
-<!-- Order Item 2 -->
-<div class="glass-card rounded-xl p-md flex items-center gap-md hover:bg-white/80 transition-all cursor-pointer">
-<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center">
-<span class="material-symbols-outlined text-on-surface-variant">bolt</span>
-</div>
-<div class="flex-grow">
-<h3 class="font-semibold text-on-surface">WO-9298: Emergency Generator Load Test</h3>
-<p class="text-sm text-on-surface-variant mt-1">Asset: GEN-4 • Sub-Level A</p>
-</div>
-<div class="flex -space-x-2">
-<img class="w-8 h-8 rounded-full border-2 border-white" data-alt="Portrait of a female engineering technician in a futuristic industrial setting. Ethereal atmospheric lighting, soft shadows, pristine white and indigo color palette. Professional tech-enabled workplace aesthetic." src="/images/ym-operator-avatar.jpg"/>
-</div>
-<div class="text-right w-32">
-<div class="flex items-center justify-end gap-1.5 text-on-surface-variant">
-<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
-<span class="font-label-caps text-[11px]">SCHEDULED</span>
-</div>
-<span class="text-xs text-on-surface-variant block mt-1">Oct 24, 09:00</span>
-</div>
-</div>
-<!-- Additional Orders (Simplified for view) -->
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-80">
-<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center">
-<span class="material-symbols-outlined text-on-surface-variant">conveyor_belt</span>
-</div>
-<div class="flex-grow">
-<h3 class="font-semibold text-on-surface">WO-9295: Line 4 Belt Replacement</h3>
-<p class="text-sm text-on-surface-variant mt-1">Asset: C-404 • Logistics Wing</p>
-</div>
-<div class="text-right w-32">
-<div class="flex items-center justify-end gap-1.5 text-tertiary">
-<div class="w-2 h-2 rounded-full bg-tertiary status-glow-amber"></div>
-<span class="font-label-caps text-[11px]">ON HOLD</span>
-</div>
-<span class="text-xs text-error font-medium block mt-1">Parts Delayed</span>
-</div>
-</div>
-<!-- Additional order rows -->
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-60">
-<div class="w-12 h-12 rounded-lg bg-surface-container"></div>
-<div class="flex-grow h-4 bg-outline-variant/20 rounded-full w-1/2"></div>
-<div class="w-32 h-4 bg-outline-variant/10 rounded-full"></div>
-</div>
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-50">
-<div class="w-12 h-12 rounded-lg bg-surface-container"></div>
-<div class="flex-grow h-4 bg-outline-variant/20 rounded-full w-1/3"></div>
-<div class="w-32 h-4 bg-outline-variant/10 rounded-full"></div>
-</div>
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-40">
-<div class="w-12 h-12 rounded-lg bg-surface-container"></div>
-<div class="flex-grow h-4 bg-outline-variant/20 rounded-full w-2/3"></div>
-<div class="w-32 h-4 bg-outline-variant/10 rounded-full"></div>
-</div>
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-30">
-<div class="w-12 h-12 rounded-lg bg-surface-container"></div>
-<div class="flex-grow h-4 bg-outline-variant/20 rounded-full w-1/4"></div>
-<div class="w-32 h-4 bg-outline-variant/10 rounded-full"></div>
-</div>
-<div class="glass-card rounded-xl p-md flex items-center gap-md opacity-20">
-<div class="w-12 h-12 rounded-lg bg-surface-container"></div>
-<div class="flex-grow h-4 bg-outline-variant/20 rounded-full w-1/2"></div>
-<div class="w-32 h-4 bg-outline-variant/10 rounded-full"></div>
-</div>
-</div>
+<div class="space-y-sm" id="ym-orders-list"></div>
 </main>
-<!-- Detail Drawer (Glassmorphism Right Side) -->
-<div class="fixed top-16 right-0 bottom-0 w-[440px] glass-drawer z-30 flex flex-col shadow-[-10px_0_40px_rgba(65,63,214,0.08)]">
-<div class="p-md flex justify-between items-center border-b border-outline-variant/20">
-<h2 class="font-section-header text-section-header text-on-surface">WO-9302 Detail</h2>
-<button class="p-2 hover:bg-primary/10 rounded-full transition-all">
+<div class="drawer-backdrop" id="ym-drawer-backdrop"></div>
+<div class="fixed top-16 right-[88px] bottom-0 w-[460px] glass-drawer z-30 flex flex-col shadow-[-10px_0_40px_rgba(65,63,214,0.08)] drawer-enter" id="ym-detail-drawer" style="display:none;">
+<div class="p-md flex justify-between items-center border-b border-outline-variant/20 shrink-0">
+<h2 class="font-section-header text-section-header text-on-surface" id="ym-drawer-title">WO-9302 Detail</h2>
+<button class="p-2 hover:bg-primary/10 rounded-full transition-all" id="ym-drawer-close">
 <span class="material-symbols-outlined">close</span>
 </button>
 </div>
-<div class="flex-grow overflow-y-auto custom-scrollbar p-md space-y-md">
-<!-- Technician Profile Card -->
-<section>
-<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">LEAD TECHNICIAN</h4>
-<div class="bg-primary/5 rounded-xl p-sm border border-primary/10 flex items-center gap-sm">
-<img class="w-12 h-12 rounded-full border-2 border-white shadow-sm" data-alt="Portrait of a young male engineering expert in a minimalist studio environment. The image uses a dreamy industrial aesthetic with soft blue gradients and subtle light flares. He is looking into the camera with a calm, professional expression, wearing a high-tech vest. 8k resolution, crisp details." src="/images/ym-operator-avatar.jpg"/>
+<div class="flex-grow overflow-y-auto custom-scrollbar p-md space-y-md" id="ym-drawer-body">
+<div id="ym-drawer-content">
+<div class="flex items-center gap-xs mb-md">
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary" id="ym-drawer-priority">URGENT</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold" id="ym-drawer-status">IN PROGRESS</span>
+</div>
+<div class="bg-primary/5 rounded-xl p-sm border border-primary/10 mb-md" id="ym-drawer-machine">
+<p class="text-sm text-on-surface-variant">Machine: <span class="font-semibold text-on-surface" id="ym-drawer-machine-name">RX-900 ARM</span></p>
+<p class="text-xs text-on-surface-variant mt-1">Location: <span id="ym-drawer-location">Bay 12</span></p>
+</div>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
+<span>LEAD TECHNICIAN</span>
+<span class="material-symbols-outlined text-sm text-primary cursor-pointer" id="ym-tech-view">open_in_new</span>
+</h4>
+<div class="bg-primary/5 rounded-xl p-sm border border-primary/10 flex items-center gap-sm cursor-pointer" id="ym-tech-card">
+<img class="w-12 h-12 rounded-full border-2 border-white shadow-sm" src="/images/ym-operator-avatar.jpg" id="ym-tech-avatar"/>
 <div>
-<p class="font-semibold text-on-surface">Elias Thorne</p>
-<p class="text-xs text-on-surface-variant">L3 Automation Specialist</p>
+<p class="font-semibold text-on-surface" id="ym-tech-name">Elias Thorne</p>
+<p class="text-xs text-on-surface-variant" id="ym-tech-role">L3 Automation Specialist</p>
 </div>
 <div class="ml-auto flex gap-1">
-<button class="p-2 rounded-full bg-white border border-outline-variant/20 text-primary">
-<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
-</button>
+<span class="text-xs font-bold text-secondary" id="ym-tech-score">98%</span>
 </div>
 </div>
 </section>
-<!-- Task Checklist -->
-<section>
+<section class="mb-md">
 <div class="flex justify-between items-center mb-sm">
 <h4 class="font-label-caps text-label-caps text-on-surface-variant">TASK CHECKLIST</h4>
-<span class="text-[11px] text-primary font-bold">2/4 DONE</span>
-</div>
-<div class="space-y-xs">
-<div class="flex items-center gap-sm p-3 bg-white/40 rounded-lg border border-outline-variant/10">
-<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="text-sm text-on-surface-variant line-through">System Diagnostic Run</span>
-</div>
-<div class="flex items-center gap-sm p-3 bg-white/40 rounded-lg border border-outline-variant/10">
-<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-<span class="text-sm text-on-surface-variant line-through">Isolation Protocol Active</span>
-</div>
-<div class="flex items-center gap-sm p-3 bg-white/60 rounded-lg border border-primary/20 ring-1 ring-primary/10">
-<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
-<span class="text-sm text-on-surface font-medium">Calibrate Pressure Valves</span>
-<span class="ml-auto font-label-caps text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded">NOW</span>
-</div>
-<div class="flex items-center gap-sm p-3 bg-white/40 rounded-lg border border-outline-variant/10">
-<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
-<span class="text-sm text-on-surface-variant">Final Stress Testing</span>
+<div class="flex items-center gap-xs">
+<span class="text-[11px] text-primary font-bold" id="ym-checklist-pct">0%</span>
+<div class="w-20 h-1.5 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" id="ym-progress-bar" style="width:0%"></div>
 </div>
 </div>
+</div>
+<div class="space-y-xs" id="ym-checklist"></div>
 </section>
-<!-- Required Parts -->
-<section>
+<section class="mb-md">
 <h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">REQUIRED PARTS</h4>
-<div class="grid grid-cols-1 gap-xs">
-<div class="flex justify-between items-center p-sm glass-card rounded-lg border-none bg-white/30">
-<div class="flex items-center gap-sm">
-<div class="w-10 h-10 rounded bg-white flex items-center justify-center">
-<span class="material-symbols-outlined text-on-surface-variant text-[20px]">settings_input_component</span>
-</div>
-<div>
-<p class="text-sm font-medium">Hydraulic Valve V2</p>
-<p class="text-[10px] text-on-surface-variant">ID: PRT-0092</p>
-</div>
-</div>
-<span class="font-label-caps text-[11px] text-secondary">STOCK OK</span>
-</div>
-<div class="flex justify-between items-center p-sm glass-card rounded-lg border-none bg-white/30">
-<div class="flex items-center gap-sm">
-<div class="w-10 h-10 rounded bg-white flex items-center justify-center">
-<span class="material-symbols-outlined text-on-surface-variant text-[20px]">oil_barrel</span>
-</div>
-<div>
-<p class="text-sm font-medium">Synthetic Lubricant</p>
-<p class="text-[10px] text-on-surface-variant">ID: FLD-4412</p>
-</div>
-</div>
-<span class="font-label-caps text-[11px] text-tertiary">LOW</span>
-</div>
-</div>
+<div class="grid grid-cols-1 gap-xs" id="ym-parts-list"></div>
 </section>
-<!-- Approval History Timeline -->
 <section class="pb-xl">
 <h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">APPROVAL HISTORY</h4>
-<div class="relative pl-6 space-y-md before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/20">
-<div class="relative">
-<div class="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-secondary ring-4 ring-white"></div>
-<div class="flex items-start gap-sm">
-<img class="w-8 h-8 rounded-full" data-alt="Close up avatar of a senior engineer with graying hair, wearing a clean industrial uniform. Cinematic soft lighting, professional and calm demeanor. Light mode background with ethereal aesthetic." src="/images/ym-operator-avatar.jpg"/>
-<div>
-<p class="text-xs font-semibold">Approved by Director Sarah</p>
-<p class="text-[10px] text-on-surface-variant">Oct 23, 14:30 • Ready for Ops</p>
-</div>
-</div>
-</div>
-<div class="relative">
-<div class="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-white"></div>
-<div class="flex items-start gap-sm">
-<img class="w-8 h-8 rounded-full" data-alt="Portrait of a young tech analyst in a high-tech office. Soft ethereal lighting, cool color palette, high-end professional photography style. Minimalist composition." src="/images/ym-operator-avatar.jpg"/>
-<div>
-<p class="text-xs font-semibold">Verified by QA Lead</p>
-<p class="text-[10px] text-on-surface-variant">Oct 23, 11:15 • Diagnostic match</p>
-</div>
-</div>
-</div>
-<div class="relative">
-<div class="absolute -left-[23px] top-1 w-4 h-4 rounded-full bg-outline-variant ring-4 ring-white"></div>
-<div class="flex items-start gap-sm">
-<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center">
-<span class="material-symbols-outlined text-[16px]">robot_2</span>
-</div>
-<div>
-<p class="text-xs font-semibold">System Auto-Generated</p>
-<p class="text-[10px] text-on-surface-variant">Oct 23, 08:00 • Maintenance Trigger</p>
-</div>
-</div>
-</div>
-</div>
+<div class="relative pl-6 space-y-md before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/20" id="ym-timeline"></div>
 </section>
 </div>
-<div class="p-md bg-white/40 border-t border-outline-variant/20 flex gap-sm">
-<button class="flex-grow py-3 rounded-full border border-primary text-primary font-label-caps text-label-caps hover:bg-primary/5 transition-all">PAUSE SESSION</button>
-<button class="flex-[2] py-3 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg">MARK AS COMPLETE</button>
+</div>
+<div class="p-md bg-white/40 border-t border-outline-variant/20 flex gap-sm shrink-0" id="ym-drawer-actions">
+<button class="flex-1 py-3 rounded-full border border-primary text-primary font-label-caps text-label-caps hover:bg-primary/5 transition-all" id="ym-pause-btn">PAUSE SESSION</button>
+<button class="flex-[2] py-3 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg" id="ym-complete-btn">MARK AS COMPLETE</button>
 </div>
 </div>
-<!-- Footer (Shared Component) -->
 <footer class="fixed bottom-0 w-full bg-transparent border-t border-outline-variant/20 py-md z-10">
 <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md">
 <span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YANTRAMITRA PLATFORM. ALL RIGHTS RESERVED.</span>
@@ -467,20 +296,11 @@
 </div>
 </div>
 </footer>
-<!-- Background Decoration -->
 <div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
 <div class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full"></div>
 <div class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary/5 blur-[100px] rounded-full"></div>
 </div>
-<script>
-        // Simple interaction for the drawer (simulated for the demo)
-        document.addEventListener('keydown', (e) => {
-            if (e.metaKey && e.key === 'k') {
-                e.preventDefault();
-                document.querySelector('input').focus();
-            }
-        });
-    </script>
+<div id="ym-toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-[120] flex flex-col items-center gap-2 pointer-events-none"></div>
 <script src="/js/work_orders_yantramitra.js" defer></script>
 <script src="/js/app_shell_yantramitra.js" defer></script>
 </body></html>
