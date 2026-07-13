@@ -300,7 +300,8 @@
       body.ym-in-app footer { display: none !important; }
 
       body.ym-page-map main,
-      body.ym-page-simulator main {
+      body.ym-page-simulator main,
+      body.ym-page-digital-twin main {
         height: calc(100vh - var(--header-height) - var(--status-bar-height)) !important;
         padding-top: 0 !important;
       }
