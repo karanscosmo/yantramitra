@@ -56,7 +56,7 @@
     const style = document.createElement('style');
     style.id = 'ym-shell-styles';
     style.textContent = `
-      :root { --header-height: 72px; --sidebar-width: 80px; --sidebar-gap: 16px; }
+      :root { --header-height: 72px; --sidebar-width: 104px; --sidebar-gap: 16px; }
 
       .ym-empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; text-align:center; }
       .ym-empty-state .material-symbols-outlined { font-size:48px; color:#c7c4d7; margin-bottom:12px; }
@@ -76,7 +76,7 @@
         flex-direction: column;
         align-items: stretch;
         gap: 0;
-        padding: 20px 10px;
+        padding: 18px 12px;
         background: rgba(255, 255, 255, 0.92);
         backdrop-filter: blur(24px) saturate(1.4);
         border: 1px solid rgba(229, 231, 235, 0.8);
@@ -86,11 +86,11 @@
         box-shadow: 0 8px 40px rgba(0,0,0,0.08);
       }
       .ym-nav-rail .ym-nav-section {
-        display:flex; flex-direction:column; align-items:stretch; gap:4px; width:100%; padding:0 0 8px;
+        display:flex; flex-direction:column; align-items:stretch; gap:6px; width:100%; padding:0 0 12px;
       }
       .ym-nav-rail .ym-nav-section + .ym-nav-section {
-        margin-top:8px;
-        padding-top:10px;
+        margin-top:10px;
+        padding-top:12px;
         position:relative;
       }
       .ym-nav-rail .ym-nav-section + .ym-nav-section::before {
@@ -99,9 +99,9 @@
       }
       .ym-nav-rail .ym-nav-section-label {
         display:block;
-        padding:0 4px 10px 4px;
-        font:600 9px/1 Inter,system-ui,sans-serif;
-        letter-spacing:1.2px;
+        padding:0 4px 12px 4px;
+        font:700 10px/1 Inter,system-ui,sans-serif;
+        letter-spacing:.18em;
         text-transform:uppercase;
         color:#9CA3AF;
         text-align:center;
@@ -109,7 +109,7 @@
       .ym-nav-rail .ym-nav-link {
         position:relative;
         width:100%;
-        min-height:56px;
+        min-height:60px;
         display:flex;
         flex-direction:column;
         align-items:center;
@@ -194,7 +194,7 @@
       .ym-standard-topbar {
         position: fixed;
         left: 0;
-        right: var(--sidebar-width);
+        right: calc(var(--sidebar-width) + var(--sidebar-gap));
         top: 0;
         height: var(--header-height);
         z-index: 95;

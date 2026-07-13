@@ -35,7 +35,7 @@ tailwind.config = {
 }
 </script>
 <style>
-body { background: radial-gradient(circle at top right, #e1dfff 0%, #fbf8ff 40%, #eeecff 100%); min-height: 100vh; overflow-x: hidden; }
+body { background: radial-gradient(circle at top right, #e1dfff 0%, #fbf8ff 40%, #eeecff 100%); min-height: 100vh; overflow-x: clip; }
 .glass-panel { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); border: 1px solid #E7E9F5; }
 .shimmer-btn { position: relative; overflow: hidden; background: linear-gradient(135deg,#5B5BF0,#7C7CFA); transition: all 0.3s ease; }
 .shimmer-btn:hover::after { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(45deg,transparent,rgba(255,255,255,0.3),transparent); transform:rotate(45deg); animation:shimmer 1s ease-in-out; }
