@@ -179,8 +179,54 @@
     </style>
 </head>
 <body class="font-body-md text-on-surface">
-<div class="flex">
-<aside class="w-56 h-[calc(100vh-98px)] sticky top-24 pl-md pt-44 flex-shrink-0 overflow-y-auto custom-scrollbar" id="ym-left-panel">
+<div class="flex flex-col min-h-screen pl-md pr-lg pt-6">
+<div class="flex items-center justify-between mb-md">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Work Orders</h1>
+<p class="text-on-surface-variant text-sm">Manage active maintenance cycles and technician assignments.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-52 bg-white/70 border border-outline-variant/40 rounded-full py-2 pl-8 pr-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-sm" id="ym-search-input" placeholder="Search orders..." type="text"/>
+</div>
+<button class="shimmer-btn px-5 py-2 rounded-full text-on-primary font-label-caps text-label-caps flex items-center gap-1.5 shadow-lg" id="ym-create-order">
+<span class="material-symbols-outlined text-[20px]">add</span>
+            CREATE ORDER
+        </button>
+</div>
+</div>
+<div class="mb-md">
+<div class="grid grid-cols-4 gap-gutter" id="ym-stats-row">
+<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[120px]">
+<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">ACTIVE ORDERS</span>
+<div class="flex items-baseline gap-xs mt-1">
+<span class="font-kpi-numeric text-4xl text-primary" id="ym-active-count">0</span>
+</div>
+</div>
+<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[120px]">
+<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">COMPLETED TODAY</span>
+<div class="flex items-baseline gap-xs mt-1">
+<span class="font-kpi-numeric text-4xl text-secondary" id="ym-completed-count">0</span>
+</div>
+</div>
+<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[120px]">
+<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">AVG COMPLETION</span>
+<div class="flex items-baseline gap-xs mt-1">
+<span class="font-kpi-numeric text-4xl text-tertiary" id="ym-avg-completion">0</span>
+<span class="text-on-surface-variant text-sm">%</span>
+</div>
+</div>
+<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[120px]">
+<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">OVERDUE</span>
+<div class="flex items-baseline gap-xs mt-1">
+<span class="font-kpi-numeric text-4xl text-error" id="ym-overdue-count">0</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-1 gap-gutter pb-28">
+<aside class="w-52 shrink-0 self-start sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar" id="ym-left-panel">
 <div class="glass-card rounded-xl p-sm mb-sm">
 <h3 class="font-label-caps text-label-caps text-on-surface-variant mb-xs flex items-center justify-between">
 <span>STATUS</span>
@@ -206,56 +252,13 @@
 <span class="material-symbols-outlined text-sm">refresh</span> RESET ALL
 </button>
 </aside>
-<main class="flex-1 min-w-0 pr-lg pb-24 transition-all duration-300 ease" id="ym-main-content">
-<header class="mb-md">
-<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Work Orders</h1>
-<p class="text-on-surface-variant">Manage active maintenance cycles and technician assignments.</p>
-</header>
-<div class="flex items-stretch gap-gutter mb-md">
-<div class="grid grid-cols-4 flex-1 gap-gutter" id="ym-stats-row">
-<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[132px]">
-<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">ACTIVE ORDERS</span>
-<div class="flex items-baseline gap-xs mt-1">
-<span class="font-kpi-numeric text-4xl text-primary" id="ym-active-count">0</span>
-</div>
-</div>
-<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[132px]">
-<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">COMPLETED TODAY</span>
-<div class="flex items-baseline gap-xs mt-1">
-<span class="font-kpi-numeric text-4xl text-secondary" id="ym-completed-count">0</span>
-</div>
-</div>
-<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[132px]">
-<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">AVG COMPLETION</span>
-<div class="flex items-baseline gap-xs mt-1">
-<span class="font-kpi-numeric text-4xl text-tertiary" id="ym-avg-completion">0</span>
-<span class="text-on-surface-variant text-sm">%</span>
-</div>
-</div>
-<div class="glass-card rounded-xl px-md py-lg flex flex-col justify-center min-h-[132px]">
-<span class="text-on-surface-variant font-label-caps text-label-caps text-[11px]">OVERDUE</span>
-<div class="flex items-baseline gap-xs mt-1">
-<span class="font-kpi-numeric text-4xl text-error" id="ym-overdue-count">0</span>
-</div>
-</div>
-</div>
-<div class="flex flex-col justify-center gap-3 shrink-0">
-<div class="relative">
-<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-<input class="w-48 bg-white/70 border border-outline-variant/40 rounded-full py-2 pl-8 pr-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-sm" id="ym-search-input" placeholder="Search orders..." type="text"/>
-</div>
-<button class="shimmer-btn px-5 py-2 rounded-full text-on-primary font-label-caps text-label-caps flex items-center gap-1.5 shadow-lg" id="ym-create-order">
-<span class="material-symbols-outlined text-[20px]">add</span>
-            CREATE ORDER
-        </button>
-</div>
-</div>
+<div class="flex-1 min-w-0 transition-all duration-300 ease" id="ym-main-content">
 <div id="ym-loading-state" class="glass-card rounded-xl p-md mb-md flex items-center justify-center gap-sm">
   <span class="material-symbols-outlined animate-spin text-primary">sync</span>
   <span class="text-sm font-bold text-on-surface-variant">Loading work orders...</span>
 </div>
 <div class="flex items-center gap-xs flex-wrap mb-0" id="ym-active-filters"></div>
-<div class="overflow-x-auto glass-card rounded-xl mb-md" id="ym-table-container" style="display:none">
+<div class="overflow-x-auto glass-card rounded-xl" id="ym-table-container" style="display:none">
   <table class="w-full text-left" id="ym-orders-table">
     <thead>
       <tr class="text-on-surface-variant font-label-caps text-[11px] border-b border-outline-variant/10">
@@ -285,7 +288,8 @@
     </div>
   </div>
 </div>
-</main>
+</div>
+</div>
 </div>
 <div class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 flex justify-center pointer-events-none">
 <div class="yantrankln-bar glass-card rounded-full px-4 py-2 flex items-center gap-3 w-full max-w-2xl pointer-events-auto shadow-xl" id="ym-yantrankln-bar">
