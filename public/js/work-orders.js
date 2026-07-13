@@ -384,7 +384,7 @@
       const statuses = ['open', 'in_progress', 'completed', 'blocked'];
       statusContainer.innerHTML = statuses.map(s => {
         const active = f.status.includes(s);
-        return `<label class="flex items-center gap-xs p-2 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
+        return `<label class="flex items-center gap-1.5 p-1.5 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
           <input type="checkbox" value="${s}" ${active ? 'checked' : ''} class="rounded border-outline-variant text-primary focus:ring-primary status-filter"/>
           <span class="text-sm capitalize">${s.replace(/_/g, ' ')}</span>
         </label>`;
@@ -406,7 +406,7 @@
       const priorities = ['critical', 'high', 'medium', 'low'];
       priorityContainer.innerHTML = priorities.map(p => {
         const active = f.priority.includes(p);
-        return `<label class="flex items-center gap-xs p-2 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
+        return `<label class="flex items-center gap-1.5 p-1.5 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
           <input type="checkbox" value="${p}" ${active ? 'checked' : ''} class="rounded border-outline-variant text-primary focus:ring-primary priority-filter"/>
           <span class="text-sm capitalize">${p}</span>
         </label>`;
@@ -428,7 +428,7 @@
       const locations = [...new Set(machines.map(m => m.plant?.name).filter(Boolean))];
       locationContainer.innerHTML = locations.map(l => {
         const active = f.location.includes(l);
-        return `<label class="flex items-center gap-xs p-2 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
+        return `<label class="flex items-center gap-1.5 p-1.5 hover:bg-primary/5 rounded-lg cursor-pointer transition-colors">
           <input type="checkbox" value="${l}" ${active ? 'checked' : ''} class="rounded border-outline-variant text-primary focus:ring-primary location-filter"/>
           <span class="text-sm">${l}</span>
         </label>`;
