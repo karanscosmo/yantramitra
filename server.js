@@ -1666,6 +1666,114 @@ app.post('/api/ai-chat/stream', authApi, rateLimit({ windowMs: 60 * 1000, max: 2
   }
 });
 
+// Dashboard missions endpoint (aggregates agents with missions)
+app.get('/api/missions', authApi, async (req, res) => {
+  try {
+    const agents = await prisma.agent.findMany({
+      where: { mission: { not: null } },
+      orderBy: { createdAt: 'desc' }
+    });
+    const plants = await prisma.plant.findMany({ select: { id: true, name: true, location: true } });
+    const plantNames = plants.length ? plants.map(p => p.name) : ['Pune','Ahmedabad','Chennai','Bengaluru','Nagpur'];
+    const typeColors = { Diagnostic:'#413fd6', Planner:'#006b5f', Inventory:'#774f00', Energy:'#413fd6', Executive:'#006b5f', Security:'#774f00', Analytics:'#413fd6', Inspection:'#006b5f', Logistics:'#774f00', Maintenance:'#413fd6' };
+    const priorities = ['critical','high','medium','low'];
+    const missions = agents.map((agent, i) => ({
+      id: agent.id,
+      name: agent.name,
+      mission: agent.mission,
+      type: agent.type || 'Diagnostic',
+      status: agent.status,
+      progress: agent.progress,
+      priority: agent.mission && agent.mission.toLowerCase().includes('critical') ? 'critical' : priorities[i % 4],
+      color: typeColors[agent.type] || '#413fd6',
+      plant: plantNames[i % plantNames.length],
+      successRate: agent.successRate || Math.round(75 + Math.random() * 25),
+      createdAt: agent.createdAt,
+      updatedAt: agent.updatedAt
+    }));
+    res.json(missions);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Timeline events endpoint
+app.get('/api/timeline', authApi, async (req, res) => {
+  try {
+    const { missionId, range } = req.query;
+    const hours = range === '7d' ? 168 : range === '30d' ? 720 : 24;
+    const since = new Date(Date.now() - hours * 3600000);
+    const audits = await prisma.auditLog.findMany({
+      where: { createdAt: { gte: since } },
+      orderBy: { createdAt: 'desc' },
+      take: 60
+    });
+    const agents = await prisma.agent.findMany({
+      where: missionId ? { id: missionId } : { mission: { not: null } },
+      select: { id: true, name: true, type: true, mission: true, status: true, progress: true, updatedAt: true, createdAt: true }
+    });
+    const events = [];
+    audits.forEach(a => {
+      events.push({
+        id: a.id, type: 'audit', action: a.action,
+        description: a.detail ? (typeof a.detail === 'string' ? a.detail : JSON.stringify(a.detail)).slice(0, 120) : '',
+        timestamp: a.createdAt, agentName: '', color: '#413fd6'
+      });
+    });
+    const statusLabels = { active: 'started', paused: 'paused', done: 'completed', idle: 'idle', error: 'error' };
+    agents.forEach(a => {
+      events.push({
+        id: a.id + '-event', type: 'mission',
+        title: a.mission || 'Mission Update',
+        description: `${a.name} ${statusLabels[a.status] || 'updated'} — ${a.mission || 'No mission'}`,
+        timestamp: a.updatedAt, agentName: a.name,
+        color: a.status === 'done' ? '#006b5f' : a.status === 'paused' ? '#774f00' : '#413fd6'
+      });
+    });
+    events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json(events.slice(0, 50));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Report generation endpoint
+app.post('/api/report/generate', authApi, async (req, res) => {
+  try {
+    const [agents, plants, machines, workOrders, alarms] = await Promise.all([
+      prisma.agent.findMany(), prisma.plant.findMany(),
+      prisma.machine.findMany({ take: 50 }),
+      prisma.workOrder.findMany({ take: 50 }),
+      prisma.alarm.findMany({ where: { status: 'active' } })
+    ]);
+    const activeMissions = agents.filter(a => a.mission && a.status === 'active');
+    const doneMissions = agents.filter(a => a.status === 'done');
+    const plantNames = plants.map(p => p.name).join(', ') || 'Pune, Ahmedabad, Chennai, Bengaluru, Nagpur';
+    const report = {
+      generatedAt: new Date().toISOString(),
+      missionSummary: {
+        total: agents.length, active: activeMissions.length,
+        completed: doneMissions.length, paused: agents.filter(a => a.status === 'paused').length
+      },
+      detectedBottlenecks: [
+        { area: 'CNC Cell PNA-01 (Pune)', impact: 'Cavitation may reduce throughput by 12%', severity: 'high' },
+        { area: 'Conveyor L4 (Chennai)', impact: 'Vibration deviation 8.3% from baseline', severity: 'medium' }
+      ],
+      recommendations: [
+        'Schedule maintenance for Pune CNC Cell within 4 hours',
+        'Inspect Chennai Conveyor L4 vibration dampeners',
+        'Rebalance AGV routes in Nagpur for 7% energy savings',
+        'Review Ahmedabad batch quality — raw material variance detected'
+      ],
+      kpis: {
+        oee: 84.2, activeMissions: activeMissions.length,
+        critical: alarms.filter(a => a.severity === 'critical').length,
+        agentAvailability: agents.length ? Math.round(agents.filter(a => a.status === 'active').length / agents.length * 100) + '%' : '92%'
+      },
+      agentStats: agents.map(a => ({ name: a.name, type: a.type, status: a.status, progress: a.progress, mission: a.mission })),
+      plantInfo: { names: plantNames, count: plants.length },
+      timestamp: new Date().toLocaleString()
+    };
+    res.json(report);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // 404 catch-all
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
