@@ -101,7 +101,7 @@
         },
       }
     </script>
-<style>
+    <style>
         .glass-card {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(16px);
@@ -142,6 +142,14 @@
             opacity: 1;
             left: 100%;
         }
+        .facility-chip.selected {
+            border-color: #413fd6 !important;
+            background: rgba(65, 63, 214, 0.1) !important;
+            box-shadow: 0 0 0 2px rgba(65, 63, 214, 0.2);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c4d7; border-radius: 10px; }
         body {
             background: radial-gradient(circle at 10% 20%, rgba(91, 91, 240, 0.05) 0%, transparent 50%),
                         radial-gradient(circle at 90% 80%, rgba(0, 107, 95, 0.03) 0%, transparent 50%),
@@ -174,8 +182,9 @@
 <button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
 <span class="material-symbols-outlined">notifications</span>
 </button>
-<div class="w-10 h-10 rounded-full border border-primary/20 overflow-hidden">
-<img class="w-full h-full object-cover" data-alt="A professional headshot of a female manufacturing supervisor in a modern, clean tech-inspired industrial setting. She is wearing a minimal grey uniform, and the background is softly blurred with hints of high-tech machinery and ambient indigo lighting, creating a high-end corporate portrait feel." src="/assets/images/ym-operator-avatar.jpg"/>
+              <div class="w-10 h-10 rounded-full border border-primary/20 overflow-hidden relative" id="ym-nav-avatar-container">
+<img class="w-full h-full object-cover" id="ym-nav-avatar" src="/assets/images/ym-operator-avatar.jpg" alt="User" onerror="this.style.display='none';document.getElementById('ym-nav-avatar-fallback').style.display='flex'">
+<div id="ym-nav-avatar-fallback" class="absolute inset-0 bg-primary/10 text-primary font-bold flex items-center justify-center text-sm" style="display:none">YM</div>
 </div>
 </div>
 </header>

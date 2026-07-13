@@ -28,9 +28,15 @@
 
   function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
+  let currentTab = 'Profile';
+  let profileDirty = false;
+
+  function setProfileDirty(v) { profileDirty = v; }
+
   function activateTab(name) {
+    currentTab = name;
     document.querySelectorAll('main .flex.gap-gutter button').forEach(btn => {
-      const active = btn.textContent.trim().toLowerCase().startsWith(name.toLowerCase());
+      const active = btn.textContent.trim() === name;
       btn.className = active
         ? 'px-md py-3 rounded-full bg-primary text-on-primary shadow-lg shadow-primary/20 font-medium whitespace-nowrap'
         : 'px-md py-3 rounded-full glass-card hover:bg-white transition-colors text-on-surface-variant font-medium whitespace-nowrap';
@@ -51,19 +57,26 @@
       const orig = { name: profile.name, email: profile.email, phone: profile.phone || '' };
       let current = { ...orig };
       let hasChanged = false;
-      function checkChanged() { hasChanged = current.name !== orig.name || current.email !== orig.email || current.phone !== orig.phone; saveBtn.disabled = !hasChanged; saveBtn.className = hasChanged ? 'shimmer-btn primary-gradient text-on-primary px-md py-2.5 rounded-lg font-bold shadow-[0_10px_20px_rgba(91,91,240,0.3)] cursor-pointer' : 'shimmer-btn primary-gradient text-on-primary/50 px-md py-2.5 rounded-lg font-bold cursor-not-allowed opacity-50'; }
+      function checkChanged() { hasChanged = current.name !== orig.name || current.email !== orig.email || current.phone !== orig.phone; setProfileDirty(hasChanged); saveBtn.disabled = !hasChanged; saveBtn.className = hasChanged ? 'shimmer-btn primary-gradient text-on-primary px-md py-2.5 rounded-lg font-bold shadow-[0_10px_20px_rgba(91,91,240,0.3)] cursor-pointer' : 'shimmer-btn primary-gradient text-on-primary/50 px-md py-2.5 rounded-lg font-bold cursor-not-allowed opacity-50'; }
 
+      const initials = (profile.name || '?').split(' ').map(s => s[0]).join('').toUpperCase().slice(0, 2) || '?';
       host.innerHTML = `
         <div class="md:col-span-4 space-y-gutter">
           <div class="glass-card rounded-xl p-md flex flex-col items-center text-center">
             <div class="relative mb-md group">
               <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-white shadow-[0_0_30px_rgba(65,63,214,0.3)] ring-4 ring-primary/10">
-                <img class="w-full h-full object-cover" id="ym-profile-avatar" src="${profile.avatar || '/assets/images/ym-operator-avatar.jpg'}" alt="${escapeHtml(profile.name)}">
+                <img class="w-full h-full object-cover" id="ym-profile-avatar" src="${profile.avatar || '/assets/images/ym-operator-avatar.jpg'}" alt="${escapeHtml(profile.name)}" style="${profile.avatar ? '' : 'display:none'}">
+                <div id="ym-avatar-fallback" class="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold" style="font-size:48px;${profile.avatar ? 'display:none' : ''}">${initials}</div>
                 <input type="file" accept="image/*" id="ym-photo-input" style="display:none">
               </div>
-              <button id="ym-change-photo" class="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform" title="Change photo">
-                <span class="material-symbols-outlined text-[18px]">camera_alt</span>
-              </button>
+              <div class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-1">
+                <button id="ym-change-photo" class="bg-primary text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform" title="Change photo">
+                  <span class="material-symbols-outlined text-[16px]">camera_alt</span>
+                </button>
+                <button id="ym-remove-photo" class="bg-error text-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-transform" title="Remove photo">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </div>
             </div>
             <h2 class="font-section-header text-section-header mb-1">${escapeHtml(profile.name)}</h2>
             <span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps tracking-wider mb-sm">${roleLabel(profile.role)}</span>
@@ -79,7 +92,7 @@
             </div>
             <div id="ym-facility-list" class="flex flex-wrap gap-xs">
               ${plants.map(p => `
-                <a href="/plant/${p.id}" class="facility-chip px-sm py-2 rounded-full glass-input text-on-surface text-body-md flex items-center gap-xs hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer">
+                <a href="/plant/${p.id}" class="facility-chip px-sm py-2 rounded-full glass-input text-on-surface text-body-md flex items-center gap-xs hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer" data-plant-id="${p.id}">
                   <span class="w-2 h-2 rounded-full ${p.status === 'attention' ? 'bg-tertiary-fixed-dim' : 'bg-secondary animate-pulse'}"></span>
                   ${escapeHtml(p.name)}
                 </a>`).join('') || '<span class="text-sm text-on-surface-variant">No connected facilities.</span>'}
@@ -129,7 +142,7 @@
       cancelBtn.addEventListener('click', () => {
         if (hasChanged && !confirm('Discard unsaved changes?')) return;
         nameInput.value = orig.name; emailInput.value = orig.email; phoneInput.value = orig.phone;
-        current = { ...orig }; checkChanged();
+        current = { ...orig }; checkChanged(); setProfileDirty(false);
       });
 
       document.getElementById('ym-profile-form').addEventListener('submit', async e => {
@@ -151,14 +164,33 @@
           const res = await patch('/api/user/profile', { name: nameInput.value.trim(), email, phone });
           if (res && !res.error) {
             profile = res; orig.name = res.name; orig.email = res.email; orig.phone = res.phone || '';
-            current = { ...orig }; hasChanged = false; checkChanged();
+            current = { ...orig }; hasChanged = false; checkChanged(); setProfileDirty(false);
             toast('Profile saved successfully');
           } else toast(res.error || 'Save failed', false);
         } catch { toast('Save failed', false); }
         saveBtn.textContent = 'Save Changes'; saveBtn.disabled = !hasChanged;
       });
 
+      const avatarImg = document.getElementById('ym-profile-avatar');
+      const avatarFallback = document.getElementById('ym-avatar-fallback');
+      avatarImg.addEventListener('error', () => {
+        avatarImg.style.display = 'none';
+        avatarFallback.style.display = 'flex';
+      });
       document.getElementById('ym-change-photo').addEventListener('click', () => document.getElementById('ym-photo-input').click());
+      document.getElementById('ym-remove-photo').addEventListener('click', async function() {
+        if (!confirm('Remove your profile photo?')) return;
+        try {
+          const r = await fetch('/api/user/profile/photo', { method: 'DELETE' });
+          const res = await r.json();
+          if (res && !res.error) {
+            avatarImg.style.display = 'none';
+            avatarFallback.style.display = 'flex';
+            profile.avatar = null;
+            toast('Photo removed');
+          } else toast(res.error || 'Remove failed', false);
+        } catch { toast('Remove failed', false); }
+      });
       document.getElementById('ym-photo-input').addEventListener('change', async function() {
         if (!this.files.length) return;
         const fd = new FormData();
@@ -167,7 +199,9 @@
           const r = await fetch('/api/user/profile/photo', { method: 'POST', body: fd });
           const res = await r.json();
           if (res.url) {
-            document.getElementById('ym-profile-avatar').src = res.url + '?t=' + Date.now();
+            avatarImg.src = res.url + '?t=' + Date.now();
+            avatarImg.style.display = '';
+            avatarFallback.style.display = 'none';
             profile.avatar = res.url;
             toast('Photo updated');
           } else toast(res.error || 'Upload failed', false);
@@ -180,7 +214,7 @@
         }
       });
 
-      // Facility search
+      // Facility search + chip interactions
       const searchInput = document.getElementById('ym-facility-search');
       if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -190,6 +224,22 @@
           });
         });
       }
+      document.querySelectorAll('.facility-chip').forEach(chip => {
+        chip.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.facility-chip').forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+          const plantId = this.dataset.plantId;
+          const plant = plants.find(p => p.id === plantId);
+          if (!plant) return;
+          const stats = plant.stats || {};
+          openModal(plant.name, `
+            <div class="flex items-center gap-3 mb-4"><span class="w-3 h-3 rounded-full ${plant.status === 'attention' ? 'bg-tertiary-fixed-dim' : 'bg-secondary'}"></span><span class="font-bold text-sm ${plant.status === 'attention' ? 'text-tertiary' : 'text-secondary'} uppercase">${plant.status || 'Operational'}</span></div>
+            <div class="grid grid-cols-2 gap-3 text-sm"><div><span class="font-bold text-on-surface-variant">Location</span><p>${plant.location || '—'}</p></div><div><span class="font-bold text-on-surface-variant">Machines</span><p>${stats.machines || '—'}</p></div><div><span class="font-bold text-on-surface-variant">Health</span><p>${stats.health || '—'}</p></div><div><span class="font-bold text-on-surface-variant">OEE</span><p>${stats.oee || '—'}</p></div></div>
+            <div class="mt-4"><a href="/plant/${plant.id}" class="block w-full text-center rounded-lg bg-primary text-white font-bold py-2.5 hover:opacity-90 transition-all">Open Plant Dashboard</a></div>
+          `);
+        });
+      });
     }).catch(() => { host.innerHTML = '<div class="md:col-span-12 text-center py-20 text-error">Failed to load profile.</div>'; });
   }
 
@@ -201,12 +251,12 @@
     get('/api/user/preferences').then(prefs => {
       settings = prefs; const p = prefs.prefs || {};
       const items = [
-        ['criticalAlerts', 'Critical Alarms', 'Immediate push alerts for production-stopping faults and safety events.', 'warning'],
-        ['shiftHandover', 'Shift Handover Digest', 'Summary of open alarms, pending plans, and work order status at shift change.', 'swap_horiz'],
-        ['agentApprovals', 'Agent Approvals', 'Notify when an AI agent proposes an action requiring your approval.', 'smart_toy'],
-        ['weeklyReport', 'Weekly Reports', 'Monday morning plant reliability summary with KPI trends.', 'calendar_month'],
+        ['emailAlerts', 'Email Alerts', 'Receive important updates and notifications via email.', 'mail'],
+        ['pushNotifications', 'Push Notifications', 'Instant push alerts for critical events directly to your device.', 'notifications_active'],
+        ['smsAlerts', 'SMS Alerts', 'Time-sensitive alerts sent as text messages for urgent situations.', 'sms'],
+        ['criticalAlarms', 'Critical Alarms', 'Immediate alerts for production-stopping faults and safety events.', 'warning'],
+        ['weeklyReports', 'Weekly Reports', 'Monday morning plant reliability summary with KPI trends.', 'calendar_month'],
         ['maintenanceReminders', 'Maintenance Reminders', 'Upcoming and overdue maintenance alerts for your assigned machines.', 'build'],
-        ['anomalyDetections', 'Anomaly Detections', 'Real-time alerts when sensor readings deviate from expected patterns.', 'report_problem'],
       ];
       host.innerHTML = `<div class="md:col-span-12 glass-card rounded-xl p-md"><div class="flex items-center justify-between mb-sm"><h3 class="font-section-header text-section-header">Notification Preferences</h3><span class="text-xs text-on-surface-variant">Changes save instantly</span></div><div class="space-y-xs">${items.map(([key, title, desc, icon]) => `
         <label class="flex items-center justify-between gap-md rounded-xl border border-outline-variant/40 bg-white/60 p-md hover:bg-white/80 transition-colors cursor-pointer">
@@ -469,11 +519,12 @@
     get('/api/user/preferences').then(prefs => {
       settings = prefs; const ints = prefs.integrations || {};
       const systems = [
-        { key: 'SCADA', name: 'Ignition / Siemens WinCC', desc: 'Real-time machine monitoring and control-system data ingestion.', icon: 'monitor_heart', health: ints.SCADA?.health || 98, latency: ints.SCADA?.latency || '12ms', version: ints.SCADA?.version || '8.1.3', lastSync: ints.SCADA?.lastSync || '—' },
-        { key: 'CMMS', name: 'MaintainX / SAP PM', desc: 'Maintenance work order synchronization and asset lifecycle tracking.', icon: 'build', health: ints.CMMS?.health || 95, latency: ints.CMMS?.latency || '45ms', version: ints.CMMS?.version || '24.2', lastSync: ints.CMMS?.lastSync || '—' },
-        { key: 'ERP', name: 'SAP S/4HANA', desc: 'Material availability, costing data, and production planning integration.', icon: 'account_balance', health: ints.ERP?.health || 92, latency: ints.ERP?.latency || '120ms', version: ints.ERP?.version || '2023 FPS02', lastSync: ints.ERP?.lastSync || '—' },
-        { key: 'Historian', name: 'OSIsoft PI / TimescaleDB', desc: 'High-frequency process data archival and trend analytics.', icon: 'database', health: ints.Historian?.health || 97, latency: ints.Historian?.latency || '8ms', version: ints.Historian?.version || '2024-Q1', lastSync: ints.Historian?.lastSync || '—' },
-        { key: 'MQTT', name: 'Mosquitto / HiveMQ', desc: 'Edge device telemetry ingestion via MQTT broker.', icon: 'hub', health: ints.MQTT?.health || 89, latency: ints.MQTT?.latency || '22ms', version: ints.MQTT?.version || '2.0.18', lastSync: ints.MQTT?.lastSync || '—' },
+        { key: 'SAP', name: 'SAP S/4HANA', desc: 'Enterprise resource planning — material availability, costing, and production planning.', icon: 'account_balance' },
+        { key: 'AzureIoT', name: 'Azure IoT Hub', desc: 'Cloud-based IoT device management and telemetry ingestion pipeline.', icon: 'cloud' },
+        { key: 'MQTT', name: 'Mosquitto / HiveMQ', desc: 'Edge device telemetry ingestion via MQTT broker.', icon: 'hub' },
+        { key: 'OPCUA', name: 'OPC Unified Architecture', desc: 'Industrial interoperability standard for secure machine-to-machine communication.', icon: 'settings_ethernet' },
+        { key: 'Email', name: 'SMTP / Exchange', desc: 'Outbound email notifications for alerts, reports, and system communications.', icon: 'mail' },
+        { key: 'Webhooks', name: 'Custom Webhooks', desc: 'HTTP callbacks to trigger external workflows and system integrations.', icon: 'webhook' },
       ];
       const state = key => { const s = ints[key]?.state || 'disconnected'; return s; };
       const badge = key => {
@@ -491,7 +542,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
           ${systems.map(sys => {
             const s = state(sys.key);
-            const healthColor = sys.health >= 95 ? 'text-secondary' : sys.health >= 80 ? 'text-tertiary' : 'text-error';
+            const i = ints[sys.key] || {};
+            const health = i.health ?? 92; const latency = i.latency || '—'; const version = i.version || '—'; const lastSync = i.lastSync || '—';
+            const healthColor = health >= 95 ? 'text-secondary' : health >= 80 ? 'text-tertiary' : 'text-error';
             return `<div class="rounded-xl border border-outline-variant/40 bg-white/70 p-md integration-card" data-key="${sys.key}">
               <div class="flex items-start justify-between gap-md mb-3">
                 <div class="flex items-center gap-2.5">
@@ -502,14 +555,15 @@
               </div>
               <p class="text-xs text-on-surface-variant mb-3">${sys.desc}</p>
               <div class="grid grid-cols-2 gap-2 text-xs mb-3">
-                <div><span class="text-on-surface-variant">Last Sync</span><p class="font-bold">${sys.lastSync}</p></div>
-                <div><span class="text-on-surface-variant">Latency</span><p class="font-bold">${sys.latency}</p></div>
-                <div><span class="text-on-surface-variant">Health</span><p class="font-bold ${healthColor}">${sys.health}%</p></div>
-                <div><span class="text-on-surface-variant">Version</span><p class="font-bold">${sys.version}</p></div>
+                <div><span class="text-on-surface-variant">Last Sync</span><p class="font-bold">${lastSync}</p></div>
+                <div><span class="text-on-surface-variant">Latency</span><p class="font-bold">${latency}</p></div>
+                <div><span class="text-on-surface-variant">Health</span><p class="font-bold ${healthColor}">${health}%</p></div>
+                <div><span class="text-on-surface-variant">Version</span><p class="font-bold">${version}</p></div>
               </div>
               <div class="flex flex-wrap gap-1.5" data-int-actions="${sys.key}">
                 ${s === 'disconnected' || s === 'error' ? `<button class="int-connect flex-1 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90">${s === 'error' ? 'Reconnect' : 'Connect'}</button>` : ''}
                 ${s === 'connected' ? `<button class="int-disconnect flex-1 px-3 py-1.5 rounded-lg border border-error/40 text-error text-xs font-bold hover:bg-error/5">Disconnect</button>` : ''}
+                ${s === 'connected' || s === 'disconnected' || s === 'error' ? `<button class="int-test flex-1 px-3 py-1.5 rounded-lg bg-secondary-container/50 text-on-secondary-container text-xs font-bold hover:bg-secondary-container">Test</button>` : ''}
                 ${s === 'connected' ? `<button class="int-reconnect flex-1 px-3 py-1.5 rounded-lg bg-secondary-container/50 text-on-secondary-container text-xs font-bold hover:bg-secondary-container">Reconnect</button>` : ''}
                 <button class="int-configure flex-1 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant text-xs font-bold hover:bg-outline-variant/40">Configure</button>
               </div>
@@ -547,6 +601,20 @@
           if (res && !res.error) { toast(key + ' disconnected'); renderIntegrations(); }
           else toast(res.error || 'Disconnect failed', false);
         } catch { toast('Disconnect failed', false); }
+      });
+    });
+    document.querySelectorAll('.int-test').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const card = this.closest('.integration-card');
+        const key = card.dataset.key;
+        const origText = this.textContent;
+        this.textContent = 'Testing...'; this.disabled = true;
+        try {
+          const res = await post('/api/integrations/' + key + '/test', {});
+          if (res && !res.error) toast(key + ' connection test passed (' + (res.latency || '—') + ')');
+          else toast(res.error || 'Test failed', false);
+        } catch { toast('Test connection failed', false); }
+        this.textContent = origText; this.disabled = false;
       });
     });
     document.querySelectorAll('.int-configure').forEach(btn => {
@@ -589,6 +657,8 @@
     get('/api/user/preferences').then(prefs => {
       settings = prefs; const sessions = prefs.sessions || []; const p = prefs.prefs || {};
       const twoFA = p.twoFactorEnabled || false;
+      const apiKeys = prefs.apiKeys || [];
+      const loginHistory = prefs.loginHistory || [];
       host.innerHTML = `
         <div class="md:col-span-6 space-y-gutter">
           <div class="glass-card rounded-xl p-md">
@@ -629,6 +699,32 @@
                   </div>
                 </div>
               </div>`).join('') : '<p class="text-sm text-on-surface-variant py-4 text-center">No active sessions.</p>'}
+          </div>
+        </div>
+        <div class="md:col-span-6 glass-card rounded-xl p-md">
+          <div class="flex items-center justify-between mb-sm">
+            <h3 class="font-section-header text-section-header">API Keys</h3>
+            <button id="ym-create-api-key" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90 flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:14px">add</span>New Key</button>
+          </div>
+          <div class="text-xs text-on-surface-variant mb-2">Keys inherit your role permissions. Keep them secure.</div>
+          <div class="space-y-2">
+            ${apiKeys.length ? apiKeys.map((k, i) => `
+              <div class="rounded-xl bg-white/70 border border-outline-variant/40 p-md flex items-center justify-between gap-2">
+                <div><p class="font-bold text-sm">${escapeHtml(k.name || 'Key ' + (i+1))}</p><p class="text-xs text-on-surface-variant font-mono">${k.key?.substring(0, 20) || 'sk-...'}${k.key?.length > 20 ? '...' : ''}</p><p class="text-[10px] text-on-surface-variant mt-0.5">Created ${k.createdAt || '—'} · Last used ${k.lastUsed || 'Never'}</p></div>
+                <button class="ym-revoke-api-key text-xs font-bold text-error hover:bg-error/5 px-2 py-1 rounded-lg shrink-0" data-idx="${i}">Revoke</button>
+              </div>`).join('') : '<p class="text-sm text-on-surface-variant py-4 text-center">No API keys. Create one for programmatic access.</p>'}
+          </div>
+        </div>
+        <div class="md:col-span-6 glass-card rounded-xl p-md">
+          <h3 class="font-section-header text-section-header mb-sm">Login History</h3>
+          <div class="space-y-1.5 max-h-[240px] overflow-y-auto custom-scrollbar">
+            ${loginHistory.length ? loginHistory.slice(0, 10).map(entry => `
+              <div class="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-white/60 transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px">${entry.success ? 'login' : 'lock'}</span>
+                <div class="flex-1 min-w-0"><p class="text-xs font-medium truncate">${escapeHtml(entry.location || '—')}</p><p class="text-[10px] text-on-surface-variant">${entry.ip || '—'} · ${entry.device || '—'}</p></div>
+                <span class="text-[10px] text-on-surface-variant shrink-0">${entry.time || '—'}</span>
+                <span class="text-[10px] font-bold ${entry.success ? 'text-secondary' : 'text-error'}">${entry.success ? 'Success' : 'Failed'}</span>
+              </div>`).join('') : '<p class="text-sm text-on-surface-variant py-4 text-center">No login history available.</p>'}
           </div>
         </div>`;
 
@@ -722,6 +818,41 @@
           } catch { toast('Failed to sign out', false); }
         });
       }
+
+      // API Keys
+      document.getElementById('ym-create-api-key')?.addEventListener('click', () => {
+        openModal('Create API Key', `
+          <form id="ym-api-key-form" class="space-y-3">
+            <label class="block"><span class="font-bold text-sm text-on-surface-variant">Key Name</span><input name="keyName" class="w-full glass-input rounded-lg px-md py-2.5 mt-1 text-sm" placeholder="e.g. CI/CD Pipeline" required></label>
+            <label class="block"><span class="font-bold text-sm text-on-surface-variant">Expires</span><select name="expires" class="w-full glass-input rounded-lg px-md py-2.5 mt-1 text-sm"><option value="30">30 days</option><option value="90">90 days</option><option value="365" selected>1 year</option><option value="0">Never</option></select></label>
+            <div class="flex gap-2 pt-2"><button type="submit" class="flex-1 shimmer-btn primary-gradient text-on-primary py-2.5 rounded-lg font-bold">Generate</button><button type="button" class="flex-1 px-md py-2.5 rounded-lg border border-outline-variant/40 text-on-surface-variant font-medium ym-close-modal2">Cancel</button></div>
+          </form>
+        `, null);
+        document.getElementById('ym-api-key-form')?.addEventListener('submit', async e => {
+          e.preventDefault();
+          const fd = new FormData(e.currentTarget);
+          const subBtn = e.currentTarget.querySelector('button[type="submit"]');
+          subBtn.disabled = true; subBtn.textContent = 'Generating...';
+          try {
+            const res = await post('/api/user/api-keys', { name: fd.get('keyName'), expiresInDays: parseInt(fd.get('expires')) || 365 });
+            if (res && res.key) {
+              openModal('API Key Generated', `<p class="text-sm text-on-surface-variant mb-3">Copy this key now. You will not be able to see it again.</p><div class="glass-input rounded-lg px-md py-3 font-mono text-xs break-all select-all mb-3">${escapeHtml(res.key)}</div><button class="ym-close-modal2 w-full rounded-lg bg-primary text-white font-bold py-2.5 hover:opacity-90" onclick="navigator.clipboard.writeText('${res.key}')">Copy & Close</button>`);
+              renderSecurity();
+            } else toast(res.error || 'Failed to generate key', false);
+          } catch { toast('Failed to generate key', false); }
+        });
+      });
+      document.querySelectorAll('.ym-revoke-api-key').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const idx = this.dataset.idx;
+          if (!confirm('Revoke this API key? Any services using it will lose access.')) return;
+          try {
+            const res = await del('/api/user/api-keys/' + idx);
+            if (res && !res.error) { toast('API key revoked'); renderSecurity(); }
+            else toast(res.error || 'Failed to revoke key', false);
+          } catch { toast('Failed to revoke key', false); }
+        });
+      });
     }).catch(() => { host.innerHTML = '<div class="md:col-span-12 text-center py-20 text-error">Failed to load security data.</div>'; });
   }
 
@@ -753,21 +884,42 @@
     if (activeModal) { activeModal.remove(); activeModal = null; }
   }
 
-  // ──────────────── INIT ────────────────
-  document.addEventListener('DOMContentLoaded', async () => {
-    const user = await checkAuth();
-    if (!user) return;
-    const tabActions = {
+  // ──────────────── HASH ROUTING ────────────────
+  function navigateToTab(name) {
+    if (name === currentTab) return;
+    if (profileDirty && !confirm('You have unsaved changes. Discard changes?')) {
+      window.location.hash = currentTab;
+      return;
+    }
+    const actions = {
       Profile: renderProfile,
       Notifications: renderNotifications,
       'Team & Roles': renderTeam,
       Integrations: renderIntegrations,
       Security: renderSecurity,
     };
+    (actions[name] || renderProfile)();
+  }
+
+  function tabFromHash() {
+    const h = window.location.hash.replace('#', '');
+    const valid = ['Profile', 'Notifications', 'Team & Roles', 'Integrations', 'Security'];
+    return valid.includes(h) ? h : 'Profile';
+  }
+
+  // ──────────────── INIT ────────────────
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = await checkAuth();
+    if (!user) return;
     document.querySelectorAll('main .flex.gap-gutter button').forEach(btn => {
-      const text = btn.textContent.trim();
-      btn.addEventListener('click', () => (tabActions[text] || renderProfile)());
+      btn.addEventListener('click', () => {
+        const name = btn.textContent.trim();
+        if (name === currentTab) return;
+        navigateToTab(name);
+        if (currentTab === name) window.location.hash = name;
+      });
     });
-    renderProfile();
+    window.addEventListener('hashchange', () => navigateToTab(tabFromHash()));
+    navigateToTab(tabFromHash());
   });
 })();
