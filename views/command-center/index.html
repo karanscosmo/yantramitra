@@ -2,7 +2,7 @@
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>YantraMitra | Mission Control</title>
+<title>YantraMitra | Global Command Center</title>
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -64,7 +64,7 @@ tailwind.config = {
 <div class="flex items-center gap-sm">
 <img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 <div class="h-6 w-px bg-outline-variant/50 mx-xs"></div>
-<span class="font-label-caps text-[11px] text-on-surface-variant">Mission Control</span>
+<span class="font-label-caps text-[11px] text-on-surface-variant">Global Command Center</span>
 </div>
 <div class="flex items-center gap-md">
 <div class="relative hidden md:block">
@@ -92,8 +92,8 @@ tailwind.config = {
 <!-- Page Header -->
 <div class="col-span-12 flex items-center justify-between">
 <div>
-<h1 class="font-headline-lg text-4xl text-on-surface tracking-tight leading-tight">Mission Control</h1>
-<p class="text-on-surface-variant/80 text-sm">Real-time operations across all autonomous facilities</p>
+<h1 class="font-headline-lg text-4xl text-on-surface tracking-tight leading-tight">Global Command Center</h1>
+<p class="text-on-surface-variant/80 text-sm">Unified real-time control, AI insights, and operational visibility across all connected plants.</p>
 </div>
 <div class="flex items-center gap-2">
 <button id="ym-new-mission-btn" class="cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors"><span class="material-symbols-outlined text-sm">add</span>New Mission</button>
@@ -107,6 +107,22 @@ tailwind.config = {
 <button data-kpi-route="/anomaly" class="glass-panel rounded-xl px-4 py-3 flex flex-col gap-1 text-left hover:border-tertiary/40 transition-colors"><div class="flex justify-between items-center"><span class="font-label-caps text-[11px] text-on-surface-variant">ACTIVE MISSIONS</span><span class="material-symbols-outlined text-sm text-tertiary">rocket_launch</span></div><div class="flex items-baseline gap-2"><span class="font-kpi-numeric text-[28px]">14</span><span class="text-[10px] text-on-surface-variant">6 queued</span></div><svg class="w-full h-6" viewBox="0 0 100 20"><path d="M0,14 L20,12 L40,10 L60,8 L80,6 L100,4" fill="none" stroke="#774f00" stroke-width="2"/></svg></button>
 <button data-kpi-route="/anomaly" class="glass-panel rounded-xl px-4 py-3 flex flex-col gap-1 text-left hover:border-error/40 transition-colors"><div class="flex justify-between items-center"><span class="font-label-caps text-[11px] text-on-surface-variant">CRITICAL</span><span class="material-symbols-outlined text-sm text-error">emergency</span></div><div class="flex items-baseline gap-2"><span class="font-kpi-numeric text-[28px] text-error">3</span><span class="text-[10px] text-error">+1 new</span></div><svg class="w-full h-6" viewBox="0 0 100 20"><path d="M0,6 L20,5 L40,10 L60,4 L80,7 L100,4" fill="none" stroke="#ba1a1a" stroke-width="2"/></svg></button>
 <button data-kpi-route="/reliability" class="glass-panel rounded-xl px-4 py-3 flex flex-col gap-1 text-left hover:border-secondary/40 transition-colors"><div class="flex justify-between items-center"><span class="font-label-caps text-[11px] text-on-surface-variant">AGENT AVAILABILITY</span><span class="material-symbols-outlined text-sm text-secondary">group</span></div><div class="flex items-baseline gap-2"><span class="font-kpi-numeric text-[28px] text-secondary">92%</span><span class="text-[10px] text-on-surface-variant">18/20 online</span></div><svg class="w-full h-6" viewBox="0 0 100 20"><path d="M0,10 L100,10" fill="none" stroke="#006b5f" stroke-width="3"/></svg></button>
+</div>
+
+<!-- Plant Preview: 5 Plants horizontal row -->
+<div class="col-span-12">
+<div class="glass-panel rounded-xl p-3">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<h2 class="font-section-header text-base font-bold">Plant Preview</h2>
+<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full">5 facilities</span>
+</div>
+<span class="text-[10px] text-primary font-bold">All plants operational</span>
+</div>
+<div id="ym-plant-preview" class="grid grid-cols-5 gap-2">
+<div class="col-span-5 text-sm text-on-surface-variant py-4 text-center">Loading plants...</div>
+</div>
+</div>
 </div>
 
 <!-- Row 1: Running Missions (8) | Live Agent Status (4) -->
@@ -326,7 +342,7 @@ tailwind.config = {
 </div>
 <button id="ym-view-archive" class="text-primary text-[10px] font-bold cursor-pointer hover:underline">View Archive</button>
 </div>
-<div id="ym-completed-missions" class="overflow-y-auto custom-scrollbar p-3 pt-2 space-y-1.5">
+<div id="ym-completed-missions" class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2 space-y-1.5">
 <div class="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/40 transition-colors cursor-pointer" data-completed-mission="0">
 <div class="flex items-center gap-2.5"><span class="material-symbols-outlined text-sm text-secondary">check_circle</span><div><p class="text-xs font-medium">Pune CNC Cell PM-01 Diagnostics</p><p class="text-[9px] text-on-surface-variant">Completed by Diagnostic Agent · 8m ago</p></div></div>
 <span class="text-[9px] text-on-surface-variant">100%</span>
@@ -356,7 +372,7 @@ tailwind.config = {
 <h2 class="font-section-header text-base font-bold">Activity Feed</h2>
 <span class="text-[10px] text-on-surface-variant">Live</span>
 </div>
-<div id="ym-activity-feed" class="overflow-y-auto custom-scrollbar p-3 pt-2 space-y-1" style="max-height:320px">
+<div id="ym-activity-feed" class="flex-1 overflow-y-auto custom-scrollbar p-3 pt-2 space-y-1">
 <div class="flex items-start gap-2.5 py-1.5 cursor-pointer hover:bg-white/40 rounded-lg px-2 -mx-2 transition-colors" data-activity="sentinel">
 <span class="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 shrink-0"></span>
 <div><p class="text-xs"><span class="font-bold">Sentinel</span> blocked unauthorized API call from 192.168.1.1 on Pune network</p><p class="text-[9px] text-on-surface-variant">2m ago</p></div>

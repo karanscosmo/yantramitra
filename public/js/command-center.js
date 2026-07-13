@@ -256,6 +256,7 @@
 
   function renderAll() {
     renderKPIs();
+    renderPlantPreview();
     renderRunningMissions();
     renderLiveAgentStatus();
     renderMissionQueue();
@@ -285,6 +286,51 @@
       kpiCards[2].querySelector('.font-kpi-numeric').textContent = criticalCount;
       kpiCards[3].querySelector('.font-kpi-numeric').textContent = Math.round(agentsOnline / totalAgents * 100) + '%';
     }
+  }
+
+  function renderPlantPreview() {
+    var host = document.getElementById('ym-plant-preview');
+    if (!host) return;
+    var plants = state.plants;
+    var images = { pune: '/assets/images/home-pune-automotive.jpg', ahmedabad: '/assets/images/home-ahmedabad-process.jpg', chennai: '/assets/images/home-chennai-electronics.jpg', bengaluru: '/assets/images/home-bengaluru-precision.jpg', nagpur: '/assets/images/home-nagpur-logistics.jpg' };
+    var defaultPlants = [
+      { id: 'pune', name: 'Pune Auto Components', location: 'Pune, Maharashtra', domain: 'Automotive Components', status: 'operational', oee: 87.4, _count: { machines: 24 } },
+      { id: 'ahmedabad', name: 'Ahmedabad Process Textiles', location: 'Ahmedabad, Gujarat', domain: 'Process Textiles', status: 'attention', oee: 79.2, _count: { machines: 18 } },
+      { id: 'chennai', name: 'Chennai Electronics Assembly', location: 'Chennai, Tamil Nadu', domain: 'Electronics Assembly', status: 'operational', oee: 91.8, _count: { machines: 32 } },
+      { id: 'bengaluru', name: 'Bengaluru Precision Fab Lab', location: 'Bengaluru, Karnataka', domain: 'Precision Fabrication', status: 'optimized', oee: 94.1, _count: { machines: 16 } },
+      { id: 'nagpur', name: 'Nagpur Central Logistics Hub', location: 'Nagpur, Maharashtra', domain: 'Logistics & Distribution', status: 'operational', oee: 82.6, _count: { machines: 12 } }
+    ];
+    if (!plants.length) plants = defaultPlants;
+    function statusTone(status) {
+      if (status === 'attention' || status === 'warning') return { dot: 'bg-tertiary-container pulsing-amber', badge: 'bg-tertiary/80', text: 'ATTENTION', score: 'text-tertiary' };
+      if (status === 'optimized') return { dot: 'bg-secondary pulsing-green', badge: 'bg-secondary/80', text: 'OPTIMIZED', score: 'text-secondary' };
+      return { dot: 'bg-secondary pulsing-green', badge: 'bg-secondary/80', text: 'OPERATIONAL', score: 'text-primary' };
+    }
+    host.innerHTML = plants.slice(0, 5).map(function(plant) {
+      var tone = statusTone(plant.status);
+      var plantKey = Object.keys(images).find(function(k) { return String(plant.name).toLowerCase().includes(k); });
+      var image = images[plantKey] || plant.image || '/assets/images/home-bengaluru-precision.jpg';
+      return '<div class="glass-panel rounded-xl overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer" data-plant-id="' + plant.id + '">' +
+        '<div class="h-24 relative"><img class="w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-500" src="' + image + '" alt="' + plant.name + '"/>' +
+        '<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>' +
+        '<div class="absolute top-2 left-2 flex items-center gap-1.5"><div class="w-2 h-2 rounded-full ' + tone.dot + '"></div><span class="font-label-caps text-[8px] text-on-primary ' + tone.badge + ' px-1.5 py-0.5 rounded-full">' + tone.text + '</span></div></div>' +
+        '<div class="p-2"><h3 class="font-bold text-xs leading-tight">' + plant.name + '</h3>' +
+        '<p class="text-[9px] text-on-surface-variant truncate">' + plant.location + ' · ' + (plant.domain || 'Industrial') + '</p>' +
+        '<div class="flex justify-between items-center py-1 my-1 border-y border-outline-variant/20"><div><p class="text-[8px] font-label-caps text-on-surface-variant">OEE</p><p class="font-kpi-numeric ' + tone.score + ' text-sm">' + (plant.oee || 'n/a') + '%</p></div><div class="text-right"><p class="text-[8px] font-label-caps text-on-surface-variant">MACHINES</p><p class="text-[10px] font-medium text-primary">' + (plant._count?.machines || 0) + ' monitored</p></div></div>' +
+        '<button data-plant-id="' + plant.id + '" class="ym-plant-drilldown w-full py-1.5 bg-primary/5 border border-primary/20 rounded-lg text-primary font-label-caps text-[9px] hover:bg-primary hover:text-on-primary transition-all">PLANT DRILLDOWN</button></div></div>';
+    }).join('');
+    host.querySelectorAll('[data-plant-id]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.closest('.ym-plant-drilldown')) return;
+        window.location.href = '/plant/' + this.dataset.plantId;
+      });
+    });
+    host.querySelectorAll('.ym-plant-drilldown').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        window.location.href = '/plant/' + this.dataset.plantId;
+      });
+    });
   }
 
   function renderRunningMissions() {
