@@ -129,7 +129,7 @@
     const main = document.querySelector('main');
     if (!main) return;
     main.innerHTML = `
-      <div class="flex h-full w-full">
+      <div class="flex h-full" style="width:calc(100vw - 80px)">
         <div class="flex-1 relative overflow-hidden" id="ym-twin-canvas"></div>
         <aside id="ym-twin-inspector" class="w-[380px] min-w-[320px] max-w-[420px] bg-[#191a28]/95 border-l border-white/5 overflow-y-auto shadow-2xl" style="z-index:10"></aside>
       </div>

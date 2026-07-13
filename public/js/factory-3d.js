@@ -453,7 +453,8 @@
 
     const previousFrame = renderPlantFloor._frames.get(host);
     if (previousFrame) cancelAnimationFrame(previousFrame);
-    window.addEventListener('resize', resize);
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(host);
     resize();
     animate();
 
@@ -490,6 +491,7 @@
       destroy() {
         const frame = renderPlantFloor._frames.get(host);
         if (frame) cancelAnimationFrame(frame);
+        ro.disconnect();
         tooltip.remove();
         renderer.dispose();
         host.innerHTML = '';
