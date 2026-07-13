@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YantraMitra | Global Command Center</title>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#986500",
+                    "on-primary-fixed-variant": "#2e29c6",
+                    "outline-variant": "#c7c4d7",
+                    "secondary-fixed-dim": "#36ddc8",
+                    "secondary-fixed": "#5efae4",
+                    "on-primary-container": "#f6f2ff",
+                    "tertiary-fixed": "#ffddb1",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#09006b",
+                    "on-secondary": "#ffffff",
+                    "on-surface": "#191a28",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#fff2e5",
+                    "surface-variant": "#e2e1f4",
+                    "secondary-container": "#5efae4",
+                    "surface-bright": "#fbf8ff",
+                    "surface": "#fbf8ff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#c1c1ff",
+                    "primary-fixed": "#e1dfff",
+                    "inverse-surface": "#2e2f3e",
+                    "surface-container-high": "#e8e6fa",
+                    "on-secondary-container": "#007165",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "primary": "#413fd6",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "outline": "#767586",
+                    "background": "#fbf8ff",
+                    "on-secondary-fixed-variant": "#005047",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#5b5bf0",
+                    "surface-container-highest": "#e2e1f4",
+                    "surface-tint": "#4948de",
+                    "surface-container-low": "#f4f2ff",
+                    "tertiary": "#774f00",
+                    "secondary": "#006b5f",
+                    "on-background": "#191a28",
+                    "inverse-on-surface": "#f1efff",
+                    "on-surface-variant": "#464555",
+                    "on-tertiary-fixed": "#291800",
+                    "surface-container": "#eeecff",
+                    "on-secondary-fixed": "#00201c",
+                    "surface-dim": "#d9d8ec",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "64px",
+                    "nav-width": "72px",
+                    "lg": "40px",
+                    "base": "4px",
+                    "gutter": "24px",
+                    "xs": "8px",
+                    "sm": "16px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "display-hero": ["Geist"],
+                    "headline-lg": ["Geist"],
+                    "headline-lg-mobile": ["Geist"],
+                    "section-header": ["Geist"],
+                    "kpi-numeric": ["Space Grotesk"],
+                    "label-caps": ["Space Grotesk"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid #E7E9F5;
+            box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.05);
+        }
+        .glow-indigo { box-shadow: 0 0 15px rgba(65, 63, 214, 0.3); }
+        .glow-teal { box-shadow: 0 0 15px rgba(54, 221, 200, 0.3); }
+        .pulsing-green {
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 107, 95, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 107, 95, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 107, 95, 0); }
+        }
+        .pulsing-amber {
+            animation: pulse-amber 2s infinite;
+        }
+        @keyframes pulse-amber {
+            0% { box-shadow: 0 0 0 0 rgba(152, 101, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(152, 101, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(152, 101, 0, 0); }
+        }
+        body {
+            background: radial-gradient(circle at top left, #f4f2ff 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c4d7; border-radius: 10px; }
+    </style>
+</head>
+<body class="font-body-md text-on-surface overflow-x-hidden" data-no-demo>
+<!-- Top Bar Navigation Shell -->
+<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md shadow-[0_8px_32px_0_rgba(65,63,214,0.1)]">
+<div class="flex items-center gap-sm">
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
+<div class="h-6 w-[1px] bg-outline-variant/50 mx-xs"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Ops Intel • Global Command</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden md:block">
+<input id="ym-dashboard-search" class="w-80 h-10 px-md pr-11 rounded-full border border-outline-variant/30 bg-surface/50 backdrop-blur focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-body-md" placeholder="Search facilities or agents (⌘K)" type="search"/>
+<span class="material-symbols-outlined absolute right-4 top-2 text-on-surface-variant/60" style="font-variation-settings: 'wght' 300">search</span>
+</div>
+<div class="flex items-center gap-xs">
+<button id="ym-notifications" aria-label="Open notifications" class="p-2 rounded-full hover:bg-primary/10 transition-colors relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button id="ym-facility-switcher" aria-label="Open facility switcher" class="p-2 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary">factory</span>
+</button>
+<button id="ym-profile-menu" aria-label="Open profile menu" class="ml-sm w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional plant manager's profile portrait in high-end photographic lighting, shallow depth of field, minimalist office background with soft indigo and teal lighting accents." src="/assets/images/ym-operator-avatar.jpg"/>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-md pl-md max-w-screen-2xl mx-auto grid grid-cols-12 gap-gutter">
+<!-- Page Title & Atmosphere -->
+<div class="col-span-12 mb-xs">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Global Command Center</h1>
+<p class="text-on-surface-variant/80 font-body-md">Monitoring 14 autonomous facilities across 3 continents.</p>
+</div>
+<!-- KPI Strip -->
+<section class="col-span-12 grid grid-cols-1 md:grid-cols-4 gap-md">
+<button data-kpi-route="/reliability" class="glass-panel p-md rounded-xl flex flex-col gap-xs text-left hover:border-primary/40 transition-colors"><div class="flex justify-between"><span class="font-label-caps text-label-caps text-on-surface-variant">OEE (GLOBAL AVG)</span><span class="material-symbols-outlined text-secondary">trending_up</span></div><div class="flex items-baseline gap-xs"><span class="font-kpi-numeric text-[32px] text-primary">84.2%</span><span class="text-xs text-secondary font-medium">+1.4% vs LY</span></div><svg class="mt-xs h-10 w-full" viewBox="0 0 100 30"><path d="M0,25 L20,22 L40,15 L60,18 L80,5 L100,6" fill="none" stroke="#413fd6" stroke-width="2"/></svg></button>
+<button data-kpi-route="/anomaly" class="glass-panel p-md rounded-xl flex flex-col gap-xs text-left hover:border-tertiary/40 transition-colors"><div class="flex justify-between"><span class="font-label-caps text-label-caps text-on-surface-variant">OPEN INCIDENTS</span><span class="material-symbols-outlined text-tertiary">warning</span></div><div class="flex items-baseline gap-xs"><span class="font-kpi-numeric text-[32px]">12</span><span class="text-xs text-on-surface-variant">4 resolving</span></div><svg class="mt-xs h-10 w-full" viewBox="0 0 100 30"><path d="M0,8 L20,12 L40,10 L60,20 L80,18 L100,26" fill="none" stroke="#774f00" stroke-width="2"/></svg></button>
+<button data-kpi-route="/anomaly" class="glass-panel p-md rounded-xl flex flex-col gap-xs text-left hover:border-error/40 transition-colors"><div class="flex justify-between"><span class="font-label-caps text-label-caps text-on-surface-variant">CRITICAL ALERTS</span><span class="material-symbols-outlined text-error">emergency</span></div><div class="flex items-baseline gap-xs"><span class="font-kpi-numeric text-[32px] text-error">3</span><span class="text-xs text-error">+1 new</span></div><svg class="mt-xs h-10 w-full" viewBox="0 0 100 30"><path d="M0,9 L20,7 L40,14 L60,6 L80,10 L100,5" fill="none" stroke="#ba1a1a" stroke-width="2"/></svg></button>
+<button data-kpi-route="/reliability" class="glass-panel p-md rounded-xl flex flex-col gap-xs text-left hover:border-secondary/40 transition-colors"><div class="flex justify-between"><span class="font-label-caps text-label-caps text-on-surface-variant">UPTIME</span><span class="material-symbols-outlined text-secondary">bolt</span></div><div class="flex items-baseline gap-xs"><span class="font-kpi-numeric text-[32px] text-secondary">99.8%</span><span class="text-xs text-on-surface-variant">L30D average</span></div><svg class="mt-xs h-10 w-full" viewBox="0 0 100 30"><path d="M0,8 L100,8" fill="none" stroke="#006b5f" stroke-width="3"/></svg></button>
+</section>
+<!-- Cross-plant Comparison Grid -->
+<div class="col-span-12 lg:col-span-8">
+<div class="flex justify-between items-center mb-sm">
+<h2 class="font-section-header text-section-header text-on-surface">Top Facilities</h2>
+<button class="text-primary font-label-caps text-label-caps flex items-center gap-1 hover:underline">
+                    VIEW ALL PLANTS <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div id="ym-top-facilities" class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="glass-panel rounded-xl p-md text-on-surface-variant">Loading live facilities...</div>
+</div>
+<!-- Secondary Content Layer: Map or Visualization -->
+<div class="mt-gutter glass-panel rounded-2xl p-md h-80 relative overflow-hidden group">
+
+<div class="relative z-10 h-full flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-section-header text-section-header">Facility Distribution</h2>
+<div class="flex gap-2">
+<button data-region="americas" class="ym-region-tab px-3 py-1 bg-white/50 border border-outline-variant/30 rounded-full text-xs font-medium">Americas</button>
+<button data-region="emea" class="ym-region-tab px-3 py-1 bg-white/50 border border-outline-variant/30 rounded-full text-xs font-medium">EMEA</button>
+<button data-region="apac" class="ym-region-tab px-3 py-1 bg-primary text-on-primary rounded-full text-xs font-medium">APAC</button>
+</div>
+</div>
+<div class="flex-grow flex items-center justify-center">
+<div id="ym-dashboard-map" class="w-full h-full rounded-xl bg-[radial-gradient(circle_at_50%_55%,rgba(91,91,240,.14),transparent_48%),linear-gradient(135deg,#f4f2ff,#fff)] border border-outline-variant/20 relative overflow-hidden cursor-pointer" role="link" tabindex="0" aria-label="Open the interactive operations map">
+<div class="absolute inset-0 opacity-40 bg-[linear-gradient(rgba(65,63,214,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(65,63,214,.08)_1px,transparent_1px)] bg-[size:28px_28px]"></div>
+<p class="absolute left-4 bottom-3 text-[10px] font-label-caps text-primary">LIVE FACILITY NETWORK · OPEN MAP</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Agent Activity Feed -->
+<aside class="col-span-12 lg:col-span-4 flex flex-col gap-md">
+<div class="glass-panel rounded-2xl p-md flex flex-col h-full">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1">smart_toy</span>
+<h2 class="font-section-header text-[20px]">Agent Activity</h2>
+</div>
+<span class="px-2 py-1 bg-primary-container text-on-primary-container text-[10px] font-bold rounded">LIVE</span>
+</div>
+<div id="ym-agent-activity" class="space-y-sm flex-grow overflow-y-auto custom-scrollbar pr-xs">
+<!-- Activity 1 -->
+<div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1">psychology</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Diagnostic Agent</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Analyzing Pump CNC Cell PNA-01 failure in Ahmedabad plant. Root cause identified: Cavitation.</p>
+<p class="text-[10px] text-primary mt-xs font-medium uppercase tracking-wider">Just Now</p>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_rgba(65,63,214,0.2)]">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1">security</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Sentinel</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Security handshake completed with Chennai production network. All protocols green.</p>
+<p class="text-[10px] text-on-surface-variant/60 mt-xs font-medium uppercase tracking-wider">2m ago</p>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed-dim flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant" style="font-variation-settings: 'FILL' 1">event_note</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Planner Agent</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Rescheduling shift B in Pune to optimize for incoming materials shipment.</p>
+<p class="text-[10px] text-on-surface-variant/60 mt-xs font-medium uppercase tracking-wider">12m ago</p>
+</div>
+</div>
+<!-- Activity 4 -->
+<div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1">psychology</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Diagnostic Agent</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Predictive maintenance recommended for Conveyor L4 (Chennai) in next 48 hours.</p>
+<p class="text-[10px] text-on-surface-variant/60 mt-xs font-medium uppercase tracking-wider">24m ago</p>
+</div>
+</div>
+<!-- Activity 5 -->
+<div class="p-sm rounded-xl bg-white/40 border border-outline-variant/20 flex gap-sm hover:bg-white/60 transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1">security</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface">Sentinel</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Detected and blocked unauthorized API call from external node IP 192.168.1.1.</p>
+<p class="text-[10px] text-on-surface-variant/60 mt-xs font-medium uppercase tracking-wider">1h ago</p>
+</div>
+</div>
+</div>
+<button class="mt-md w-full py-3 bg-surface-container-high rounded-xl text-on-surface font-label-caps hover:bg-primary/10 transition-colors flex items-center justify-center gap-2">
+                    OPEN AGENT TERMINAL <span class="material-symbols-outlined text-sm">terminal</span>
+</button>
+</div>
+<!-- Health Snapshot Mini Card -->
+<div class="glass-panel rounded-2xl p-md bg-primary-container/10 border-primary/20">
+<h3 class="font-label-caps text-label-caps text-primary mb-sm">GLOBAL SYSTEM STATUS</h3>
+<div class="space-y-xs">
+<div class="flex justify-between items-center text-xs">
+<span class="text-on-surface-variant">Cloud Infrastructure</span>
+<span class="text-secondary font-bold">99.99%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1">
+<div class="bg-secondary w-full h-full rounded-full"></div>
+</div>
+<div class="flex justify-between items-center text-xs pt-xs">
+<span class="text-on-surface-variant">Edge Device Connectivity</span>
+<span class="text-secondary font-bold">98.4%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-1">
+<div class="bg-secondary w-[98%] h-full rounded-full"></div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Shell -->
+<footer class="hidden w-full py-md mt-xl border-t border-outline-variant/20 bg-transparent">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YANTRAMITRA PLATFORM. ALL RIGHTS RESERVED.</span>
+<div class="flex gap-md mt-sm md:mt-0">
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="text-on-surface-variant text-body-md hover:text-primary transition-colors flex items-center gap-1" href="/api-status">
+<span class="w-2 h-2 bg-secondary rounded-full"></span> API Status
+                </a>
+</div>
+</div>
+</footer>
+<!-- FAB (Suppressed on Dashboard as per guidelines but included as a small reference if needed) -->
+<!-- Suppression Logic applied: Dashboard generally stays clean unless specific action required -->
+<script>
+        // Micro-interactions and glow effects
+        document.querySelectorAll('.glass-panel').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Search shortcut mock
+        window.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('input[type="text"]').focus();
+            }
+        });
+    </script>
+<script src="/js/command-center.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<title>YantraMitra | Work Orders Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&family=Geist:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed": "#09006b",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "secondary-container": "#5efae4",
+                    "on-background": "#191a28",
+                    "outline": "#767586",
+                    "on-primary-container": "#f6f2ff",
+                    "inverse-on-surface": "#f1efff",
+                    "on-secondary-fixed": "#00201c",
+                    "inverse-surface": "#2e2f3e",
+                    "surface-variant": "#e2e1f4",
+                    "on-tertiary-fixed": "#291800",
+                    "on-surface-variant": "#464555",
+                    "tertiary-container": "#986500",
+                    "surface": "#fbf8ff",
+                    "tertiary": "#774f00",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#5efae4",
+                    "on-secondary-fixed-variant": "#005047",
+                    "surface-tint": "#4948de",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#fbf8ff",
+                    "surface-container": "#eeecff",
+                    "secondary-fixed-dim": "#36ddc8",
+                    "on-tertiary-container": "#fff2e5",
+                    "on-secondary-container": "#007165",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "on-primary-fixed-variant": "#2e29c6",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e8e6fa",
+                    "surface-container-highest": "#e2e1f4",
+                    "tertiary-fixed": "#ffddb1",
+                    "surface-container-low": "#f4f2ff",
+                    "on-surface": "#191a28",
+                    "on-error": "#ffffff",
+                    "secondary": "#006b5f",
+                    "primary-container": "#5b5bf0",
+                    "on-error-container": "#93000a",
+                    "primary": "#413fd6",
+                    "inverse-primary": "#c1c1ff",
+                    "surface-dim": "#d9d8ec",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#c7c4d7",
+                    "background": "#fbf8ff",
+                    "primary-fixed": "#e1dfff",
+                    "on-tertiary-fixed-variant": "#624000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "nav-width": "72px",
+                    "lg": "40px",
+                    "gutter": "24px",
+                    "xl": "64px",
+                    "base": "4px",
+                    "sm": "16px",
+                    "xs": "8px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "display-hero": ["Geist"],
+                    "section-header": ["Geist"],
+                    "kpi-numeric": ["Space Grotesk"],
+                    "headline-lg": ["Geist"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Geist"],
+                    "label-caps": ["Space Grotesk"]
+            },
+            "fontSize": {
+                    "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background: radial-gradient(circle at top right, #e1dfff 0%, #fbf8ff 40%, #eeecff 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid #E7E9F5;
+            box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.05);
+        }
+        .glass-drawer {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid #E7E9F5;
+        }
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #5B5BF0, #7C7CFA);
+            transition: all 0.3s ease;
+        }
+        .shimmer-btn:hover::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 1s ease-in-out;
+        }
+        @keyframes shimmer {
+            0% { transform: translate(-100%, -100%) rotate(45deg); }
+            100% { transform: translate(100%, 100%) rotate(45deg); }
+        }
+        .sort-arrow { display:inline-block; font-size:8px; opacity:0.3; transition:opacity .15s; margin-left:2px; vertical-align:middle; }
+        th:hover .sort-arrow { opacity:0.7; }
+        th.is-sorted .sort-arrow { opacity:1; color:#413fd6; }
+        .status-glow-teal { box-shadow: 0 0 12px rgba(94, 250, 228, 0.4); }
+        .status-glow-amber { box-shadow: 0 0 12px rgba(255, 186, 75, 0.4); }
+        .status-glow-coral { box-shadow: 0 0 12px rgba(186, 26, 26, 0.4); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c4d7; border-radius: 10px; }
+
+        .drawer-enter { transform: translateX(100%); opacity: 0; }
+        .drawer-enter-active { transform: translateX(0); opacity: 1; transition: transform .3s ease, opacity .3s ease; }
+        .drawer-exit { transform: translateX(0); opacity: 1; }
+        .drawer-exit-active { transform: translateX(100%); opacity: 0; transition: transform .3s ease, opacity .3s ease; }
+        .drawer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(25,26,40,0.32); opacity: 0; transition: opacity .3s ease; }
+        .drawer-backdrop.open { opacity: 1; }
+
+        @media (max-width: 1024px) {
+            .glass-drawer { width: 400px !important; }
+        }
+        @media (max-width: 768px) {
+            .glass-drawer { width: 100% !important; right: 0 !important; }
+        }
+        .checklist-state { transition: all .2s ease; cursor: pointer; }
+        .checklist-state:hover { transform: translateX(2px); }
+
+        .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(25,26,40,0.36); display: flex; align-items: center; justify-content: center; padding: 18px; opacity: 0; transition: opacity .25s ease; }
+        .modal-backdrop.open { opacity: 1; }
+        .modal-card { width: min(600px, calc(100vw - 32px)); max-height: min(80vh, 600px); overflow-y: auto; border-radius: 18px; border: 1px solid rgba(199,196,215,0.72); background: rgba(255,255,255,0.96); box-shadow: 0 30px 90px rgba(25,26,40,0.28); padding: 20px; transform: scale(0.95); transition: transform .25s ease; }
+        .modal-backdrop.open .modal-card { transform: scale(1); }
+
+        .yantrankln-bar { transition: all .3s ease; }
+        .yantrankln-bar:focus-within { box-shadow: 0 0 0 2px #413fd6, 0 8px 32px rgba(65,63,214,0.15); }
+
+        .filter-chip.active { box-shadow: 0 0 0 2px #413fd6; }
+        .wo-card { transition: all 0.2s ease; }
+        .wo-card:hover { transform: translateY(-1px); box-shadow: 0 8px 32px rgba(65,63,214,0.1); }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<div class="flex">
+<aside class="w-56 h-screen sticky top-0 pt-24 pl-md pb-lg flex-shrink-0 overflow-y-auto custom-scrollbar" id="ym-left-panel">
+<div class="glass-card rounded-xl p-md mb-md">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
+<span>STATUS</span>
+<button class="text-[10px] text-primary hover:underline font-label-caps" id="ym-reset-status">RESET</button>
+</h3>
+<div class="space-y-1" id="ym-status-filters"></div>
+</div>
+<div class="glass-card rounded-xl p-md mb-md">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
+<span>PRIORITY</span>
+<button class="text-[10px] text-primary hover:underline font-label-caps" id="ym-reset-priority">RESET</button>
+</h3>
+<div class="space-y-1" id="ym-priority-filters"></div>
+</div>
+<div class="glass-card rounded-xl p-md mb-md">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
+<span>LOCATION</span>
+<button class="text-[10px] text-primary hover:underline font-label-caps" id="ym-reset-location">RESET</button>
+</h3>
+<div class="space-y-1" id="ym-location-filters"></div>
+</div>
+<button class="w-full py-2 rounded-full border border-outline-variant/50 text-on-surface-variant font-label-caps text-[11px] hover:bg-primary/5 hover:border-primary/30 transition-all flex items-center justify-center gap-xs" id="ym-reset-all">
+<span class="material-symbols-outlined text-sm">refresh</span> RESET ALL
+</button>
+</aside>
+<main class="flex-1 min-w-0 pt-24 pr-lg pb-36 transition-all duration-300 ease" id="ym-main-content">
+<header class="flex justify-between items-end mb-xl">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Work Orders</h1>
+<p class="text-on-surface-variant">Manage active maintenance cycles and technician assignments.</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-64 bg-white/70 border border-outline-variant/40 rounded-full py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none text-sm" id="ym-search-input" placeholder="Search orders..." type="text"/>
+</div>
+<button class="shimmer-btn px-6 py-2.5 rounded-full text-on-primary font-label-caps text-label-caps flex items-center gap-xs shadow-lg" id="ym-create-order">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                CREATE ORDER
+            </button>
+</div>
+</header>
+<div class="grid grid-cols-4 gap-gutter mb-xl" id="ym-stats-row">
+<div class="glass-card rounded-xl p-md">
+<span class="text-on-surface-variant font-label-caps text-label-caps">ACTIVE ORDERS</span>
+<div class="flex items-baseline gap-xs mt-xs">
+<span class="font-kpi-numeric text-4xl text-primary" id="ym-active-count">0</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-md">
+<span class="text-on-surface-variant font-label-caps text-label-caps">COMPLETED TODAY</span>
+<div class="flex items-baseline gap-xs mt-xs">
+<span class="font-kpi-numeric text-4xl text-secondary" id="ym-completed-count">0</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-md">
+<span class="text-on-surface-variant font-label-caps text-label-caps">AVG COMPLETION</span>
+<div class="flex items-baseline gap-xs mt-xs">
+<span class="font-kpi-numeric text-4xl text-tertiary" id="ym-avg-completion">0</span>
+<span class="text-on-surface-variant text-sm">%</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-md">
+<span class="text-on-surface-variant font-label-caps text-label-caps">OVERDUE</span>
+<div class="flex items-baseline gap-xs mt-xs">
+<span class="font-kpi-numeric text-4xl text-error" id="ym-overdue-count">0</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto glass-card rounded-xl mb-xl" id="ym-table-container" style="display:none">
+  <table class="w-full text-left" id="ym-orders-table">
+    <thead>
+      <tr class="text-on-surface-variant font-label-caps text-[11px] border-b border-outline-variant/10">
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="id">ID <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="machine">Asset <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="title">Issue <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="priority">Priority <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="assignedTo">Engineer <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="dueDate">Due Date <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="plant">Plant <span class="sort-arrow"></span></th>
+        <th class="px-4 py-3 font-medium whitespace-nowrap cursor-pointer hover:text-primary transition-colors" data-sort="status">Status <span class="sort-arrow"></span></th>
+      </tr>
+    </thead>
+    <tbody id="ym-table-body"></tbody>
+  </table>
+  <div class="flex items-center justify-between px-4 py-3 border-t border-outline-variant/10" id="ym-table-footer">
+    <span class="text-xs text-on-surface-variant" id="ym-table-info">0 orders</span>
+    <div class="flex items-center gap-1.5" id="ym-table-pagination">
+      <button class="p-1.5 rounded-lg hover:bg-primary/10 transition-colors material-symbols-outlined text-[18px] text-on-surface-variant" id="ym-page-prev" disabled>chevron_left</button>
+      <span class="text-xs font-bold text-on-surface-variant px-2" id="ym-page-info">1 / 1</span>
+      <button class="p-1.5 rounded-lg hover:bg-primary/10 transition-colors material-symbols-outlined text-[18px] text-on-surface-variant" id="ym-page-next" disabled>chevron_right</button>
+    </div>
+  </div>
+</div>
+<div class="flex items-center gap-xs flex-wrap mb-sm" id="ym-active-filters"></div>
+<div class="space-y-sm" id="ym-orders-list"></div>
+</main>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 flex justify-center pointer-events-none">
+<div class="yantrankln-bar glass-card rounded-full px-4 py-2 flex items-center gap-3 w-full max-w-2xl pointer-events-auto shadow-xl" id="ym-yantrankln-bar">
+<img src="/assets/images/yantranklan-avatar-ai.jpg" alt="Nklan" class="w-8 h-8 rounded-full border-2 border-secondary/40 shrink-0"/>
+<input class="flex-1 bg-transparent border-none outline-none text-sm" id="ym-yantrankln-input" placeholder="Ask YantraNklan to create, update, or find work orders..." type="text"/>
+<button class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shrink-0 hover:bg-primary/90 transition-all" id="ym-yantrankln-send">
+<span class="material-symbols-outlined text-sm">bolt</span>
+</button>
+</div>
+</div>
+<div class="drawer-backdrop" id="ym-drawer-backdrop"></div>
+<div class="fixed top-16 bottom-0 w-[460px] glass-drawer z-30 flex flex-col shadow-[-10px_0_40px_rgba(65,63,214,0.08)] drawer-enter" id="ym-detail-drawer" style="display:none;right:var(--sidebar-width)">
+<div class="p-md flex justify-between items-center border-b border-outline-variant/20 shrink-0">
+<h2 class="font-section-header text-section-header text-on-surface" id="ym-drawer-title">Work Order Detail</h2>
+<button class="p-2 hover:bg-primary/10 rounded-full transition-all" id="ym-drawer-close">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-grow overflow-y-auto custom-scrollbar p-md space-y-md" id="ym-drawer-body">
+<div id="ym-drawer-content">
+<div class="flex items-center gap-xs mb-md">
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary" id="ym-drawer-priority">STANDARD</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold" id="ym-drawer-status">OPEN</span>
+</div>
+<div class="bg-primary/5 rounded-xl p-sm border border-primary/10 mb-md" id="ym-drawer-machine">
+<p class="text-sm text-on-surface-variant">Machine: <span class="font-semibold text-on-surface" id="ym-drawer-machine-name">—</span></p>
+<p class="text-xs text-on-surface-variant mt-1">Location: <span id="ym-drawer-location">—</span></p>
+    </div>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">DETAILS</h4>
+<div class="space-y-sm">
+<div>
+<label class="text-xs text-on-surface-variant">STATUS</label>
+<select class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-status-select">
+<option value="open">Open</option>
+<option value="assigned">Assigned</option>
+<option value="in_progress">In Progress</option>
+<option value="waiting_parts">Waiting Parts</option>
+<option value="completed">Completed</option>
+<option value="approved">Approved</option>
+<option value="cancelled">Cancelled</option>
+</select>
+</div>
+<div>
+<label class="text-xs text-on-surface-variant">PRIORITY</label>
+<select class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-priority-select">
+<option value="low">Low</option>
+<option value="medium">Medium</option>
+<option value="high">High</option>
+<option value="critical">Critical</option>
+</select>
+</div>
+<div>
+<label class="text-xs text-on-surface-variant">ASSIGNED ENGINEER</label>
+<input class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-assign-input" placeholder="Engineer name"/>
+</div>
+<div>
+<label class="text-xs text-on-surface-variant">NOTES</label>
+<textarea class="w-full border border-outline-variant/50 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none bg-white/80" id="ym-drawer-notes" rows="2" placeholder="Add notes..."></textarea>
+</div>
+</div>
+<button class="w-full mt-sm py-2.5 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg text-sm flex items-center justify-center gap-xs" id="ym-drawer-save-btn">
+<span class="material-symbols-outlined text-sm">save</span> SAVE CHANGES
+</button>
+</section>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm flex items-center justify-between">
+<span>LEAD TECHNICIAN</span>
+<span class="material-symbols-outlined text-sm text-primary cursor-pointer" id="ym-tech-view">open_in_new</span>
+</h4>
+<div class="bg-primary/5 rounded-xl p-sm border border-primary/10 flex items-center gap-sm cursor-pointer" id="ym-tech-card">
+<img class="w-12 h-12 rounded-full border-2 border-white shadow-sm" src="/assets/images/ym-operator-avatar.jpg" id="ym-tech-avatar"/>
+<div>
+<p class="font-semibold text-on-surface" id="ym-tech-name">—</p>
+<p class="text-xs text-on-surface-variant" id="ym-tech-role">—</p>
+</div>
+<div class="ml-auto flex gap-1">
+<span class="text-xs font-bold text-secondary" id="ym-tech-score">—</span>
+</div>
+</div>
+</section>
+<section class="mb-md">
+<div class="flex justify-between items-center mb-sm">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant">TASK CHECKLIST</h4>
+<div class="flex items-center gap-xs">
+<span class="text-[11px] text-primary font-bold" id="ym-checklist-pct">0%</span>
+<div class="w-20 h-1.5 bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" id="ym-progress-bar" style="width:0%"></div>
+</div>
+</div>
+</div>
+<div class="space-y-xs" id="ym-checklist"></div>
+</section>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">REQUIRED PARTS</h4>
+<div class="grid grid-cols-1 gap-xs" id="ym-parts-list"></div>
+</section>
+<section class="pb-xl">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">APPROVAL HISTORY</h4>
+<div class="relative pl-6 space-y-md before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/20" id="ym-timeline"></div>
+</section>
+<section class="mb-md">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-sm">HISTORY LOG</h4>
+<div class="space-y-xs" id="ym-history-log"></div>
+</section>
+</div>
+</div>
+<div class="p-md bg-white/40 border-t border-outline-variant/20 flex gap-sm shrink-0" id="ym-drawer-actions">
+<button class="flex-1 py-3 rounded-full border border-error text-error font-label-caps text-label-caps hover:bg-error/5 transition-all" id="ym-close-order-btn">CLOSE ORDER</button>
+<button class="flex-1 py-3 rounded-full border border-primary text-primary font-label-caps text-label-caps hover:bg-primary/5 transition-all" id="ym-pause-btn">PAUSE SESSION</button>
+<button class="flex-[2] py-3 rounded-full shimmer-btn text-on-primary font-label-caps text-label-caps shadow-lg" id="ym-complete-btn">MARK AS COMPLETE</button>
+</div>
+</div>
+<footer class="fixed bottom-16 w-full bg-transparent border-t border-outline-variant/20 py-md z-10">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YANTRAMITRA PLATFORM. ALL RIGHTS RESERVED.</span>
+<div class="flex gap-md mt-sm md:mt-0 font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="text-primary underline" href="/api-status">API Status</a>
+</div>
+</div>
+</footer>
+<div class="fixed top-0 left-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
+<div class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary/5 blur-[100px] rounded-full"></div>
+</div>
+<div id="ym-toast-container" class="fixed top-24 left-1/2 -translate-x-1/2 z-[120] flex flex-col items-center gap-2 pointer-events-none"></div>
+<script src="/js/work-orders.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

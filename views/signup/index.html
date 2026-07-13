@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up | YantraMitra</title>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-surface {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid #E7E9F5;
+        }
+        
+        .primary-gradient {
+            background: linear-gradient(135deg, #5B5BF0 0%, #7C7CFA 100%);
+            box-shadow: 0 0 20px rgba(91, 91, 240, 0.3);
+        }
+
+        .primary-gradient:hover {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .primary-gradient:hover::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) rotate(45deg); }
+            100% { transform: translateX(150%) rotate(45deg); }
+        }
+
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        }
+
+        .strength-meter-bar {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+        }
+
+        .auth-field { min-height: 44px; }
+        .hero-thumbnail { transition: transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease; }
+        .hero-thumbnail:hover, .hero-thumbnail:focus-visible { transform: translateY(-2px); opacity: 1; box-shadow: 0 0 0 2px rgba(255,255,255,.88); }
+        .hero-thumbnail[aria-pressed="true"] { opacity: 1; box-shadow: 0 0 0 2px #5B5BF0; }
+        .signup-submit:disabled { cursor: wait; opacity: .78; transform: none; }
+        .signup-success { background: linear-gradient(135deg, #007165, #36ddc8); }
+
+        body {
+            background-color: #fbf8ff;
+            overflow: hidden;
+        }
+
+        .floating-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .ym-auth-motion {
+            position: absolute;
+            inset: -12%;
+            pointer-events: none;
+            opacity: 0.75;
+            background-image:
+                radial-gradient(circle at 18% 28%, rgba(94, 250, 228, 0.5) 0 2px, transparent 3px),
+                radial-gradient(circle at 54% 68%, rgba(193, 193, 255, 0.48) 0 2px, transparent 3px),
+                radial-gradient(circle at 82% 32%, rgba(255, 186, 75, 0.34) 0 1px, transparent 3px),
+                linear-gradient(135deg, rgba(65, 63, 214, 0.3), rgba(0, 107, 95, 0.18), transparent 68%);
+            background-size: 210px 210px, 260px 260px, 180px 180px, 100% 100%;
+            animation: ymAuthDrift 30s linear infinite;
+            mix-blend-mode: screen;
+            z-index: 12;
+        }
+
+        .ym-plant-ribbon {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.38);
+        }
+
+        @keyframes ymAuthDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 210px 120px, -260px 140px, 180px -80px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-auth-motion,
+            .primary-gradient:hover::after {
+                animation: none !important;
+            }
+            .ym-auth-motion {
+                opacity: 0.24;
+            }
+            .hero-thumbnail, .strength-meter-bar { transition: none; }
+        }
+
+        @media (max-width: 767px) {
+            body { overflow: auto; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#986500",
+                        "on-primary-fixed-variant": "#2e29c6",
+                        "outline-variant": "#c7c4d7",
+                        "secondary-fixed-dim": "#36ddc8",
+                        "secondary-fixed": "#5efae4",
+                        "on-primary-container": "#f6f2ff",
+                        "tertiary-fixed": "#ffddb1",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#09006b",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191a28",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#fff2e5",
+                        "surface-variant": "#e2e1f4",
+                        "secondary-container": "#5efae4",
+                        "surface-bright": "#fbf8ff",
+                        "surface": "#fbf8ff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c1c1ff",
+                        "primary-fixed": "#e1dfff",
+                        "inverse-surface": "#2e2f3e",
+                        "surface-container-high": "#e8e6fa",
+                        "on-secondary-container": "#007165",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffba4b",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "primary": "#413fd6",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c1c1ff",
+                        "outline": "#767586",
+                        "background": "#fbf8ff",
+                        "on-secondary-fixed-variant": "#005047",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#5b5bf0",
+                        "surface-container-highest": "#e2e1f4",
+                        "surface-tint": "#4948de",
+                        "surface-container-low": "#f4f2ff",
+                        "tertiary": "#774f00",
+                        "secondary": "#006b5f",
+                        "on-background": "#191a28",
+                        "inverse-on-surface": "#f1efff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-container": "#eeecff",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-dim": "#d9d8ec",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.8rem",
+                        "xl": "1.2rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "lg": "40px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "section-header": ["Geist"],
+                        "kpi-numeric": ["Space Grotesk"],
+                        "label-caps": ["Space Grotesk"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- Ambient Background Decorations -->
+<div class="floating-orb w-[600px] h-[600px] bg-primary top-[-10%] left-[-10%]"></div>
+<div class="floating-orb w-[400px] h-[400px] bg-secondary-fixed-dim bottom-[10%] left-[20%]"></div>
+<!-- MAIN WRAPPER -->
+<div class="flex w-full min-h-screen h-auto overflow-visible md:h-screen md:overflow-hidden">
+<!-- LEFT PANEL: 40% Glass Form Card -->
+<section class="w-full md:w-[40%] min-h-full md:min-h-0 md:h-full flex flex-col justify-center md:justify-start items-center p-sm md:px-md md:py-6 md:overflow-y-auto relative z-10 after:hidden md:after:block md:after:absolute md:after:-right-5 md:after:top-0 md:after:h-full md:after:w-5 md:after:bg-gradient-to-r md:after:from-white/35 md:after:to-transparent">
+<div class="glass-surface inner-glow rounded-xl p-md md:p-lg w-full max-w-md shadow-lg border-outline-variant/30 md:my-0">
+<!-- Branding -->
+<div class="mb-lg text-center md:text-left">
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9 inline-block"/>
+<p class="mt-xs max-w-[330px] mx-auto md:mx-0 font-body-md text-body-md text-on-surface-variant">Join the next generation of industrial operations intelligence.</p>
+</div>
+<!-- Registration Form -->
+<form class="space-y-sm" novalidate>
+<!-- Name -->
+<div>
+<label for="signup-name" class="block font-label-caps text-label-caps text-on-surface-variant mb-xs ml-1">FULL NAME</label>
+<input id="signup-name" name="name" autocomplete="name" required class="auth-field w-full bg-white/40 border border-outline-variant/30 rounded-lg px-sm py-xs font-body-md focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200" placeholder="John Doe" type="text"/>
+</div>
+<!-- Work Email -->
+<div>
+<label for="signup-email" class="block font-label-caps text-label-caps text-on-surface-variant mb-xs ml-1">WORK EMAIL</label>
+<input id="signup-email" name="email" autocomplete="email" inputmode="email" required class="auth-field w-full bg-white/40 border border-outline-variant/30 rounded-lg px-sm py-xs font-body-md focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200" placeholder="john@company.ai" type="email"/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<!-- Company -->
+<div>
+<label for="signup-company" class="block font-label-caps text-label-caps text-on-surface-variant mb-xs ml-1">COMPANY</label>
+<input id="signup-company" name="company" autocomplete="organization" class="auth-field w-full bg-white/40 border border-outline-variant/30 rounded-lg px-sm py-xs font-body-md focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200" placeholder="Industrial Corp" type="text"/>
+</div>
+<!-- Role -->
+<div>
+<label for="signup-role" class="block font-label-caps text-label-caps text-on-surface-variant mb-xs ml-1">ROLE</label>
+<select id="signup-role" name="role" class="auth-field w-full bg-white/40 border border-outline-variant/30 rounded-lg px-sm py-xs font-body-md focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200">
+<option value="plant_manager">Plant Manager</option>
+<option value="maintenance">Maintenance Lead</option>
+<option value="operator">Automation Engineer</option>
+<option value="operator">Operations Lead</option>
+<option value="executive">Executive / VP</option>
+</select>
+</div>
+</div>
+<!-- Password & Strength Meter -->
+<div>
+<label for="password-input" class="block font-label-caps text-label-caps text-on-surface-variant mb-xs ml-1">PASSWORD</label>
+<div class="relative">
+<input name="password" autocomplete="new-password" required minlength="8" aria-describedby="strength-label" class="auth-field w-full bg-white/40 border border-outline-variant/30 rounded-lg px-sm py-xs pr-11 font-body-md focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all duration-200" id="password-input" placeholder="••••••••" type="password"/>
+<button id="password-visibility" aria-label="Show password" aria-pressed="false" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40 rounded" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+<!-- Strength Meter -->
+<div class="mt-sm">
+<div class="flex justify-between items-center mb-1">
+<span class="text-[10px] font-bold font-label-caps text-on-surface-variant uppercase" id="strength-label">Strength: Empty</span>
+<span class="text-[10px] font-kpi-numeric text-on-surface-variant" id="strength-percent">0%</span>
+</div>
+<div class="w-full h-1 bg-surface-variant rounded-full overflow-hidden">
+<div class="strength-meter-bar h-full w-0 bg-error-container" id="strength-bar"></div>
+</div>
+</div>
+</div>
+<!-- Terms Checkbox -->
+<div class="flex items-start pt-xs">
+<input class="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/40" id="terms" type="checkbox"/>
+<label class="ml-sm font-body-md text-[13px] text-on-surface-variant leading-tight" for="terms">
+                            I agree to the <a class="text-primary font-semibold hover:underline" href="/terms">Terms of Service</a> and <a class="text-primary font-semibold hover:underline" href="/privacy">Privacy Policy</a> of YantraMitra Platform.
+                        </label>
+</div>
+<!-- CTA -->
+<button type="submit" class="signup-submit primary-gradient w-full py-sm rounded-lg text-on-primary font-bold font-label-caps text-label-caps tracking-widest uppercase transition-all duration-300 active:scale-[.99] mt-sm">
+                        Create Account
+                    </button><div class="mt-lg flex flex-col items-center">
+<p class="text-[10px] font-label-caps text-on-surface-variant/60 uppercase tracking-widest mb-xs">Trusted by 200+ Enterprises</p>
+<div class="flex items-center gap-md opacity-50 grayscale">
+<span title="Manufacturing" class="material-symbols-outlined text-[20px] transition-transform hover:-translate-y-0.5">factory</span>
+<span title="AI Operations" class="material-symbols-outlined text-[20px] transition-transform hover:-translate-y-0.5">precision_manufacturing</span>
+<span title="Enterprise Security" class="material-symbols-outlined text-[20px] transition-transform hover:-translate-y-0.5">conveyor_belt</span>
+</div>
+</div>
+<!-- Footer Link -->
+<p class="text-center font-body-md text-[13px] text-on-surface-variant pt-sm">
+                        Already have an account? <a class="text-primary font-bold hover:underline transition-all" href="/login">Sign In</a>
+</p><div class="mt-md pt-md border-t border-outline-variant/20 space-y-xs">
+<div class="flex min-h-5 items-center space-x-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span>
+<span class="text-[12px] font-body-md text-on-surface-variant">Real-time fleet monitoring</span>
+</div>
+<div class="flex min-h-5 items-center space-x-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span>
+<span class="text-[12px] font-body-md text-on-surface-variant">AI-powered root cause analysis</span>
+</div>
+<div class="flex min-h-5 items-center space-x-xs">
+<span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span>
+<span class="text-[12px] font-body-md text-on-surface-variant">Automated work order routing</span>
+</div>
+</div>
+</form>
+</div>
+</section>
+<!-- RIGHT PANEL: 60% Visual Context -->
+<section class="hidden md:block md:w-[60%] h-full relative overflow-hidden">
+<!-- Background Visual with Placeholder -->
+<div class="absolute inset-0 z-0 scale-105 bg-[#191a28]">
+<img id="hero-image" class="absolute inset-0 w-full h-full object-cover opacity-90 transition-opacity duration-300" src="/assets/images/home-bengaluru-precision.jpg" alt="Bengaluru precision engineering facility" fetchpriority="high"/>
+</div>
+<div class="ym-auth-motion" aria-hidden="true"></div>
+<!-- Glass Overlay for Texture -->
+<div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px] z-10 mix-blend-overlay"></div>
+<div class="absolute left-md bottom-md z-20 grid grid-cols-5 gap-xs ym-plant-ribbon rounded-2xl p-xs max-w-xl" aria-label="Facility image gallery">
+<button type="button" class="hero-thumbnail h-16 w-20 rounded-lg overflow-hidden opacity-70 focus:outline-none" aria-label="Show Pune automotive facility" aria-pressed="false" data-hero-src="/assets/images/home-pune-automotive.jpg" data-hero-alt="Pune automotive facility"><img class="h-full w-full object-cover" src="/assets/images/home-pune-automotive.jpg" alt="" loading="lazy"/></button>
+<button type="button" class="hero-thumbnail h-16 w-20 rounded-lg overflow-hidden opacity-70 focus:outline-none" aria-label="Show Ahmedabad textile chemical facility" aria-pressed="false" data-hero-src="/assets/images/home-ahmedabad-process.jpg" data-hero-alt="Ahmedabad textile chemical facility"><img class="h-full w-full object-cover" src="/assets/images/home-ahmedabad-process.jpg" alt="" loading="lazy"/></button>
+<button type="button" class="hero-thumbnail h-16 w-20 rounded-lg overflow-hidden opacity-70 focus:outline-none" aria-label="Show Chennai electronics facility" aria-pressed="false" data-hero-src="/assets/images/home-chennai-electronics.jpg" data-hero-alt="Chennai electronics facility"><img class="h-full w-full object-cover" src="/assets/images/home-chennai-electronics.jpg" alt="" loading="lazy"/></button>
+<button type="button" class="hero-thumbnail h-16 w-20 rounded-lg overflow-hidden opacity-100" aria-label="Show Bengaluru precision facility" aria-pressed="true" data-hero-src="/assets/images/home-bengaluru-precision.jpg" data-hero-alt="Bengaluru precision engineering facility"><img class="h-full w-full object-cover" src="/assets/images/home-bengaluru-precision.jpg" alt="" loading="lazy"/></button>
+<button type="button" class="hero-thumbnail h-16 w-20 rounded-lg overflow-hidden opacity-70 focus:outline-none" aria-label="Show Nagpur warehouse facility" aria-pressed="false" data-hero-src="/assets/images/home-nagpur-logistics.jpg" data-hero-alt="Nagpur warehouse facility"><img class="h-full w-full object-cover" src="/assets/images/home-nagpur-logistics.jpg" alt="" loading="lazy"/></button>
+</div>
+<!-- Floating Data Widgets for depth -->
+<div class="absolute top-1/4 right-md z-20 glass-surface p-md rounded-xl inner-glow shadow-xl border border-outline-variant/30">
+<div class="grid grid-cols-2 gap-md">
+<div class="flex items-center space-x-sm">
+<div class="p-xs bg-secondary-container rounded-full">
+<span class="material-symbols-outlined text-on-secondary-container text-[18px]">bolt</span>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant">NODE EFFICIENCY</p>
+<p class="font-kpi-numeric text-primary" data-kpi-value="98.4" data-kpi-suffix="%">0%</p>
+</div>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="p-xs bg-tertiary-fixed-dim rounded-full">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant text-[18px]">precision_manufacturing</span>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant">ACTIVE AGENTS</p>
+<p class="font-kpi-numeric text-tertiary" data-kpi-value="142">0</p>
+</div>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="p-xs bg-secondary-container rounded-full">
+<span class="material-symbols-outlined text-on-secondary-container text-[18px]">network_check</span>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant">NETWORK HEALTH</p>
+<p class="font-kpi-numeric text-primary" data-kpi-value="100" data-kpi-suffix="%">0%</p>
+</div>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="p-xs bg-tertiary-fixed-dim rounded-full">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant text-[18px]">timer</span>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant">SYSTEM UPTIME</p>
+<p class="font-kpi-numeric text-tertiary" data-kpi-value="99.9" data-kpi-suffix="%">0%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Logo / Motto -->
+<div class="absolute bottom-md right-md z-20 text-right">
+<p class="font-label-caps text-[14px] text-white/80 tracking-[0.2em] uppercase">Intelligence. Precision. Scale.</p>
+</div>
+</section>
+</div>
+<script>
+        // Password Strength Logic
+        const passInput = document.getElementById('password-input');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthLabel = document.getElementById('strength-label');
+        const strengthPercent = document.getElementById('strength-percent');
+
+        passInput.addEventListener('input', function(e) {
+            const val = e.target.value;
+            let strength = 0;
+            
+            if (val.length > 0) strength += 20;
+            if (val.length > 7) strength += 20;
+            if (/[A-Z]/.test(val)) strength += 20;
+            if (/[0-9]/.test(val)) strength += 20;
+            if (/[^A-Za-z0-9]/.test(val)) strength += 20;
+
+            strengthPercent.innerText = strength + '%';
+            strengthBar.style.width = strength + '%';
+
+            if (strength <= 20) {
+                strengthBar.className = 'strength-meter-bar h-full bg-error';
+                strengthLabel.innerText = 'Strength: Weak';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-error uppercase';
+            } else if (strength <= 40) {
+                strengthBar.className = 'strength-meter-bar h-full bg-tertiary-fixed-dim';
+                strengthLabel.innerText = 'Strength: Fair';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-tertiary uppercase';
+            } else if (strength <= 60) {
+                strengthBar.className = 'strength-meter-bar h-full bg-tertiary-fixed-dim';
+                strengthLabel.innerText = 'Strength: Good';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-tertiary uppercase';
+            } else if (strength <= 80) {
+                strengthBar.className = 'strength-meter-bar h-full bg-secondary-fixed-dim';
+                strengthLabel.innerText = 'Strength: Strong';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-secondary uppercase';
+            } else {
+                strengthBar.className = 'strength-meter-bar h-full bg-secondary-fixed-dim';
+                strengthLabel.innerText = 'Strength: Excellent';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-secondary uppercase';
+            }
+            
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthLabel.innerText = 'Strength: Empty';
+                strengthLabel.className = 'text-[10px] font-bold font-label-caps text-on-surface-variant uppercase';
+            }
+        });
+
+        // Toggle Password Visibility
+        const visibilityBtn = document.getElementById('password-visibility');
+        visibilityBtn.addEventListener('click', () => {
+            const icon = visibilityBtn.querySelector('span');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.innerText = 'visibility_off';
+                visibilityBtn.setAttribute('aria-label', 'Hide password');
+                visibilityBtn.setAttribute('aria-pressed', 'true');
+            } else {
+                passInput.type = 'password';
+                icon.innerText = 'visibility';
+                visibilityBtn.setAttribute('aria-label', 'Show password');
+                visibilityBtn.setAttribute('aria-pressed', 'false');
+            }
+        });
+
+        const heroImage = document.getElementById('hero-image');
+        document.querySelectorAll('.hero-thumbnail').forEach((thumbnail) => {
+            thumbnail.addEventListener('click', () => {
+                const { heroSrc, heroAlt } = thumbnail.dataset;
+                if (!heroSrc || heroImage.src.endsWith(heroSrc)) return;
+                heroImage.classList.add('opacity-0');
+                window.setTimeout(() => {
+                    heroImage.src = heroSrc;
+                    heroImage.alt = heroAlt;
+                    heroImage.classList.remove('opacity-0');
+                }, 150);
+                document.querySelectorAll('.hero-thumbnail').forEach((item) => item.setAttribute('aria-pressed', String(item === thumbnail)));
+            });
+        });
+
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('[data-kpi-value]').forEach((element) => {
+                const target = Number(element.dataset.kpiValue);
+                const suffix = element.dataset.kpiSuffix || '';
+                const started = performance.now();
+                const duration = 850;
+                const tick = (now) => {
+                    const progress = Math.min((now - started) / duration, 1);
+                    const value = target * (1 - Math.pow(1 - progress, 3));
+                    element.textContent = (Number.isInteger(target) ? Math.round(value) : value.toFixed(1)) + suffix;
+                    if (progress < 1) requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            });
+        } else {
+            document.querySelectorAll('[data-kpi-value]').forEach((element) => {
+                element.textContent = element.dataset.kpiValue + (element.dataset.kpiSuffix || '');
+            });
+        }
+    </script>
+<script src="/js/signup.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

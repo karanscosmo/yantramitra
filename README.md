@@ -50,7 +50,7 @@ YantraMitra models a realistic five-plant Indian manufacturing company (Pune, Ah
 ```
 api/
   index.js                          Vercel serverless entry point
-frontend/
+views/
   */code.html                       21 standalone page screens
 prisma/
   schema.prisma                     Database schema (15 models)

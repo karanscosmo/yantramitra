@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YantraMitra | Reset Password</title>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Inter:wght@100..900&amp;family=Space+Grotesk:wght@300..700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Shimmer Sweep Effect */
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.1) 40%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0.1) 60%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(45deg);
+            transition: transform 0.6s ease;
+            pointer-events: none;
+        }
+        .shimmer-btn:hover::after {
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        /* Glass Inner Glow */
+        .glass-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Subtle floating animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .step-transition {
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+
+        .ym-auth-motion {
+            position: fixed;
+            inset: -12%;
+            pointer-events: none;
+            opacity: 0.5;
+            background-image:
+                radial-gradient(circle at 18% 26%, rgba(94, 250, 228, 0.42) 0 2px, transparent 3px),
+                radial-gradient(circle at 54% 70%, rgba(65, 63, 214, 0.3) 0 2px, transparent 3px),
+                radial-gradient(circle at 82% 34%, rgba(255, 186, 75, 0.24) 0 1px, transparent 3px),
+                linear-gradient(135deg, rgba(65, 63, 214, 0.1), rgba(0, 107, 95, 0.06), transparent 68%);
+            background-size: 210px 210px, 260px 260px, 180px 180px, 100% 100%;
+            animation: ymAuthDrift 30s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes ymAuthDrift {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 210px 120px, -260px 140px, 180px -80px, 0 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ym-auth-motion,
+            .animate-float,
+            .animate-pulse {
+                animation: none !important;
+            }
+            .ym-auth-motion {
+                opacity: 0.18;
+            }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#986500",
+                        "on-primary-fixed-variant": "#2e29c6",
+                        "outline-variant": "#c7c4d7",
+                        "secondary-fixed-dim": "#36ddc8",
+                        "secondary-fixed": "#5efae4",
+                        "on-primary-container": "#f6f2ff",
+                        "tertiary-fixed": "#ffddb1",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#09006b",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191a28",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#fff2e5",
+                        "surface-variant": "#e2e1f4",
+                        "secondary-container": "#5efae4",
+                        "surface-bright": "#fbf8ff",
+                        "surface": "#fbf8ff",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#c1c1ff",
+                        "primary-fixed": "#e1dfff",
+                        "inverse-surface": "#2e2f3e",
+                        "surface-container-high": "#e8e6fa",
+                        "on-secondary-container": "#007165",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffba4b",
+                        "on-tertiary-fixed-variant": "#624000",
+                        "primary": "#413fd6",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c1c1ff",
+                        "outline": "#767586",
+                        "background": "#fbf8ff",
+                        "on-secondary-fixed-variant": "#005047",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#5b5bf0",
+                        "surface-container-highest": "#e2e1f4",
+                        "surface-tint": "#4948de",
+                        "surface-container-low": "#f4f2ff",
+                        "tertiary": "#774f00",
+                        "secondary": "#006b5f",
+                        "on-background": "#191a28",
+                        "inverse-on-surface": "#f1efff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-fixed": "#291800",
+                        "surface-container": "#eeecff",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-dim": "#d9d8ec",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "nav-width": "72px",
+                        "lg": "40px",
+                        "base": "4px",
+                        "gutter": "24px",
+                        "xs": "8px",
+                        "sm": "16px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-lg-mobile": ["Geist"],
+                        "section-header": ["Geist"],
+                        "kpi-numeric": ["Space Grotesk"],
+                        "label-caps": ["Space Grotesk"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+            @keyframes scan {
+                0% { left: 0; opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { left: 100%; opacity: 0; }
+            }
+        </style></head>
+<body class="bg-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Ambient Animated Background -->
+<div class="fixed inset-0 z-0"><div class="absolute top-[-10%] left-[-10%] w-1/2 h-1/2 bg-primary/15 rounded-full blur-3xl animate-pulse"></div><div class="absolute bottom-[-10%] right-[-10%] w-1/2 h-1/2 bg-secondary/15 rounded-full blur-3xl animate-pulse"></div></div>
+<div class="ym-auth-motion" aria-hidden="true"></div>
+<!-- Header (No Nav Shell per Destination Rule) -->
+<header class="fixed top-0 left-0 w-full h-16 flex items-center justify-center z-50"><div class="max-w-7xl w-full px-md flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">factory</span>
+</div>
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
+</div>
+<div class="hidden md:flex items-center bg-surface-container-low border border-outline-variant/30 rounded-full px-4 py-1.5 gap-2 w-64">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">search</span>
+<span class="text-on-surface-variant/60 text-sm">Search documentation...</span>
+</div>
+<div class="w-8 md:hidden"></div>
+</div></header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center p-md relative z-10 mt-16">
+<!-- Center Glass Card -->
+<div class="relative w-full max-w-xl bg-white/60 backdrop-blur-xl border border-outline-variant/30 rounded-[32px] p-lg md:p-xl shadow-[0_32px_64px_-16px_rgba(65,63,214,0.25)] glass-glow overflow-hidden" id="auth-container">
+<!-- Step 1: Initial Request -->
+<div class="step-transition opacity-100 transform translate-x-0" id="step-1">
+<div class="text-center mb-md">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Reset Password</h1>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">Enter your enterprise email address and we'll send you instructions to regain access to Ops Intel.</p>
+</div>
+<form class="space-y-md" onsubmit="handleNext(event, 1)">
+<div class="space-y-xs">
+<label class="font-label-caps text-label-caps text-primary px-1" for="email">Institutional Email</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">alternate_email</span>
+</div>
+<input class="w-full bg-surface-container-low/50 border border-outline-variant/50 rounded-xl py-4 pl-12 pr-4 font-body-md text-on-surface focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-on-surface-variant/40" id="email" placeholder="name@yantramitra.io" required="" type="email"/>
+</div>
+</div>
+<button class="shimmer-btn relative overflow-hidden w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-4 rounded-xl font-label-caps text-label-caps shadow-[0_10px_20px_-5px_rgba(91,91,240,0.4)] hover:shadow-[0_20px_40px_-10px_rgba(65,63,214,0.5)] active:scale-[0.98] transition-all glass-glow" type="submit">
+                        SEND RESET LINK
+                    </button>
+<div class="text-center mt-md">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center gap-2" href="/login">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                            RETURN TO LOGIN
+                        </a>
+</div>
+</form>
+<div class="mt-md p-md bg-white/60 backdrop-blur-xl border border-outline-variant/30 rounded-2xl shadow-lg glass-glow grid grid-cols-2 gap-md"><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant/60">AVG RESET TIME</span><span class="font-kpi-numeric text-kpi-numeric text-primary">42s</span></div><div class="flex flex-col"><span class="font-label-caps text-label-caps text-on-surface-variant/60">SUCCESS RATE</span><span class="font-kpi-numeric text-secondary">99.7%</span></div></div><div class="mt-md p-md bg-white/60 backdrop-blur-xl border border-outline-variant/30 rounded-2xl shadow-lg glass-glow"><h3 class="font-label-caps text-label-caps text-primary mb-md">RECENT SECURITY ACTIVITY</h3><div class="space-y-sm"><div class="flex items-center justify-between py-1 border-b border-outline-variant/20"><span class="text-sm text-on-surface">Password changed</span><span class="text-xs text-on-surface-variant/60">14 Mar 2024</span></div><div class="flex items-center justify-between py-1 border-b border-outline-variant/20"><span class="text-sm text-on-surface">New device sign-in</span><span class="text-xs text-on-surface-variant/60">Chennai Electronics Assembly</span></div><div class="flex items-center justify-between py-1"><span class="text-sm text-on-surface">SSO re-authenticated</span><span class="text-xs text-on-surface-variant/60">Pune Auto Components</span></div></div></div></div>
+<!-- Step 2: Confirmation -->
+<div class="step-transition hidden opacity-0 transform translate-x-12" id="step-2">
+<div class="grid md:grid-cols-2 gap-md items-center">
+<div class="order-2 md:order-1 text-left">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs" style="font-size: 32px;">Check your email</h2>
+<p class="font-body-md text-on-surface-variant mb-md">Instructions have been dispatched to your inbox. Check your spam folder if it doesn't arrive within 2 minutes.</p>
+<div class="space-y-sm">
+<button class="w-full bg-surface-container-highest/50 border border-outline-variant/50 text-on-surface py-3 rounded-xl font-label-caps text-label-caps hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2" onclick="handleNext(event, 2)">
+<span class="material-symbols-outlined">mark_email_read</span>
+                                OPEN EMAIL CLIENT
+                            </button>
+<button class="w-full text-primary py-3 font-label-caps text-label-caps hover:underline transition-all" onclick="handleNext(event, 1)">
+                                RESEND LINK
+                            </button>
+</div>
+</div>
+<div class="order-1 md:order-2 flex justify-center">
+<div class="relative w-48 h-48 animate-float">
+<!-- Custom Industrial-style mail illustration using gradients and shapes -->
+<div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="relative w-full h-full flex items-center justify-center">
+<div class="w-32 h-24 bg-white border-2 border-primary/20 rounded-lg shadow-xl relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1/2 bg-surface-container-low border-b border-outline-variant/30"></div>
+<div class="absolute top-2 left-2 w-8 h-1.5 bg-primary/20 rounded-full"></div>
+<div class="absolute top-5 left-2 w-12 h-1.5 bg-primary/10 rounded-full"></div>
+<div class="absolute bottom-4 right-4 w-8 h-8 bg-gradient-to-br from-secondary to-secondary-fixed rounded-full flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white text-[16px]">bolt</span>
+</div>
+<!-- Scanning line effect -->
+<div class="absolute top-0 left-0 w-1 h-full bg-primary/40 animate-[move_3s_infinite]" style="animation: scan 2s linear infinite;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Success State -->
+<div class="step-transition hidden opacity-0 transform scale-95 flex flex-col items-center text-center py-lg" id="step-success">
+<div class="relative mb-md">
+<!-- Checkmark Burst -->
+<div class="absolute inset-0 bg-secondary/20 rounded-full blur-2xl animate-pulse"></div>
+<div class="w-24 h-24 rounded-full bg-secondary text-white flex items-center justify-center shadow-2xl shadow-secondary/40 relative z-10 border-4 border-white/30">
+<span class="material-symbols-outlined text-[48px] font-bold">check_circle</span>
+</div>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Success!</h2>
+<p class="font-body-md text-on-surface-variant max-w-xs mb-lg">Your password has been reset successfully. You can now log in with your new credentials.</p>
+<button class="shimmer-btn relative overflow-hidden w-full max-w-xs bg-primary text-on-primary py-4 rounded-xl font-label-caps text-label-caps shadow-lg hover:shadow-primary/30 transition-all" onclick="window.location.reload()">
+                    GO TO DASHBOARD
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="relative z-10 w-full py-md">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md border-t border-outline-variant/20 pt-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-60">© 2024 YantraMitra Platform. All rights reserved.</span>
+<div class="flex gap-md mt-sm md:mt-0">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/privacy">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="/api-status">System Status</a>
+</div>
+</div>
+</footer>
+<script>
+        function handleNext(event, currentStep) {
+            event.preventDefault();
+            
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            const stepSuccess = document.getElementById('step-success');
+
+            if (currentStep === 1) {
+                // Transition 1 to 2
+                step1.classList.add('opacity-0', '-translate-x-12');
+                setTimeout(() => {
+                    step1.classList.add('hidden');
+                    step2.classList.remove('hidden');
+                    // Small delay to trigger animation
+                    requestAnimationFrame(() => {
+                        step2.classList.remove('opacity-0', 'translate-x-12');
+                        step2.classList.add('opacity-100', 'translate-x-0');
+                    });
+                }, 400);
+            } else if (currentStep === 2) {
+                // Transition 2 to Success
+                step2.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    step2.classList.add('hidden');
+                    stepSuccess.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        stepSuccess.classList.remove('opacity-0', 'scale-95');
+                        stepSuccess.classList.add('opacity-100', 'scale-100');
+                    });
+                }, 400);
+            }
+        }
+
+        // Custom industrial scan animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes scan {
+                0% { left: 0; opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { left: 100%; opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+<!-- Custom Tags for Animations -->
+<script>
+        class WebGLShader extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });</script>
+<script src="/js/reset-password.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

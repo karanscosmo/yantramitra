@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YantraMitra | Anomaly Investigation</title>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f4f2ff",
+                    "surface-variant": "#e2e1f4",
+                    "on-background": "#191a28",
+                    "on-secondary-fixed": "#00201c",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#5b5bf0",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#464555",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191a28",
+                    "tertiary": "#774f00",
+                    "surface-container-highest": "#e2e1f4",
+                    "tertiary-fixed": "#ffddb1",
+                    "on-secondary-container": "#007165",
+                    "surface-container": "#eeecff",
+                    "surface": "#fbf8ff",
+                    "primary-fixed": "#e1dfff",
+                    "inverse-on-surface": "#f1efff",
+                    "surface-tint": "#4948de",
+                    "secondary-fixed": "#5efae4",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "primary": "#413fd6",
+                    "on-primary-container": "#f6f2ff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "on-primary-fixed": "#09006b",
+                    "background": "#fbf8ff",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#36ddc8",
+                    "on-primary-fixed-variant": "#2e29c6",
+                    "surface-bright": "#fbf8ff",
+                    "inverse-primary": "#c1c1ff",
+                    "secondary-container": "#5efae4",
+                    "on-tertiary-container": "#fff2e5",
+                    "surface-container-high": "#e8e6fa",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "outline": "#767586",
+                    "secondary": "#006b5f",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "inverse-surface": "#2e2f3e",
+                    "on-secondary-fixed-variant": "#005047",
+                    "outline-variant": "#c7c4d7",
+                    "surface-dim": "#d9d8ec",
+                    "on-tertiary-fixed": "#291800",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "sm": "16px",
+                    "md": "24px",
+                    "lg": "40px",
+                    "gutter": "24px",
+                    "nav-width": "72px",
+                    "base": "4px",
+                    "xl": "64px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Geist"],
+                    "label-caps": ["Space Grotesk"],
+                    "kpi-numeric": ["Space Grotesk"],
+                    "display-hero": ["Geist"]
+            },
+            "fontSize": {
+                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background: radial-gradient(circle at top left, #fbf8ff, #eeecff);
+            min-height: 100vh;
+            color: #191a28;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E7E9F5;
+            box-shadow: 0 4px 24px -1px rgba(65, 63, 214, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px -1px rgba(65, 63, 214, 0.1);
+        }
+        .severity-critical { border-left: 4px solid #ba1a1a; }
+        .severity-warning { border-left: 4px solid #ffba4b; }
+        .severity-low { border-left: 4px solid #006b5f; }
+
+        .node-line {
+            stroke: #413fd6;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            animation: dash 10s linear infinite;
+            opacity: 0.3;
+        }
+        @keyframes dash { to { stroke-dashoffset: -100; } }
+
+        .node-pulse {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0% { r: 6; opacity: 0.4; }
+            50% { r: 12; opacity: 0.1; }
+            100% { r: 6; opacity: 0.4; }
+        }
+        
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #5B5BF0, #7C7CFA);
+            box-shadow: 0 0 10px rgba(91, 91, 240, 0.4);
+        }
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+        .shimmer-btn:hover::after {
+            left: 120%;
+            top: 120%;
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="font-body-md text-on-background selection:bg-primary/20">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md dark:bg-surface/70 border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
+<div class="flex items-center gap-sm">
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
+<div class="ml-lg relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low/50 focus:ring-2 focus:ring-primary/50 transition-all w-64 text-sm" placeholder="Search factory nodes (⌘K)" type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a female industrial plant manager in her 40s. She is wearing a clean navy work vest and subtle safety glasses. The lighting is bright and ethereal with a slight soft focus background of a high-tech control room with glowing blue interface screens. The overall mood is intelligent, focused, and high-performance." src="/assets/images/ym-operator-avatar.jpg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 px-md max-w-full">
+<div class="mb-md flex justify-between items-end">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Anomaly Investigation</h1>
+<p class="text-on-surface-variant mt-1">Live monitoring: 14 agents active across Zone-B Industrial Cluster.</p>
+</div>
+<div class="flex gap-sm">
+<button class="shimmer-btn text-white px-md py-2 rounded-lg font-label-caps flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
+                    AUTO-RESOLVE ALL
+                </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Side: Filterable Anomaly List -->
+<section class="lg:col-span-4 flex flex-col gap-sm h-[calc(100vh-220px)]">
+<div class="flex items-center justify-between px-2 mb-2">
+<span class="font-label-caps text-on-surface-variant">ACTIVE ALARMS (7)</span>
+<button class="text-primary text-xs font-semibold hover:underline">Clear Filters</button>
+</div>
+<div class="overflow-y-auto no-scrollbar flex flex-col gap-sm pr-2">
+<!-- Critical Alarm -->
+<div class="glass-card p-sm rounded-xl severity-critical border-primary/20 relative overflow-hidden">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-error/10 text-error font-label-caps text-[10px]">CRITICAL</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">14:22:01</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Turbine Shaft Eccentricity</h3>
+<p class="text-xs text-on-surface-variant mt-1">Vibration detected in Unit 04-B exceeds safety threshold (12.4mm/s).</p>
+<div class="mt-3 flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold">AS</div>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold">YM</div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-medium">2 Experts Investigating</span>
+</div>
+</div>
+<!-- Warning Alarm -->
+<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 bg-white/40">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">14:18:55</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Hydraulic Pressure Drop</h3>
+<p class="text-xs text-on-surface-variant mt-1">Secondary pump loop showing 15% efficiency decay over 30 mins.</p>
+</div>
+<!-- Multiple Glass Cards for spacing -->
+<div class="glass-card p-sm rounded-xl severity-low border-primary/20">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-caps text-[10px]">LOW</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">14:05:12</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Fan Filter Restriction</h3>
+<p class="text-xs text-on-surface-variant mt-1">Exhaust fan 12 obstruction detected. Scheduled for next shift.</p>
+</div>
+<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 opacity-80">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">13:45:00</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Thermal Coupling Variance</h3>
+<p class="text-xs text-on-surface-variant mt-1">Sensor mismatch on Boiler-7 feed water inlet.</p>
+</div>
+<div class="glass-card p-sm rounded-xl severity-critical border-primary/20 opacity-80">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-error/10 text-error font-label-caps text-[10px]">CRITICAL</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">13:32:11</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Network Latency Spike</h3>
+<p class="text-xs text-on-surface-variant mt-1">Substation 4 node reporting &gt;200ms round-trip delay.</p>
+</div>
+<div class="glass-card p-sm rounded-xl severity-low border-primary/20 opacity-70">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-caps text-[10px]">LOW</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">13:10:44</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Lubricant Reservoir Low</h3>
+<p class="text-xs text-on-surface-variant mt-1">Main reservoir at 25% capacity. Request dispatched.</p>
+</div>
+<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 opacity-60">
+<div class="flex justify-between items-start mb-2">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
+<span class="font-kpi-numeric text-xs text-on-surface-variant">12:55:19</span>
+</div>
+<h3 class="font-section-header text-sm text-on-surface leading-tight">Belt Tension Irregularity</h3>
+<p class="text-xs text-on-surface-variant mt-1">Conveyor 3 phase jitter detected on motor A-4.</p>
+</div>
+</div>
+</section>
+<!-- Right Side: Investigation Panel -->
+<section class="lg:col-span-8 flex flex-col gap-gutter">
+<!-- Root Cause Node Graph (Interactive Placeholder) -->
+<div class="glass-card rounded-2xl p-md h-[420px] relative overflow-hidden border-primary/30 flex flex-col">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-section-header text-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="account_tree">account_tree</span>
+                            Root-Cause Intelligence
+                        </h2>
+<div class="flex gap-2">
+<button type="button" class="px-3 py-1 rounded-full border border-outline-variant text-[10px] font-bold hover:bg-primary/10 transition-colors">RE-SCAN GRAPH</button>
+<button type="button" class="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-bold hover:bg-primary/90 transition-colors">LATEST SNAPSHOT</button>
+</div>
+</div>
+<div class="flex-grow relative flex items-center justify-center">
+<!-- SVG Node Graph -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none">
+<!-- Paths -->
+<path class="node-line" d="M 150 150 L 350 100"></path>
+<path class="node-line" d="M 150 150 L 350 200"></path>
+<path class="node-line" d="M 350 100 L 550 150"></path>
+<path class="node-line" d="M 350 200 L 550 150"></path>
+<path class="node-line" d="M 550 150 L 750 150" style="stroke: #ba1a1a; opacity: 0.6;"></path>
+</svg>
+<!-- Nodes -->
+<div class="absolute left-[15%] top-[40%] flex flex-col items-center">
+<div class="w-16 h-16 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="factory">factory</span>
+<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Unit 04-B</div>
+</div>
+</div>
+<div class="absolute left-[40%] top-[25%] flex flex-col items-center">
+<div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
+<span class="material-symbols-outlined text-primary" data-icon="sensors">sensors</span>
+<div class="absolute -top-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Radial Vib S-1</div>
+</div>
+</div>
+<div class="absolute left-[40%] top-[55%] flex flex-col items-center">
+<div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
+<span class="material-symbols-outlined text-primary" data-icon="speed">speed</span>
+<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Tachometer G-4</div>
+</div>
+</div>
+<div class="absolute left-[65%] top-[40%] flex flex-col items-center">
+<div class="w-20 h-20 rounded-full glass-card flex items-center justify-center border-4 border-error/50 relative group cursor-pointer z-10">
+<div class="absolute inset-0 bg-error/10 rounded-full animate-pulse"></div>
+<span class="material-symbols-outlined text-error text-3xl font-bold" data-icon="report" style="font-variation-settings: 'FILL' 1;">report</span>
+<div class="absolute -top-10 whitespace-nowrap text-[11px] font-bold text-error bg-white/95 px-3 py-1.5 rounded-lg border border-error/20 shadow-lg">ECCENTRICITY FAULT</div>
+</div>
+</div>
+<div class="absolute left-[85%] top-[40%] flex flex-col items-center">
+<div class="w-12 h-12 rounded-full glass-card flex items-center justify-center border-2 border-outline/30 relative opacity-50 group cursor-pointer">
+<span class="material-symbols-outlined text-outline" data-icon="electrical_services">electrical_services</span>
+<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps">Grid Impact</div>
+</div>
+</div>
+</div>
+<!-- Overlay decorative element -->
+<div class="absolute bottom-4 right-4 pointer-events-none opacity-40">
+
+</div>
+</div>
+<!-- Causal Hypotheses Section -->
+<div class="glass-card rounded-2xl p-md border-primary/20">
+<h2 class="font-section-header text-lg mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
+                        Causal Hypotheses &amp; Intelligence Confidence
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Hypothesis 1 -->
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-xs text-on-surface">Main Bearing Inner-Race Wear</span>
+<span class="font-kpi-numeric text-primary">88%</span>
+</div>
+<div class="h-2 w-full bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(65,63,214,0.4)]" style="width: 88%"></div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Correlated with high-frequency harmonics observed in Sensor S-1 during ramp-down sequence.</p>
+</div>
+<!-- Hypothesis 2 -->
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-xs text-on-surface">Inlet Cavitation Effect</span>
+<span class="font-kpi-numeric text-on-surface-variant">12%</span>
+</div>
+<div class="h-2 w-full bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant/80 rounded-full" style="width: 12%"></div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Fluid temperature remains within nominal bounds. Low correlation with current vib-profile.</p>
+</div>
+<!-- Hypothesis 3 -->
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-xs text-on-surface">Structural Resonance (Loose Bolt)</span>
+<span class="font-kpi-numeric text-primary">45%</span>
+</div>
+<div class="h-2 w-full bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary/60 rounded-full" style="width: 45%"></div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Partial match. Harmonic peaks observed at multiples of 3x rotational speed.</p>
+</div>
+<!-- Hypothesis 4 -->
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-xs text-on-surface">Unbalanced Impeller Load</span>
+<span class="font-kpi-numeric text-primary">31%</span>
+</div>
+<div class="h-2 w-full bg-outline-variant/30 rounded-full overflow-hidden">
+<div class="h-full bg-primary/40 rounded-full" style="width: 31%"></div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2">Material buildup suspected but secondary to bearing frequency indicators.</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Global Footer -->
+<footer class="mt-auto w-full py-md border-t border-outline-variant/20 bg-transparent flex flex-col md:flex-row justify-between items-center px-md max-w-7xl mx-auto">
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YantraMitra Platform. All rights reserved.</span>
+<div class="flex gap-md mt-sm md:mt-0">
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="font-body-md text-primary underline" href="/api-status">API Status</a>
+</div>
+</footer>
+<!-- Interactive script for node micro-interactions -->
+<script>
+        document.querySelectorAll('.group').forEach(node => {
+            node.addEventListener('mouseenter', () => {
+                const icon = node.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.textShadow = '0 0 8px currentColor';
+            });
+            node.addEventListener('mouseleave', () => {
+                const icon = node.querySelector('.material-symbols-outlined');
+                if(icon) icon.style.textShadow = 'none';
+            });
+        });
+    </script>
+<script src="/js/anomaly.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

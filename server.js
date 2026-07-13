@@ -135,7 +135,7 @@ function validateEnum(value, allowedValues, fieldName) {
 
 function servePage(pageName) {
   return (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', pageName, 'code.html'));
+    res.sendFile(path.join(__dirname, 'views', pageName, 'index.html'));
   };
 }
 
@@ -235,27 +235,27 @@ const publicFacilities = {
   }
 };
 
-app.get('/', authOptional, servePage('yantramitra_home'));
-app.get('/login', servePage('login_yantramitra_polished'));
-app.get('/signup', servePage('join_yantramitra_polished'));
-app.get('/reset-password', servePage('reset_password_yantramitra_polished'));
-app.get('/onboarding', authRequired, servePage('onboarding_yantramitra_polished'));
-app.get('/dashboard', authRequired, servePage('command_center_yantramitra'));
-app.get('/map', authRequired, servePage('global_operations_map_yantramitra_polished'));
-app.get('/plant/:id', authRequired, servePage('detroit_plant_overview_yantramitra'));
-app.get('/digital-twin', authRequired, servePage('digital_twin_yantramitra'));
-app.get('/assets', authRequired, servePage('asset_fleet_yantramitra'));
-app.get('/assets/:id', authRequired, servePage('asset_detail_pump_p_102_yantramitra'));
-app.get('/anomaly', authRequired, servePage('anomaly_investigation_yantramitra'));
-app.get('/reliability', authRequired, servePage('reliability_forecast_yantramitra'));
-app.get('/diagnostics/:assetId', authRequired, servePage('diagnostics_yantramitra'));
-app.get('/simulator', authRequired, servePage('scenario_simulator_yantramitra'));
-app.get('/ai-console', authRequired, servePage('ai_operations_console_yantramitra'));
-app.get('/agents', authRequired, servePage('agent_mission_control_yantramitra'));
-app.get('/plans', authRequired, servePage('plan_review_yantramitra'));
-app.get('/maintenance', authRequired, servePage('maintenance_planner_yantramitra'));
-app.get('/work-orders', authRequired, servePage('work_orders_yantramitra'));
-app.get('/settings', authRequired, servePage('settings_yantramitra'));
+app.get('/', authOptional, servePage('home'));
+app.get('/login', servePage('login'));
+app.get('/signup', servePage('signup'));
+app.get('/reset-password', servePage('reset-password'));
+app.get('/onboarding', authRequired, servePage('onboarding'));
+app.get('/dashboard', authRequired, servePage('command-center'));
+app.get('/map', authRequired, servePage('global-map'));
+app.get('/plant/:id', authRequired, servePage('plant-overview'));
+app.get('/digital-twin', authRequired, servePage('digital-twin'));
+app.get('/assets', authRequired, servePage('asset-fleet'));
+app.get('/assets/:id', authRequired, servePage('asset-detail'));
+app.get('/anomaly', authRequired, servePage('anomaly'));
+app.get('/reliability', authRequired, servePage('reliability-forecast'));
+app.get('/diagnostics/:assetId', authRequired, servePage('diagnostics'));
+app.get('/simulator', authRequired, servePage('simulator'));
+app.get('/ai-console', authRequired, servePage('ai-console'));
+app.get('/agents', authRequired, servePage('agents'));
+app.get('/plans', authRequired, servePage('plans'));
+app.get('/maintenance', authRequired, servePage('maintenance'));
+app.get('/work-orders', authRequired, servePage('work-orders'));
+app.get('/settings', authRequired, servePage('settings'));
 app.get('/about', (req, res) => {
   res.send(infoPage('About YantraMitra', '<p>YantraMitra is an industrial operations intelligence platform built around a realistic five-plant Indian manufacturing company. The product combines command dashboards, plant maps, machine health, work orders, digital-twin views, and YantraNklan AI agents.</p><p>The public site explains the platform without sending logged-out visitors into protected app routes. After sign-in, teams can enter the working company operations environment.</p>'));
 });

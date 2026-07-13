@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>YantraMitra | Factory Intel Pune</title>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&family=Geist:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&family=Space+Grotesk:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #E7E9F5;
+            box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.05);
+        }
+        .shimmer-btn:hover::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-25deg);
+            animation: shimmer 0.75s forwards;
+        }
+        @keyframes shimmer {
+            100% { left: 150%; }
+        }
+        .glow-pulse-green {
+            box-shadow: 0 0 0 0 rgba(0, 107, 95, 0.4);
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 107, 95, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 107, 95, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 107, 95, 0); }
+        }
+        .glow-pulse-amber {
+            box-shadow: 0 0 0 0 rgba(152, 101, 0, 0.4);
+            animation: pulse-amber 2s infinite;
+        }
+        @keyframes pulse-amber {
+            0% { box-shadow: 0 0 0 0 rgba(152, 101, 0, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(152, 101, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(152, 101, 0, 0); }
+        }
+        body {
+            background: radial-gradient(circle at top right, #f4f2ff 0%, #fbf8ff 100%);
+            min-height: 100vh;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f4f2ff",
+                    "surface-variant": "#e2e1f4",
+                    "on-background": "#191a28",
+                    "on-secondary-fixed": "#00201c",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#5b5bf0",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#464555",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191a28",
+                    "tertiary": "#774f00",
+                    "surface-container-highest": "#e2e1f4",
+                    "tertiary-fixed": "#ffddb1",
+                    "on-secondary-container": "#007165",
+                    "surface-container": "#eeecff",
+                    "surface": "#fbf8ff",
+                    "primary-fixed": "#e1dfff",
+                    "inverse-on-surface": "#f1efff",
+                    "surface-tint": "#4948de",
+                    "secondary-fixed": "#5efae4",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "primary": "#413fd6",
+                    "on-primary-container": "#f6f2ff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "on-primary-fixed": "#09006b",
+                    "background": "#fbf8ff",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#36ddc8",
+                    "on-primary-fixed-variant": "#2e29c6",
+                    "surface-bright": "#fbf8ff",
+                    "inverse-primary": "#c1c1ff",
+                    "secondary-container": "#5efae4",
+                    "on-tertiary-container": "#fff2e5",
+                    "surface-container-high": "#e8e6fa",
+                    "tertiary-container": "#986500",
+                    "outline": "#767586",
+                    "secondary": "#006b5f",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "inverse-surface": "#2e2f3e",
+                    "on-secondary-fixed-variant": "#005047",
+                    "outline-variant": "#c7c4d7",
+                    "surface-dim": "#d9d8ec",
+                    "on-tertiary-fixed": "#291800",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "sm": "16px",
+                    "md": "24px",
+                    "lg": "40px",
+                    "gutter": "24px",
+                    "nav-width": "72px",
+                    "base": "4px",
+                    "xl": "64px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Geist"],
+                    "label-caps": ["Space Grotesk"],
+                    "kpi-numeric": ["Space Grotesk"],
+                    "display-hero": ["Geist"]
+            },
+            "fontSize": {
+                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="font-body-md text-on-surface overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 shadow-[0_8px_32px_0_rgba(65,63,214,0.1)] flex justify-between items-center px-md">
+<div class="flex items-center gap-sm">
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
+<div class="h-6 w-px bg-outline-variant/50 mx-xs"></div>
+<span class="font-body-md text-on-surface-variant font-medium">Pune Assembly Plant • <span class="text-secondary font-bold">LIVE</span></span>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group hidden md:block">
+<input class="bg-surface-container/50 border border-outline-variant/30 rounded-full px-lg py-1.5 w-64 focus:ring-2 focus:ring-primary/50 outline-none transition-all text-body-md" placeholder="Search factory assets... (⌘K)" type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1.5 text-on-surface-variant">search</span>
+</div>
+<div class="flex gap-sm">
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">factory</span>
+</button>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" data-alt="Close-up portrait of a professional industrial operations manager, high-end photography, soft corporate lighting, blue and white professional background aesthetic." src="/assets/images/ym-operator-avatar.jpg"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-md pl-md max-w-[1600px] mx-auto min-h-screen">
+<!-- KPI Row -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
+<!-- OEE Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between overflow-hidden relative">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-caps text-on-surface-variant">OVERALL EQUIP. EFFICIENCY</h3>
+<p class="font-kpi-numeric text-4xl mt-1 text-primary">87.4%</p>
+</div>
+<div class="bg-primary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+</div>
+<div class="mt-4 h-16 w-full flex items-end gap-1">
+<!-- Simple Sparkline Mockup -->
+<div class="flex-1 bg-primary/20 rounded-t-sm h-1/2"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-3/4"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-1/2"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-5/6"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm h-full"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-2/3"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm h-3/4"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm h-5/6"></div>
+</div>
+<p class="text-xs text-secondary mt-2 flex items-center font-bold">
+<span class="material-symbols-outlined text-xs mr-1">trending_up</span> +2.1% from last shift
+                </p>
+</div>
+<!-- Throughput Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between overflow-hidden">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-caps text-on-surface-variant">UNITS THROUGHPUT</h3>
+<p class="font-kpi-numeric text-4xl mt-1 text-on-background">1,242 <span class="text-lg font-normal text-on-surface-variant">/hr</span></p>
+</div>
+<div class="bg-secondary/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-secondary">speed</span>
+</div>
+</div>
+<div class="mt-4 h-16 w-full flex items-end gap-1">
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/4"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/3"></div>
+<div class="flex-1 bg-secondary/40 rounded-t-sm h-full"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-5/6"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-3/4"></div>
+<div class="flex-1 bg-secondary/40 rounded-t-sm h-full"></div>
+<div class="flex-1 bg-secondary/20 rounded-t-sm h-2/3"></div>
+<div class="flex-1 bg-secondary/40 rounded-t-sm h-1/2"></div>
+</div>
+<p class="text-xs text-on-surface-variant mt-2 flex items-center">
+<span class="material-symbols-outlined text-xs mr-1">history</span> Target: 1,300 units/hr
+                </p>
+</div>
+<!-- Downtime Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between overflow-hidden border-error/10">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-label-caps text-on-surface-variant">UNPLANNED DOWNTIME</h3>
+<p class="font-kpi-numeric text-4xl mt-1 text-error">14 <span class="text-lg font-normal text-on-surface-variant">min</span></p>
+</div>
+<div class="bg-error/10 p-2 rounded-lg">
+<span class="material-symbols-outlined text-error">timer_off</span>
+</div>
+</div>
+<div class="mt-4 h-16 w-full flex items-end gap-1">
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/6"></div>
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/4"></div>
+<div class="flex-1 bg-error/30 rounded-t-sm h-1/2"></div>
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/5"></div>
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/6"></div>
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/10"></div>
+<div class="flex-1 bg-error/10 rounded-t-sm h-1/6"></div>
+<div class="flex-1 bg-error/40 rounded-t-sm h-3/4"></div>
+</div>
+<p class="text-xs text-error mt-2 flex items-center font-bold">
+<span class="material-symbols-outlined text-xs mr-1">warning</span> Line 4 obstruction detected
+                </p>
+</div>
+</section>
+<!-- Central Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-md items-start">
+<!-- Floor Plan (Bento Main) -->
+<div class="lg:col-span-8 glass-card rounded-2xl p-lg h-[600px] flex flex-col relative overflow-hidden group">
+<div class="flex justify-between items-center mb-md z-10">
+<div>
+<h2 class="font-section-header text-on-surface">Floor Plan Intelligence</h2>
+<p class="text-on-surface-variant text-body-md">Live operational status by machine node.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-2 rounded-full glass-card text-xs font-label-caps hover:bg-white transition-all">ZOOM AUTO</button>
+<button class="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-label-caps shimmer-btn relative overflow-hidden">EXPORT DATA</button>
+</div>
+</div>
+<!-- Floor Plan Diagram Area -->
+<div class="flex-grow relative bg-surface-container/30 rounded-xl border border-outline-variant/20 flex items-center justify-center p-md">
+<!-- Interactive 3D Factory Map -->
+<div id="ym-plant-floor-3d" class="w-full h-full max-w-4xl relative rounded-xl overflow-hidden">
+<div class="h-full flex items-center justify-center text-center text-on-surface-variant font-bold">Loading live 3D machine floor...</div>
+<div id="ym-plant-floor-fallback" class="hidden w-full h-full relative">
+<!-- Pulsing Nodes Overlay -->
+<!-- Node 1: Assembly Row A -->
+<div class="absolute top-1/4 left-1/3 w-4 h-4 rounded-full bg-secondary glow-pulse-green cursor-pointer group/node" title="Robot A-1: Operating">
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/node:opacity-100 transition-opacity whitespace-nowrap">
+                                Robot Arm A-1: 98% Eff.
+                            </div>
+</div>
+<!-- Node 2: Welding Cell -->
+<div class="absolute top-1/3 left-1/2 w-4 h-4 rounded-full bg-tertiary glow-pulse-amber cursor-pointer group/node" title="Welder B-4: High Temp">
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/node:opacity-100 transition-opacity whitespace-nowrap">
+                                Welding B-4: Warning (Temp)
+                            </div>
+</div>
+<!-- Node 3: Paint Station -->
+<div class="absolute bottom-1/3 right-1/4 w-4 h-4 rounded-full bg-secondary glow-pulse-green cursor-pointer group/node" title="Paint Line: Nominal">
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/node:opacity-100 transition-opacity whitespace-nowrap">
+                                Paint Line 1: Stable
+                            </div>
+</div>
+<!-- Node 4: Quality Check -->
+<div class="absolute top-1/2 right-1/2 w-4 h-4 rounded-full bg-secondary glow-pulse-green cursor-pointer group/node" title="Quality Insp: Operating">
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-on-background text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/node:opacity-100 transition-opacity whitespace-nowrap">
+                                QC Scanner: Online
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Abstract Atmosphere element -->
+<div class="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Recent Alerts Sidebar -->
+<aside class="lg:col-span-4 flex flex-col gap-md h-full">
+<div class="glass-card rounded-2xl p-md flex flex-col h-full">
+<div class="flex items-center justify-between mb-sm">
+<h2 class="font-label-caps text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-error">campaign</span>
+                            RECENT ALERTS
+                        </h2>
+<button class="text-xs text-primary font-bold hover:underline">Mark all read</button>
+</div>
+<div class="space-y-3 overflow-y-auto max-h-[520px] pr-2 custom-scrollbar">
+<!-- Alert 1 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-error/10 to-transparent border-l-4 border-error hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-error">CRITICAL</span>
+<span class="text-[10px] text-on-surface-variant">12:44 PM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Motor Overheat - Line 4</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">Vibration threshold exceeded on assembly conveyor.</p>
+</div>
+<!-- Alert 2 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-tertiary/10 to-transparent border-l-4 border-tertiary hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-tertiary">WARNING</span>
+<span class="text-[10px] text-on-surface-variant">12:30 PM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Low Lubricant - Robot B2</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">Refill scheduled within 2 hours to avoid halt.</p>
+</div>
+<!-- Alert 3 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-primary/10 to-transparent border-l-4 border-primary hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-primary">INFO</span>
+<span class="text-[10px] text-on-surface-variant">11:15 AM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Shift Change Completed</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">Shift B hand-off confirmed by supervisor.</p>
+</div>
+<!-- Alert 4 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-tertiary/10 to-transparent border-l-4 border-tertiary hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-tertiary">WARNING</span>
+<span class="text-[10px] text-on-surface-variant">10:50 AM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Throughput Dip detected</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">Unit count down 5% vs. previous hour.</p>
+</div>
+<!-- Alert 5 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-error/10 to-transparent border-l-4 border-error hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-error">CRITICAL</span>
+<span class="text-[10px] text-on-surface-variant">09:12 AM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Power Surge Row G</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">Emergency shutdown initiated on welding nodes.</p>
+</div>
+<!-- Alert 6 -->
+<div class="p-3 rounded-xl bg-gradient-to-r from-primary/10 to-transparent border-l-4 border-primary hover:translate-x-1 transition-transform cursor-pointer">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-caps text-[10px] text-primary">INFO</span>
+<span class="text-[10px] text-on-surface-variant">08:00 AM</span>
+</div>
+<h4 class="text-sm font-bold text-on-surface">Planned Maintenance End</h4>
+<p class="text-xs text-on-surface-variant mt-1 line-clamp-1">System recalibration successful for Line 1.</p>
+</div>
+</div>
+<button class="mt-auto w-full py-3 rounded-xl border border-outline-variant/30 text-on-surface-variant text-sm font-medium hover:bg-surface-container transition-colors">
+                        View Audit Log
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer Area -->
+<footer class="hidden w-full py-md border-t border-outline-variant/20 bg-transparent pr-[100px]">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md text-on-surface-variant">
+<span class="font-label-caps text-on-surface-variant">© 2024 YANTRAMITRA PLATFORM</span>
+<div class="flex gap-md mt-sm md:mt-0 font-body-md">
+<a class="hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="/api-status">
+<span class="w-2 h-2 bg-secondary rounded-full"></span> API Status
+                </a>
+</div>
+</div>
+</footer>
+<!-- Micro-interaction JS for hover effects and live clock -->
+<script>
+        // Update live data feeling
+        setInterval(() => {
+            const timeSpan = document.querySelector('header span.text-secondary');
+            if (timeSpan) {
+                timeSpan.classList.toggle('opacity-50');
+            }
+        }, 1000);
+
+        // Simple mouse tracking for glass glow on cards
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="/js/factory-3d.js"></script>
+<script src="/js/plant-overview.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>

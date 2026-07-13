@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<title>Reliability Forecast | YantraMitra</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f4f2ff",
+                    "surface-variant": "#e2e1f4",
+                    "on-background": "#191a28",
+                    "on-secondary-fixed": "#00201c",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-container": "#5b5bf0",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#464555",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#191a28",
+                    "tertiary": "#774f00",
+                    "surface-container-highest": "#e2e1f4",
+                    "tertiary-fixed": "#ffddb1",
+                    "on-secondary-container": "#007165",
+                    "surface-container": "#eeecff",
+                    "surface": "#fbf8ff",
+                    "primary-fixed": "#e1dfff",
+                    "inverse-on-surface": "#f1efff",
+                    "surface-tint": "#4948de",
+                    "secondary-fixed": "#5efae4",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "primary": "#413fd6",
+                    "on-primary-container": "#f6f2ff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c1c1ff",
+                    "on-primary-fixed": "#09006b",
+                    "background": "#fbf8ff",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#36ddc8",
+                    "on-primary-fixed-variant": "#2e29c6",
+                    "surface-bright": "#fbf8ff",
+                    "inverse-primary": "#c1c1ff",
+                    "secondary-container": "#5efae4",
+                    "on-tertiary-container": "#fff2e5",
+                    "surface-container-high": "#e8e6fa",
+                    "tertiary-fixed-dim": "#ffba4b",
+                    "outline": "#767586",
+                    "secondary": "#006b5f",
+                    "on-tertiary-fixed-variant": "#624000",
+                    "inverse-surface": "#2e2f3e",
+                    "on-secondary-fixed-variant": "#005047",
+                    "outline-variant": "#c7c4d7",
+                    "surface-dim": "#d9d8ec",
+                    "on-tertiary-fixed": "#291800",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "sm": "16px",
+                    "md": "24px",
+                    "lg": "40px",
+                    "gutter": "24px",
+                    "nav-width": "72px",
+                    "base": "4px",
+                    "xl": "64px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Geist"],
+                    "label-caps": ["Space Grotesk"],
+                    "kpi-numeric": ["Space Grotesk"],
+                    "display-hero": ["Geist"]
+            },
+            "fontSize": {
+                    "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid #E7E9F5;
+            box-shadow: 0 8px 32px 0 rgba(65, 63, 214, 0.05);
+        }
+        .glow-indigo { box-shadow: 0 0 15px rgba(65, 63, 214, 0.4); }
+        .inner-glow { box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.4); }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .shimmer-sweep::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-20deg);
+            animation: shimmer 3s infinite;
+        }
+
+        /* Prognostics Chart Curve Animation */
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+        .animate-draw {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- Background Shader Simulation -->
+<div class="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,#f4f2ff_0%,#ffffff_100%)]">
+
+</div>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md shadow-[0_8px_32px_0_rgba(65,63,214,0.1)]">
+<div class="flex items-center gap-sm">
+<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
+<div class="h-6 w-px bg-outline-variant/50 ml-sm"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Ops Intel</span>
+</div>
+<div class="flex-1 max-w-md mx-xl relative focus-within:ring-2 focus-within:ring-primary/50 transition-all rounded-full overflow-hidden">
+<input class="w-full bg-surface-container/50 border border-outline-variant/30 rounded-full py-2 px-10 text-body-md focus:outline-none focus:border-primary" placeholder="Search industrial assets... (⌘K)" type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">factory</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-primary-container border-2 border-white shadow-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior industrial operations manager, soft studio lighting, focused gaze, minimalist tech background in cool tones of indigo and white." src="/assets/images/ym-operator-avatar.jpg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-12 pl-md min-h-screen">
+<div class="max-w-7xl mx-auto space-y-gutter">
+<!-- Page Header & KPI Bar -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Reliability Forecast</h1>
+<p class="text-on-surface-variant mt-1">Asset ID: <span class="font-label-caps text-primary">PX-992 Turbine Assembly</span></p>
+</div>
+<div class="flex gap-md">
+<div class="glass-card inner-glow rounded-xl px-md py-sm border-l-4 border-primary">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">HEALTH SCORE</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-kpi-numeric text-4xl text-primary">82</span>
+<span class="text-on-surface-variant">/ 100</span>
+</div>
+</div>
+<div class="glass-card inner-glow rounded-xl px-md py-sm border-l-4 border-secondary">
+<p class="font-label-caps text-label-caps text-on-surface-variant mb-1">CONFIDENCE</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-kpi-numeric text-4xl text-secondary">94%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Prognostics Chart Card -->
+<div class="col-span-12 lg:col-span-9 glass-card inner-glow rounded-3xl p-lg relative overflow-hidden">
+<div class="flex justify-between items-center mb-lg">
+<div>
+<h2 class="font-section-header text-section-header text-on-surface">Remaining Useful Life (RUL)</h2>
+<p class="text-on-surface-variant">Projected degradation path based on real-time sensor streams</p>
+</div>
+<div class="flex gap-sm">
+<span class="flex items-center gap-xs font-label-caps text-label-caps"><span class="w-3 h-3 rounded-full bg-primary"></span> Nominal</span>
+<span class="flex items-center gap-xs font-label-caps text-label-caps"><span class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></span> Warning</span>
+<span class="flex items-center gap-xs font-label-caps text-label-caps"><span class="w-3 h-3 rounded-full bg-error"></span> Critical</span>
+</div>
+</div>
+<!-- SVG Chart -->
+<div class="relative h-[400px] w-full mt-lg">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 1000 400">
+<!-- Grid Lines -->
+<g class="stroke-outline-variant/20" stroke-dasharray="4 4" stroke-width="1">
+<line x1="0" x2="1000" y1="100" y2="100"></line>
+<line x1="0" x2="1000" y1="200" y2="200"></line>
+<line x1="0" x2="1000" y1="300" y2="300"></line>
+</g>
+<!-- Risk Gradient Defs -->
+<defs>
+<lineargradient id="risk-gradient" x1="0" x2="1" y1="0" y2="1">
+<stop offset="0%" stop-color="#413fd6"></stop>
+<stop offset="60%" stop-color="#ffba4b"></stop>
+<stop offset="100%" stop-color="#ba1a1a"></stop>
+</lineargradient>
+<filter id="glow">
+<fegaussianblur result="blur" stddeviation="4"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+</defs>
+<!-- Curve -->
+<path class="animate-draw" d="M0,50 Q250,60 500,150 T950,380" fill="none" filter="url(#glow)" stroke="url(#risk-gradient)" stroke-width="4"></path>
+<!-- Milestone Markers -->
+<g>
+<circle cx="500" cy="150" fill="#ffba4b" r="6" stroke="white" stroke-width="2"></circle>
+<text class="font-label-caps text-[10px] fill-on-surface-variant" x="510" y="140">Maintenance Threshold</text>
+<circle class="animate-pulse" cx="950" cy="380" fill="#ba1a1a" r="8" stroke="white" stroke-width="2"></circle>
+<text class="font-label-caps text-[10px] font-bold fill-error" x="820" y="370">PREDICTED FAILURE</text>
+</g>
+</svg>
+<!-- Overlay Legend -->
+<div class="absolute bottom-4 left-0 right-0 flex justify-between px-md">
+<span class="font-label-caps text-xs text-on-surface-variant">MAR 2024 (Current)</span>
+<span class="font-label-caps text-xs text-on-surface-variant">MAY 2024</span>
+<span class="font-label-caps text-xs text-on-surface-variant">JUL 2024</span>
+<span class="font-label-caps text-xs text-on-surface-variant">SEP 2024</span>
+</div>
+</div>
+<!-- Prediction Countdown -->
+<div class="mt-lg flex items-center justify-between border-t border-outline-variant/20 pt-md">
+<div class="flex items-center gap-md">
+<div class="bg-primary/10 p-3 rounded-full">
+<span class="material-symbols-outlined text-primary">timer</span>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">ESTIMATED REMAINDER</p>
+<p class="font-kpi-numeric text-3xl text-on-surface">142 Days <span class="text-body-md font-normal text-on-surface-variant">12h 45m</span></p>
+</div>
+</div>
+<button class="relative bg-gradient-to-r from-primary to-primary-container text-on-primary px-xl py-3 rounded-full font-label-caps overflow-hidden shadow-lg hover:scale-105 transition-transform shimmer-sweep">
+                            SCHEDULE MAINTENANCE
+                        </button>
+</div>
+</div>
+<!-- Right Side Panel: Contributing Factors -->
+<div class="col-span-12 lg:col-span-3 space-y-gutter">
+<!-- Factors Cloud Card -->
+<div class="glass-card inner-glow rounded-3xl p-md">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<h3 class="font-section-header text-lg">Risk Drivers</h3>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-error border-error/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> High Vibration
+                            </span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Thermal Stress
+                            </span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-on-surface-variant">Load Spikes</span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-on-surface-variant">Lubricant Viscosity</span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-error border-error/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> RPM Jitter
+                            </span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-on-surface-variant">Pressure Delta</span>
+<span class="glass-card px-3 py-1.5 rounded-full text-[11px] font-label-caps text-on-surface-variant">Ambient Humidity</span>
+</div>
+</div>
+<!-- Active Monitor Mini-Card -->
+<div class="glass-card inner-glow rounded-3xl p-md overflow-hidden relative">
+<div class="flex justify-between items-start mb-md">
+<h3 class="font-section-header text-lg">Live Telemetry</h3>
+<span class="material-symbols-outlined text-secondary animate-pulse">sensors</span>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Torque</span>
+<span class="font-kpi-numeric">842 Nm</span>
+</div>
+<div class="w-full h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[65%]"></div>
+</div>
+<div class="flex justify-between items-center text-sm mt-2">
+<span class="text-on-surface-variant">Temperature</span>
+<span class="font-kpi-numeric">72°C</span>
+</div>
+<div class="w-full h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-tertiary-fixed-dim h-full w-[82%]"></div>
+</div>
+</div>
+<!-- Ambient Blur Circle -->
+<div class="absolute -bottom-10 -right-10 w-24 h-24 bg-secondary/10 blur-3xl rounded-full"></div>
+</div>
+<!-- Action Link -->
+<a id="ym-diagnostics-link" href="/diagnostics" class="glass-card inner-glow rounded-3xl p-md border-dashed border-primary/30 flex items-center justify-between group hover:bg-primary/5 transition-colors no-underline">
+<span class="font-label-caps text-primary text-xs">VIEW FULL DIAGNOSTIC LOG</span>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<!-- Secondary Row: Fleet Insights (Asymmetric Layout) -->
+<div class="col-span-12 grid grid-cols-3 gap-gutter">
+<div class="col-span-2 glass-card inner-glow rounded-3xl p-md flex gap-lg items-center">
+<div class="w-32 h-32 flex-shrink-0 bg-surface-container rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A 3D isometric technical render of a industrial turbine component, wireframe details overlaying a smooth metallic surface, illuminated by a futuristic neon indigo and cyan light source, isolated on a clean white background." src="/assets/images/home-pune-automotive.jpg"/>
+</div>
+<div>
+<h4 class="font-label-caps text-label-caps text-primary mb-2">COMPARATIVE ANALYTICS</h4>
+<p class="text-body-md text-on-surface mb-4">This asset is degrading <span class="font-bold text-error">12% faster</span> than the fleet average for this workload profile. Stress correlates with recent peak load cycles in Zone B.</p>
+<div class="flex gap-md">
+<button class="text-sm font-semibold flex items-center gap-1 text-primary hover:underline">
+<span class="material-symbols-outlined text-sm">compare_arrows</span> Run Simulation
+                                </button>
+<button class="text-sm font-semibold flex items-center gap-1 text-on-surface-variant hover:underline">
+<span class="material-symbols-outlined text-sm">history</span> Historical Trends
+                                </button>
+</div>
+</div>
+</div>
+<div class="col-span-1 glass-card inner-glow rounded-3xl p-md bg-gradient-to-br from-white/80 to-surface-container/30">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant mb-4">SYSTEM NOTICES</h4>
+<ul class="space-y-sm">
+<li class="flex gap-sm text-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
+<span>Sensor calibration verified</span>
+</li>
+<li class="flex gap-sm text-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">info</span>
+<span>Model updated 2h ago</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-md border-t border-outline-variant/20 bg-transparent mt-lg">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 YantraMitra Platform. All rights reserved.</span>
+<div class="flex gap-md mt-4 md:mt-0">
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors" href="/sitemap">Sitemap</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors" href="/privacy">Privacy</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors" href="/terms">Terms</a>
+<a class="text-on-surface-variant font-body-md hover:text-primary transition-colors" href="/api-status">API Status</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for KPI numbers
+        document.querySelectorAll('.font-kpi-numeric').forEach(el => {
+            const finalValue = el.innerText;
+            if (finalValue.includes('%') || finalValue.includes('Days')) return;
+            
+            let count = 0;
+            const target = parseInt(finalValue);
+            const interval = setInterval(() => {
+                count += Math.ceil(target / 20);
+                if (count >= target) {
+                    el.innerText = target;
+                    clearInterval(interval);
+                } else {
+                    el.innerText = count;
+                }
+            }, 30);
+        });
+    </script>
+<script src="/js/reliability-forecast.js" defer></script>
+<script src="/js/app-shell.js" defer></script>
+</body></html>
