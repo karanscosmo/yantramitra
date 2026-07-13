@@ -56,7 +56,7 @@
     const style = document.createElement('style');
     style.id = 'ym-shell-styles';
     style.textContent = `
-      :root { --sidebar-width: 100px; }
+      :root { --sidebar-width: 80px; }
 
       .ym-empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; text-align:center; }
       .ym-empty-state .material-symbols-outlined { font-size:48px; color:#c7c4d7; margin-bottom:12px; }
@@ -66,11 +66,11 @@
       .ym-empty-state a:hover, .ym-empty-state button:hover { opacity:.85; }
       .ym-nav-rail {
         position: fixed;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
+        right: 16px;
+        top: 72px;
+        transform: none;
         width: var(--sidebar-width);
-        z-index: 80;
+        z-index: 90;
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -79,8 +79,8 @@
         background: rgba(25, 26, 40, 0.75);
         backdrop-filter: blur(24px) saturate(1.4);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        overflow-y: auto;
+        border-radius: 24px;
+        overflow: visible;
         scrollbar-width: none;
         box-shadow: 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
       }
