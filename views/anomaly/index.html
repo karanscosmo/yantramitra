@@ -187,166 +187,150 @@
 </div>
 </header>
 <!-- Main Content Canvas -->
-<main class="pb-12 px-md max-w-full">
-<div class="mb-md flex justify-between items-end">
+<main class="grid grid-cols-12 gap-gutter px-md pb-12">
+<div class="col-span-12 flex items-center justify-between mb-xs">
 <div>
 <h1 class="font-headline-lg text-headline-lg text-on-surface">Anomaly Investigation</h1>
-<p class="text-on-surface-variant mt-1">Live monitoring: 14 agents active across Zone-B Industrial Cluster.</p>
+<p class="text-on-surface-variant mt-1 text-sm">Live monitoring: 14 agents active across Zone-B Industrial Cluster.</p>
 </div>
 <div class="flex gap-sm">
 <button class="shimmer-btn text-white px-md py-2 rounded-lg font-label-caps flex items-center gap-2">
 <span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
-                    AUTO-RESOLVE ALL
-                </button>
+                AUTO-RESOLVE ALL
+            </button>
 </div>
 </div>
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
-<!-- Left Side: Filterable Anomaly List -->
-<section class="lg:col-span-4 flex flex-col gap-sm h-[calc(100vh-220px)]">
-<div class="flex items-center justify-between px-2 mb-2">
-<span class="font-label-caps text-on-surface-variant">ACTIVE ALARMS (7)</span>
-<button class="text-primary text-xs font-semibold hover:underline">Clear Filters</button>
+<section class="col-span-12 lg:col-span-3 flex flex-col gap-xs">
+<div class="flex items-center justify-between px-2">
+<span class="font-label-caps text-on-surface-variant text-[11px]">ACTIVE ALARMS (7)</span>
+<button class="text-primary text-[10px] font-semibold hover:underline">Clear Filters</button>
 </div>
-<div class="overflow-y-auto no-scrollbar flex flex-col gap-sm pr-2">
-<!-- Critical Alarm -->
-<div class="glass-card p-sm rounded-xl severity-critical border-primary/20 relative overflow-hidden">
-<div class="flex justify-between items-start mb-2">
+<div class="overflow-y-auto no-scrollbar flex flex-col gap-2 pr-1">
+<div class="glass-card p-xs rounded-xl severity-critical border-primary/20 relative overflow-hidden cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-error/10 text-error font-label-caps text-[10px]">CRITICAL</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">14:22:01</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">14:22:01</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Turbine Shaft Eccentricity</h3>
-<p class="text-xs text-on-surface-variant mt-1">Vibration detected in Unit 04-B exceeds safety threshold (12.4mm/s).</p>
-<div class="mt-3 flex items-center gap-3">
-<div class="flex -space-x-2">
-<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold">AS</div>
-<div class="w-6 h-6 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold">YM</div>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Turbine Shaft Eccentricity</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Unit 04-B vibration 12.4mm/s exceeds threshold.</p>
+<div class="mt-2 flex items-center gap-2">
+<div class="flex -space-x-1.5">
+<div class="w-5 h-5 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-bold">AS</div>
+<div class="w-5 h-5 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center text-[8px] font-bold">YM</div>
 </div>
-<span class="text-[10px] text-on-surface-variant font-medium">2 Experts Investigating</span>
+<span class="text-[9px] text-on-surface-variant">2 Experts</span>
 </div>
 </div>
-<!-- Warning Alarm -->
-<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 bg-white/40">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-warning border-primary/20 bg-white/40 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">14:18:55</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">14:18:55</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Hydraulic Pressure Drop</h3>
-<p class="text-xs text-on-surface-variant mt-1">Secondary pump loop showing 15% efficiency decay over 30 mins.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Hydraulic Pressure Drop</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Secondary pump loop 15% efficiency decay.</p>
 </div>
-<!-- Multiple Glass Cards for spacing -->
-<div class="glass-card p-sm rounded-xl severity-low border-primary/20">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-low border-primary/20 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-caps text-[10px]">LOW</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">14:05:12</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">14:05:12</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Fan Filter Restriction</h3>
-<p class="text-xs text-on-surface-variant mt-1">Exhaust fan 12 obstruction detected. Scheduled for next shift.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Fan Filter Restriction</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Exhaust fan 12 obstruction detected.</p>
 </div>
-<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 opacity-80">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-warning border-primary/20 opacity-80 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">13:45:00</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">13:45:00</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Thermal Coupling Variance</h3>
-<p class="text-xs text-on-surface-variant mt-1">Sensor mismatch on Boiler-7 feed water inlet.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Thermal Coupling Variance</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Sensor mismatch on Boiler-7 feed water.</p>
 </div>
-<div class="glass-card p-sm rounded-xl severity-critical border-primary/20 opacity-80">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-critical border-primary/20 opacity-80 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-error/10 text-error font-label-caps text-[10px]">CRITICAL</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">13:32:11</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">13:32:11</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Network Latency Spike</h3>
-<p class="text-xs text-on-surface-variant mt-1">Substation 4 node reporting &gt;200ms round-trip delay.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Network Latency Spike</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Substation 4 node &gt;200ms delay.</p>
 </div>
-<div class="glass-card p-sm rounded-xl severity-low border-primary/20 opacity-70">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-low border-primary/20 opacity-70 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-caps text-[10px]">LOW</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">13:10:44</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">13:10:44</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Lubricant Reservoir Low</h3>
-<p class="text-xs text-on-surface-variant mt-1">Main reservoir at 25% capacity. Request dispatched.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Lubricant Reservoir Low</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Main reservoir at 25% capacity.</p>
 </div>
-<div class="glass-card p-sm rounded-xl severity-warning border-primary/20 opacity-60">
-<div class="flex justify-between items-start mb-2">
+<div class="glass-card p-xs rounded-xl severity-warning border-primary/20 opacity-60 cursor-pointer">
+<div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-tertiary-fixed-dim/20 text-tertiary font-label-caps text-[10px]">WARNING</span>
-<span class="font-kpi-numeric text-xs text-on-surface-variant">12:55:19</span>
+<span class="font-kpi-numeric text-[10px] text-on-surface-variant">12:55:19</span>
 </div>
-<h3 class="font-section-header text-sm text-on-surface leading-tight">Belt Tension Irregularity</h3>
-<p class="text-xs text-on-surface-variant mt-1">Conveyor 3 phase jitter detected on motor A-4.</p>
+<h3 class="font-label-caps text-xs text-on-surface leading-tight">Belt Tension Irregularity</h3>
+<p class="text-[10px] text-on-surface-variant mt-0.5 leading-snug">Conveyor 3 phase jitter on motor A-4.</p>
 </div>
 </div>
 </section>
-<!-- Right Side: Investigation Panel -->
-<section class="lg:col-span-8 flex flex-col gap-gutter">
-<!-- Root Cause Node Graph (Interactive Placeholder) -->
-<div class="glass-card rounded-2xl p-md h-[420px] relative overflow-hidden border-primary/30 flex flex-col">
-<div class="flex items-center justify-between mb-md">
+<section class="col-span-12 lg:col-span-6 flex flex-col gap-gutter">
+<div class="glass-card rounded-2xl p-md flex-1 relative overflow-hidden border-primary/30 flex flex-col min-h-[600px]">
+<div class="flex items-center justify-between mb-md shrink-0">
 <h2 class="font-section-header text-lg flex items-center gap-2">
 <span class="material-symbols-outlined text-primary" data-icon="account_tree">account_tree</span>
-                            Root-Cause Intelligence
-                        </h2>
+                        Root-Cause Intelligence
+                    </h2>
 <div class="flex gap-2">
 <button type="button" class="px-3 py-1 rounded-full border border-outline-variant text-[10px] font-bold hover:bg-primary/10 transition-colors">RE-SCAN GRAPH</button>
 <button type="button" class="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-bold hover:bg-primary/90 transition-colors">LATEST SNAPSHOT</button>
 </div>
 </div>
-<div class="flex-grow relative flex items-center justify-center">
-<!-- SVG Node Graph -->
+<div class="flex-grow relative">
 <svg class="absolute inset-0 w-full h-full pointer-events-none">
-<!-- Paths -->
 <path class="node-line" d="M 150 150 L 350 100"></path>
 <path class="node-line" d="M 150 150 L 350 200"></path>
 <path class="node-line" d="M 350 100 L 550 150"></path>
 <path class="node-line" d="M 350 200 L 550 150"></path>
 <path class="node-line" d="M 550 150 L 750 150" style="stroke: #ba1a1a; opacity: 0.6;"></path>
 </svg>
-<!-- Nodes -->
-<div class="absolute left-[15%] top-[40%] flex flex-col items-center">
+<div class="absolute left-[15%] top-[35%] flex flex-col items-center">
 <div class="w-16 h-16 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
 <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="factory">factory</span>
 <div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Unit 04-B</div>
 </div>
 </div>
-<div class="absolute left-[40%] top-[25%] flex flex-col items-center">
+<div class="absolute left-[40%] top-[22%] flex flex-col items-center">
 <div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
 <span class="material-symbols-outlined text-primary" data-icon="sensors">sensors</span>
 <div class="absolute -top-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Radial Vib S-1</div>
 </div>
 </div>
-<div class="absolute left-[40%] top-[55%] flex flex-col items-center">
+<div class="absolute left-[40%] top-[52%] flex flex-col items-center">
 <div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
 <span class="material-symbols-outlined text-primary" data-icon="speed">speed</span>
 <div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Tachometer G-4</div>
 </div>
 </div>
-<div class="absolute left-[65%] top-[40%] flex flex-col items-center">
+<div class="absolute left-[65%] top-[35%] flex flex-col items-center">
 <div class="w-20 h-20 rounded-full glass-card flex items-center justify-center border-4 border-error/50 relative group cursor-pointer z-10">
 <div class="absolute inset-0 bg-error/10 rounded-full animate-pulse"></div>
 <span class="material-symbols-outlined text-error text-3xl font-bold" data-icon="report" style="font-variation-settings: 'FILL' 1;">report</span>
 <div class="absolute -top-10 whitespace-nowrap text-[11px] font-bold text-error bg-white/95 px-3 py-1.5 rounded-lg border border-error/20 shadow-lg">ECCENTRICITY FAULT</div>
 </div>
 </div>
-<div class="absolute left-[85%] top-[40%] flex flex-col items-center">
+<div class="absolute left-[85%] top-[35%] flex flex-col items-center">
 <div class="w-12 h-12 rounded-full glass-card flex items-center justify-center border-2 border-outline/30 relative opacity-50 group cursor-pointer">
 <span class="material-symbols-outlined text-outline" data-icon="electrical_services">electrical_services</span>
 <div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps">Grid Impact</div>
 </div>
 </div>
 </div>
-<!-- Overlay decorative element -->
-<div class="absolute bottom-4 right-4 pointer-events-none opacity-40">
-
 </div>
-</div>
-<!-- Causal Hypotheses Section -->
 <div class="glass-card rounded-2xl p-md border-primary/20">
-<h2 class="font-section-header text-lg mb-md flex items-center gap-2">
+<h2 class="font-section-header text-lg mb-sm flex items-center gap-2">
 <span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
-                        Causal Hypotheses &amp; Intelligence Confidence
-                    </h2>
+                    Causal Hypotheses &amp; Intelligence Confidence
+                </h2>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
-<!-- Hypothesis 1 -->
-<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30 cursor-pointer">
 <div class="flex justify-between items-center mb-2">
 <span class="font-label-caps text-xs text-on-surface">Main Bearing Inner-Race Wear</span>
 <span class="font-kpi-numeric text-primary">88%</span>
@@ -356,8 +340,7 @@
 </div>
 <p class="text-xs text-on-surface-variant mt-2">Correlated with high-frequency harmonics observed in Sensor S-1 during ramp-down sequence.</p>
 </div>
-<!-- Hypothesis 2 -->
-<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30 cursor-pointer">
 <div class="flex justify-between items-center mb-2">
 <span class="font-label-caps text-xs text-on-surface">Inlet Cavitation Effect</span>
 <span class="font-kpi-numeric text-on-surface-variant">12%</span>
@@ -367,8 +350,7 @@
 </div>
 <p class="text-xs text-on-surface-variant mt-2">Fluid temperature remains within nominal bounds. Low correlation with current vib-profile.</p>
 </div>
-<!-- Hypothesis 3 -->
-<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30 cursor-pointer">
 <div class="flex justify-between items-center mb-2">
 <span class="font-label-caps text-xs text-on-surface">Structural Resonance (Loose Bolt)</span>
 <span class="font-kpi-numeric text-primary">45%</span>
@@ -378,8 +360,7 @@
 </div>
 <p class="text-xs text-on-surface-variant mt-2">Partial match. Harmonic peaks observed at multiples of 3x rotational speed.</p>
 </div>
-<!-- Hypothesis 4 -->
-<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30">
+<div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30 cursor-pointer">
 <div class="flex justify-between items-center mb-2">
 <span class="font-label-caps text-xs text-on-surface">Unbalanced Impeller Load</span>
 <span class="font-kpi-numeric text-primary">31%</span>
@@ -392,7 +373,112 @@
 </div>
 </div>
 </section>
+<aside class="col-span-12 lg:col-span-3 flex flex-col gap-gutter">
+<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="account_tree">account_tree</span>
+<h3 class="font-label-caps text-xs text-on-surface">INVESTIGATION PATH</h3>
 </div>
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error shadow-[0_0_6px_rgba(186,26,26,0.5)]"></div>
+<div class="flex-1">
+<p class="text-[10px] font-bold text-on-surface">Unit 04-B → ECCENTRICITY FAULT</p>
+<p class="text-[9px] text-on-surface-variant">Confidence: 88% · Path: Radial Vib S-1</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1">
+<p class="text-[10px] font-bold text-on-surface">Tachometer G-4 → ECCENTRICITY FAULT</p>
+<p class="text-[9px] text-on-surface-variant">Confidence: 45% · Path: Resonance Analysis</p>
+</div>
+</div>
+<div class="flex items-center gap-2 opacity-50">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="flex-1">
+<p class="text-[10px] font-bold text-on-surface">ECCENTRICITY FAULT → Grid Impact</p>
+<p class="text-[9px] text-on-surface-variant">Potential propagation · Under observation</p>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-md bg-primary-container/10 border-primary/20">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="lightbulb">lightbulb</span>
+<h3 class="font-label-caps text-xs text-on-surface">AI REASONING</h3>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">Primary confidence pathway identified through high-frequency harmonics on Sensor S-1 during ramp-down. Pattern matches Main Bearing Inner-Race Wear signature with 88% confidence. Secondary path via Tachometer G-4 shows structural resonance at 45%.</p>
+</div>
+<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="schedule">schedule</span>
+<h3 class="font-label-caps text-xs text-on-surface">EVIDENCE TIMELINE</h3>
+</div>
+<div class="space-y-2">
+<div class="flex gap-2">
+<div class="text-[9px] font-bold text-on-surface-variant w-10 shrink-0">14:22</div>
+<p class="text-[10px] text-on-surface leading-tight">Critical alarm triggered — Turbine Shaft Eccentricity</p>
+</div>
+<div class="flex gap-2">
+<div class="text-[9px] font-bold text-on-surface-variant w-10 shrink-0">14:18</div>
+<p class="text-[10px] text-on-surface leading-tight">Hydraulic pressure anomaly detected in secondary loop</p>
+</div>
+<div class="flex gap-2">
+<div class="text-[9px] font-bold text-on-surface-variant w-10 shrink-0">13:45</div>
+<p class="text-[10px] text-on-surface leading-tight">Thermal coupling variance on Boiler-7 feed water</p>
+</div>
+<div class="flex gap-2">
+<div class="text-[9px] font-bold text-on-surface-variant w-10 shrink-0">13:10</div>
+<p class="text-[10px] text-on-surface leading-tight">Lubricant reservoir low — maintenance dispatched</p>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-md border-secondary/20 bg-secondary/5">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="build">build</span>
+<h3 class="font-label-caps text-xs text-on-surface">RECOMMENDED ACTIONS</h3>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-primary">priority_high</span>
+<p class="text-[10px] text-on-surface flex-1">Inspect Main Bearing assembly on Unit 04-B</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-secondary">schedule</span>
+<p class="text-[10px] text-on-surface flex-1">Schedule vibration analysis for Radial Vib S-1</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-tertiary">assignment</span>
+<p class="text-[10px] text-on-surface flex-1">Generate work order for bearing replacement</p>
+</div>
+</div>
+</div>
+<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="precision_manufacturing">precision_manufacturing</span>
+<h3 class="font-label-caps text-xs text-on-surface">AFFECTED ASSETS</h3>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-error"></div>
+<p class="text-[10px] text-on-surface flex-1">Unit 04-B · Turbine Assembly</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+<p class="text-[10px] text-on-surface flex-1">Radial Vibration Sensor S-1</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-tertiary"></div>
+<p class="text-[10px] text-on-surface flex-1">Tachometer G-4</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant"></div>
+<p class="text-[10px] text-on-surface flex-1">Grid Connection · Substation 4</p>
+</div>
+</div>
+</div>
+</aside>
 </main>
 <!-- Global Footer -->
 <footer class="mt-auto w-full py-md border-t border-outline-variant/20 bg-transparent flex flex-col md:flex-row justify-between items-center px-md max-w-7xl mx-auto">
