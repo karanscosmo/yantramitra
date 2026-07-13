@@ -445,6 +445,9 @@
       });
     }
 
+  }
+
+  function attachResetHandlers() {
     document.getElementById('ym-reset-status')?.addEventListener('click', () => {
       const nf = getActiveFilters(); nf.status = []; setFiltersToURL(nf); applyFilters();
     });
@@ -968,6 +971,7 @@
     } catch {}
 
     renderFilters();
+    attachResetHandlers();
     await loadOrders();
 
     document.getElementById('ym-empty-reset')?.addEventListener('click', () => {
