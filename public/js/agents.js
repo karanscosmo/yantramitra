@@ -3,16 +3,21 @@
   async function post(p, b) { const r = await fetch(p, { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify(b) }); if (!r.ok) throw new Error(p); return r.json(); }
   async function patch(p, b) { const r = await fetch(p, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify(b) }); if (!r.ok) throw new Error(p); return r.json(); }
 
-  let agents = [], machines = [], workOrders = [], plans = [];
+  let agents = [], machines = [], workOrders = [], plans = [], missions = [];
   let selectedAgent = null;
+  let selectedMissionId = null;
   let drawerOpen = false;
   let draggedAgentId = null;
+  let loaded = { agents: false, missions: false };
+  let errors = { agents: null, missions: null };
 
   const plantNames = ['Pune Automotive','Chennai Electronics','Ahmedabad Process','Bengaluru Precision','Nagpur Logistics'];
   const machineNames = ['CNC-7740','EV-LOADER','CONVEYOR-B','HVAC-SYS','Turbine-7','RX-900 ARM','Pump P-102'];
   const agentTypes = ['Diagnostic','Planner','Inventory','Energy','Executive','Security','Firmware','HVAC','Grid'];
   const statuses = ['active','paused','done'];
   const typeColors = { Diagnostic:'#413fd6', Planner:'#774f00', Inventory:'#986500', Energy:'#006b5f', Executive:'#ba1a1a', Security:'#2e2f3e', Firmware:'#4948de', HVAC:'#007165', Grid:'#624000' };
+
+  function escapeHtml(t) { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
   function rn(min, max) { return Math.round((Math.random() * (max - min) + min) * 10) / 10; }
   function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -63,7 +68,27 @@
     return map[status] || { status:'active', progress:25 };
   }
 
+  function loadingSpinner() {
+    return '<div class="flex items-center justify-center py-6"><div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div><span class="ml-2 text-xs text-on-surface-variant">Loading...</span></div>';
+  }
+
+  function errorState(msg) {
+    return '<div class="text-xs text-center py-4 text-error/70">' + (msg || 'Failed to load') + '</div>';
+  }
+
   function renderKPIs() {
+    if (!loaded.agents) {
+      ['ym-kpi-active','ym-kpi-running','ym-kpi-awaiting','ym-kpi-completed','ym-kpi-efficiency','ym-kpi-success'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = '--';
+      });
+      return;
+    }
+    if (errors.agents) {
+      ['ym-kpi-active','ym-kpi-running','ym-kpi-awaiting','ym-kpi-completed','ym-kpi-efficiency','ym-kpi-success'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = '--';
+      });
+      return;
+    }
     const active = agents.filter(a => a.status === 'active').length;
     const paused = agents.filter(a => a.status === 'paused').length;
     const done = agents.filter(a => a.status === 'done').length;
@@ -85,22 +110,23 @@
     const priorityColors = { critical:'text-error', high:'text-primary', medium:'text-tertiary', low:'text-on-surface-variant' };
     const statusDots = { active:'bg-primary status-glow-primary', paused:'bg-tertiary', done:'bg-outline-variant' };
     const statusLabels = { active:'Running', paused:'Reviewing', done:'Completed' };
+    const isSelected = selectedMissionId === agent.id;
 
-    return `<article class="glass-panel rounded-xl p-md flex flex-col gap-sm agent-card" draggable="true" data-agent-id="${e.id}" data-status="${e.status}">
+    return `<article class="glass-panel rounded-xl p-md flex flex-col gap-sm agent-card ${isSelected ? 'ring-2 ring-primary' : ''}" draggable="true" data-agent-id="${e.id}" data-status="${e.status}">
       <div class="flex items-start gap-3">
         <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background:${e.agentColor}18;border:2px solid ${e.agentColor}40">
           <span class="material-symbols-outlined" style="color:${e.agentColor};font-variation-settings:'FILL' 1">smart_toy</span>
         </div>
         <div class="flex-grow min-w-0">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <h3 class="font-semibold text-on-surface text-sm truncate">${e.name}</h3>
+            <h3 class="font-semibold text-on-surface text-sm truncate">${escapeHtml(e.name)}</h3>
             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${priorityColors[e.priority] || 'text-on-surface-variant'} bg-surface-container-high">${e.priority.toUpperCase()}</span>
           </div>
-          <p class="text-xs text-on-surface-variant truncate">${e.agentType} · ${e.plant} · ${e.machine}</p>
+          <p class="text-xs text-on-surface-variant truncate">${e.agentType} &middot; ${e.plant} &middot; ${e.machine}</p>
         </div>
         <div class="w-2 h-2 rounded-full shrink-0 ${statusDots[e.status] || 'bg-outline-variant'}"></div>
       </div>
-      <p class="text-xs text-on-surface font-medium truncate">${e.mission || 'No active mission'}</p>
+      <p class="text-xs text-on-surface font-medium truncate">${escapeHtml(e.mission || 'No active mission')}</p>
       <div class="flex items-center gap-2">
         <div class="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500" style="width:${progress}%;background:${e.status === 'done' ? '#006b5f' : e.agentColor}"></div></div>
         <span class="text-[10px] font-bold shrink-0" style="color:${e.agentColor}">${Math.round(progress)}%</span>
@@ -135,7 +161,14 @@
       const container = document.getElementById('ym-drop-' + status);
       const countEl = document.getElementById('ym-count-' + status);
       if (!container) return;
+      if (!loaded.agents) { container.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-4">--</div>'; return; }
+      if (errors.agents) { container.innerHTML = '<div class="text-xs text-error/70 text-center py-2">Error</div>'; return; }
       const items = filtered.filter(a => (a.status || 'idle') === status);
+      if (!items.length) {
+        container.innerHTML = '<div class="text-[10px] text-on-surface-variant text-center py-4 italic">No agents</div>';
+        if (countEl) countEl.textContent = '0';
+        return;
+      }
       container.innerHTML = items.map(a => renderAgentCard(a)).join('');
       if (countEl) countEl.textContent = items.length;
     });
@@ -322,108 +355,169 @@
   function renderRunningMissions() {
     const c = document.getElementById('ym-running-missions');
     if (!c) return;
-    const items = agents.filter(a => a.mission && a.status === 'active').slice(0, 5);
-    if (!items.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-4">No active missions</div>'; return; }
+    if (!loaded.agents) { c.innerHTML = loadingSpinner(); return; }
+    if (errors.agents) { c.innerHTML = errorState(); return; }
+    const items = agents.filter(a => a.mission && a.status === 'active');
+    if (!items.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-6 flex flex-col items-center gap-2"><span class="material-symbols-outlined text-lg text-outline">rocket_launch</span><span>No active missions</span></div>'; return; }
     const borderColors = ['border-l-primary', 'border-l-secondary', 'border-l-tertiary', 'border-l-primary', 'border-l-secondary'];
     c.innerHTML = items.map((a, i) => {
       const e = enrichAgent(a);
       const bc = borderColors[i % borderColors.length];
       const color = e.agentColor;
-      return `<div class="glass-panel rounded-xl p-3 border-l-4 ${bc} flex items-center gap-3">
+      const isSelected = selectedMissionId === a.id;
+      return `<div class="glass-panel rounded-xl p-3 border-l-4 ${bc} flex items-center gap-3 cursor-pointer transition-all duration-200 mission-item ${isSelected ? 'ring-2 ring-primary' : 'hover:bg-white/40'}" data-mission-id="${a.id}">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background:${color}18"><span class="material-symbols-outlined" style="color:${color}">precision_manufacturing</span></div>
         <div class="flex-1 min-w-0">
-          <p class="text-xs font-bold truncate">${a.mission}</p>
+          <p class="text-xs font-bold truncate">${escapeHtml(a.mission)}</p>
           <p class="text-[10px] text-on-surface-variant">${e.agentType} · ${Math.round(e.confidence)}% confidence</p>
           <div class="flex items-center gap-2 mt-1"><div class="flex-1 h-1 bg-surface-container rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${Math.round(e.progress)}%;background:${color}"></div></div><span class="text-[9px] font-bold" style="color:${color}">${Math.round(e.progress)}%</span></div>
         </div>
         <div class="flex flex-col items-end gap-1 shrink-0"><span class="text-[9px] font-bold text-secondary">${e.remainingTime}</span><span class="text-[9px] text-on-surface-variant">ETA</span></div>
       </div>`;
     }).join('');
+    c.querySelectorAll('.mission-item').forEach(el => {
+      el.addEventListener('click', function() {
+        const id = this.dataset.missionId;
+        selectedMissionId = id;
+        renderRunningMissions();
+        renderMissionQueue();
+        renderColumns();
+        renderMissionDetails();
+      });
+    });
   }
 
   function renderMissionQueue() {
     const c = document.getElementById('ym-mission-queue-body');
     if (!c) return;
+    if (!loaded.agents) { c.innerHTML = '<tr><td colspan="5" class="text-center py-6">' + loadingSpinner() + '</td></tr>'; return; }
+    if (errors.agents) { c.innerHTML = '<tr><td colspan="5" class="text-center py-4">' + errorState() + '</td></tr>'; return; }
     const items = agents.filter(a => a.mission).sort((a, b) => {
       const pri = { critical: 0, high: 1, medium: 2, low: 3 };
       return (pri[a.priority] ?? 99) - (pri[b.priority] ?? 99);
-    }).slice(0, 8);
-    if (!items.length) { c.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-xs text-on-surface-variant">No missions in queue</td></tr>'; return; }
+    });
+    if (!items.length) { c.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-xs text-on-surface-variant"><span class="material-symbols-outlined text-lg block mb-1 text-outline">assignment</span>No missions in queue</td></tr>'; return; }
     const dotColors = { critical: 'bg-error', high: 'bg-tertiary', medium: 'bg-primary', low: 'bg-on-surface-variant' };
     const badgeColors = { critical: 'bg-error/10 text-error', high: 'bg-tertiary/10 text-tertiary', medium: 'bg-primary/10 text-primary', low: 'bg-on-surface-variant/10 text-on-surface-variant' };
     c.innerHTML = items.map(a => {
       const e = enrichAgent(a);
       const p = (a.priority || 'medium').toLowerCase();
       const statusLabel = { active: 'Running', paused: 'Reviewing', done: 'Completed' };
-      return `<tr class="border-b border-outline-variant/10 hover:bg-primary/5 transition-colors">
-        <td class="py-2.5 pl-4"><div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full ${dotColors[p] || 'bg-on-surface-variant'} shrink-0"></span><span class="font-medium text-xs">${a.mission}</span></div></td>
-        <td class="py-2.5 text-xs"><div class="flex items-center gap-1.5"><span class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style="background:${e.agentColor}20;color:${e.agentColor}">${e.agentType[0]}</span>${e.agentType}</div></td>
+      const isSelected = selectedMissionId === a.id;
+      return `<tr class="border-b border-outline-variant/10 hover:bg-primary/5 transition-colors cursor-pointer queue-row ${isSelected ? 'bg-primary/10' : ''}" data-mission-id="${a.id}">
+        <td class="py-2.5 pl-4"><div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full ${dotColors[p] || 'bg-on-surface-variant'} shrink-0"></span><span class="font-medium text-xs">${escapeHtml(a.mission)}</span></div></td>
+        <td class="py-2.5 text-xs"><div class="flex items-center gap-1.5"><span class="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold" style="background:${e.agentColor}20;color:${e.agentColor}">${e.agentType[0]}</span>${escapeHtml(e.agentType)}</div></td>
         <td class="py-2.5"><span class="px-1.5 py-0.5 rounded ${badgeColors[p]} text-[9px] font-bold">${p.toUpperCase()}</span></td>
         <td class="py-2.5 text-xs"><span class="font-bold">${statusLabel[a.status] || a.status}</span></td>
         <td class="py-2.5 pr-4 text-right text-xs text-on-surface-variant">${e.remainingTime}</td>
       </tr>`;
     }).join('');
+    c.querySelectorAll('.queue-row').forEach(el => {
+      el.addEventListener('click', function() {
+        const id = this.dataset.missionId;
+        selectedMissionId = selectedMissionId === id ? null : id;
+        renderMissionQueue();
+        renderRunningMissions();
+        renderColumns();
+        renderMissionDetails();
+      });
+    });
   }
 
   function renderActivityFeed() {
     const c = document.getElementById('ym-activity-feed');
     if (!c) return;
-    const items = agents.slice(0, 8);
-    if (!items.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-4">No activity yet</div>'; return; }
+    if (!loaded.agents) { c.innerHTML = loadingSpinner(); return; }
+    if (errors.agents) { c.innerHTML = errorState(); return; }
+    const items = agents.slice(0, 10);
+    if (!items.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-6 flex flex-col items-center gap-2"><span class="material-symbols-outlined text-lg text-outline">cable</span><span>No activity yet</span></div>'; return; }
     const dotColors = ['bg-secondary', 'bg-primary', 'bg-tertiary', 'bg-secondary', 'bg-on-surface-variant'];
     c.innerHTML = items.map((a, i) => {
       const e = enrichAgent(a);
-      return `<div class="flex items-start gap-2.5 py-1.5"><span class="w-1.5 h-1.5 rounded-full ${dotColors[i % dotColors.length]} mt-1.5 shrink-0"></span><div class="min-w-0"><p class="text-xs truncate"><span class="font-bold">${a.name}</span> ${a.mission ? 'working on: ' + a.mission : 'idle'}</p><p class="text-[9px] text-on-surface-variant">${e.lastActivity}</p></div></div>`;
+      return `<div class="flex items-start gap-2.5 py-1.5"><span class="w-1.5 h-1.5 rounded-full ${dotColors[i % dotColors.length]} mt-1.5 shrink-0"></span><div class="min-w-0"><p class="text-xs truncate"><span class="font-bold">${escapeHtml(a.name)}</span> ${a.mission ? 'working on: ' + escapeHtml(a.mission) : 'idle'}</p><p class="text-[9px] text-on-surface-variant">${e.lastActivity}</p></div></div>`;
     }).join('');
   }
+
+  let timelineEvents = [];
+  let timelineRange = '24h';
 
   function renderTimeline() {
     const c = document.getElementById('ym-timeline');
     if (!c) return;
-    const items = agents.slice(0, 4);
-    if (!items.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-4">No timeline events</div>'; return; }
+    if (!loaded.agents && !timelineEvents.length) { c.innerHTML = loadingSpinner(); return; }
+    const events = timelineEvents.length ? timelineEvents : agents.slice(0, 6);
+    if (!events.length) { c.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-6 flex flex-col items-center gap-2"><span class="material-symbols-outlined text-lg text-outline">timeline</span><span>No timeline events</span></div>'; return; }
     const colors = ['primary', 'secondary', 'tertiary', 'on-surface-variant'];
-    c.innerHTML = items.map((a, i) => {
-      const e = enrichAgent(a);
+    c.innerHTML = events.slice(0, 6).map((ev, i) => {
       const color = colors[i % colors.length];
-      const time = new Date(Date.now() - i * 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const action = a.status === 'active' ? 'started' : a.status === 'done' ? 'completed' : 'paused';
-      return `<div class="relative pl-5 pb-1.5 ${i < items.length - 1 ? 'border-l-2 border-' + color + '/30' : ''}"><div class="absolute -left-[9px] top-0 w-3.5 h-3.5 rounded-full bg-${color} ring-2 ring-white"></div><p class="text-[10px] text-${color} font-bold">${time}</p><p class="text-xs">${a.name} ${action} ${a.mission || 'task'}</p></div>`;
+      const time = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(Date.now() - i * 15 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const name = ev.name || ev.agentName || 'Agent';
+      const action = ev.action || (ev.status === 'active' ? 'started' : ev.status === 'done' ? 'completed' : 'updated');
+      const desc = ev.description || ev.mission || 'task';
+      return `<div class="relative pl-5 pb-1.5 ${i < events.slice(0, 6).length - 1 ? 'border-l-2 border-' + color + '/30' : ''}"><div class="absolute -left-[9px] top-0 w-3.5 h-3.5 rounded-full bg-${color} ring-2 ring-white"></div><p class="text-[10px] text-${color} font-bold">${time}</p><p class="text-xs">${escapeHtml(name)} ${action} ${escapeHtml(desc)}</p></div>`;
     }).join('');
+  }
+
+  async function loadTimeline() {
+    try {
+      const data = await get('/api/timeline?range=' + (timelineRange === '7d' ? '7d' : '24h'));
+      timelineEvents = data.events || data || [];
+    } catch { timelineEvents = []; }
+    renderTimeline();
   }
 
   function renderMissionDetails() {
     const c = document.getElementById('ym-mission-details');
     if (!c) return;
-    const activeCount = agents.filter(a => a.status === 'active').length;
-    const done = agents.filter(a => a.status === 'done').length;
-    const avgProgress = agents.length ? Math.round(agents.reduce((s, a) => s + (a.progress || 0), 0) / agents.length) : 0;
-    const avgResponse = (80 + Math.random() * 40).toFixed(1);
-    const focusAgent = agents.find(a => a.status === 'active' && a.mission);
-    const e = focusAgent ? enrichAgent(focusAgent) : null;
+    if (!loaded.agents) { c.innerHTML = '<div class="flex items-center justify-center py-6">' + loadingSpinner() + '</div>'; return; }
+    if (errors.agents) { c.innerHTML = errorState(); return; }
+
+    const focusAgent = selectedMissionId ? agents.find(a => a.id === selectedMissionId) : null;
+    const agent = focusAgent || agents.find(a => a.status === 'active' && a.mission);
+    if (!agent) {
+      c.innerHTML = '<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-sm text-primary">assignment</span><h3 class="font-section-header text-xs font-bold">Mission Details</h3></div><div class="text-xs text-on-surface-variant text-center py-6 flex flex-col items-center gap-2"><span class="material-symbols-outlined text-lg text-outline">assignment</span><span>Select a mission to view details</span></div>';
+      return;
+    }
+    const e = enrichAgent(agent);
+    const logs = agent.recentActions || [
+      'Initialized diagnostic sweep',
+      'Fetched sensor telemetry (24 streams)',
+      'Cross-referenced failure patterns',
+      'Generating recommendation report'
+    ];
     c.innerHTML = `<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-sm text-primary">assignment</span><h3 class="font-section-header text-xs font-bold">Mission Details</h3></div>
-      <div class="space-y-2 text-xs">
-        <div class="flex justify-between"><span class="text-on-surface-variant">Active Agents</span><span class="font-bold">${activeCount}</span></div>
-        <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="bg-primary h-full rounded-full" style="width:${activeCount ? Math.min(100, activeCount * 20) : 0}%"></div></div>
-        <div class="flex justify-between"><span class="text-on-surface-variant">Avg Progress</span><span class="text-secondary font-bold">${avgProgress}%</span></div>
-        <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="bg-secondary h-full rounded-full" style="width:${avgProgress}%"></div></div>
-        <div class="flex justify-between"><span class="text-on-surface-variant">Completed</span><span class="font-bold">${done}</span></div>
-        <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="bg-primary h-full rounded-full" style="width:${agents.length ? Math.round(done / agents.length * 100) : 0}%"></div></div>
-        <div class="pt-2 border-t border-outline-variant/20"><p class="text-[10px] text-on-surface-variant mb-1">Current Focus</p><p class="text-xs font-medium">${e ? e.agentType + ' on ' + e.machine + ': ' + (focusAgent.mission || 'No active mission') : 'No active agents'}</p></div>
+      <div class="space-y-2.5 text-xs">
+        <div class="flex items-center justify-between"><span class="text-on-surface-variant">Mission</span><span class="font-bold text-right max-w-[60%] truncate">${escapeHtml(agent.mission || 'No mission')}</span></div>
+        <div class="flex items-center justify-between"><span class="text-on-surface-variant">Agent</span><span class="font-bold text-primary">${escapeHtml(agent.name)}</span></div>
+        <div class="flex items-center justify-between"><span class="text-on-surface-variant">Status</span><span class="font-bold ${agent.status === 'active' ? 'text-secondary' : agent.status === 'paused' ? 'text-tertiary' : 'text-on-surface-variant'}">${(agent.status || 'idle').toUpperCase()}</span></div>
+        <div class="flex items-center justify-between"><span class="text-on-surface-variant">Progress</span><span class="font-bold text-secondary">${Math.round(e.progress)}%</span></div>
+        <div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500" style="width:${Math.round(e.progress)}%;background:${e.agentColor}"></div></div>
+        <div class="flex items-center justify-between"><span class="text-on-surface-variant">ETA</span><span class="font-bold">${e.remainingTime}</span></div>
+        <div class="pt-2 border-t border-outline-variant/20">
+          <h4 class="font-label-caps text-[10px] text-on-surface-variant mb-1.5">RECENT LOGS</h4>
+          <div class="space-y-1">${logs.slice(-4).map(l => `<div class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-primary/60 shrink-0"></span><span class="text-[10px] text-on-surface-variant">${escapeHtml(l)}</span></div>`).join('')}</div>
+        </div>
+        <div class="flex gap-1.5 pt-1">
+          <span class="px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-bold">Conf: ${Math.round(e.confidence)}%</span>
+          <span class="px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary text-[9px] font-bold">Health: ${Math.round(e.health)}%</span>
+          <span class="px-1.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary text-[9px] font-bold">${e.agentType}</span>
+        </div>
       </div>`;
   }
 
   function renderAIRecommendations() {
     const c = document.getElementById('ym-ai-recommendations');
     if (!c) return;
+    if (!loaded.agents) { c.innerHTML = '<div class="flex items-center justify-center py-6">' + loadingSpinner() + '</div>'; return; }
+    if (errors.agents) { c.innerHTML = errorState(); return; }
     const active = agents.filter(a => a.status === 'active');
-    const avgConf = active.length ? Math.round(active.reduce((s, a) => s + a.confidence, 0) / active.length) : 0;
+    const avgConf = active.length ? Math.round(active.reduce((s, a) => s + (a.confidence || 70), 0) / active.length) : 0;
     const bottleneck = agents.find(a => a.priority === 'critical' && a.status === 'active');
     const e = bottleneck ? enrichAgent(bottleneck) : null;
     c.innerHTML = `<div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-sm text-primary">auto_awesome</span><h3 class="font-section-header text-xs font-bold">AI Recommendations</h3></div>
       <div class="space-y-2">
         <div class="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-3 border border-primary/20"><div class="flex items-center gap-1.5 mb-1"><span class="material-symbols-outlined text-xs text-primary">insights</span><span class="text-[10px] font-bold">Operations</span></div><p class="text-[10px] text-on-surface-variant">${active.length} agents active with avg ${avgConf}% confidence. ${active.length > 0 ? 'Monitoring all systems.' : 'No agents currently running.'}</p></div>
-        ${e ? `<div class="bg-gradient-to-br from-tertiary/5 to-tertiary/10 rounded-xl p-3 border border-tertiary/20"><div class="flex items-center gap-1.5 mb-1"><span class="material-symbols-outlined text-xs text-tertiary">warning</span><span class="text-[10px] font-bold">Bottleneck</span></div><p class="text-[10px] text-on-surface-variant">${e.agentType} on ${e.machine} at ${e.plant} requires attention — ${e.priority} priority.</p></div>` : ''}
+        ${e ? `<div class="bg-gradient-to-br from-tertiary/5 to-tertiary/10 rounded-xl p-3 border border-tertiary/20"><div class="flex items-center gap-1.5 mb-1"><span class="material-symbols-outlined text-xs text-tertiary">warning</span><span class="text-[10px] font-bold">Bottleneck</span></div><p class="text-[10px] text-on-surface-variant">${escapeHtml(e.agentType)} on ${escapeHtml(e.machine)} at ${escapeHtml(e.plant)} requires attention — ${e.priority} priority.</p></div>` : ''}
         <div class="bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl p-3 border border-secondary/20"><div class="flex items-center gap-1.5 mb-1"><span class="material-symbols-outlined text-xs text-secondary">anomaly</span><span class="text-[10px] font-bold">Health</span></div><p class="text-[10px] text-on-surface-variant">System health nominal. ${bottleneck ? 'One critical item flagged above.' : 'All systems operational.'}</p></div>
       </div>`;
   }
@@ -431,6 +525,8 @@
   function renderSystemHealth() {
     const c = document.getElementById('ym-system-health');
     if (!c) return;
+    if (!loaded.agents) { c.innerHTML = '<div class="flex items-center justify-center py-6">' + loadingSpinner() + '</div>'; return; }
+    if (errors.agents) { c.innerHTML = errorState(); return; }
     const cloud = (99.5 + Math.random() * 0.5).toFixed(2);
     const edge = (97 + Math.random() * 2.5).toFixed(1);
     const network = agents.length ? Math.min(100, 95 + Math.random() * 5) : 0;
@@ -515,27 +611,88 @@
   }
 
   async function loadAgents() {
+    errors.agents = null;
+    errors.missions = null;
     try {
-      const [agentsData, machinesData, ordersData, plansData] = await Promise.all([
-        get('/api/agents'), get('/api/machines'), get('/api/work-orders'), get('/api/plans')
+      const [agentsData, machinesData, ordersData, plansData, missionsData] = await Promise.all([
+        get('/api/agents'), get('/api/machines'), get('/api/work-orders'), get('/api/plans'), get('/api/missions')
       ]);
       agents = agentsData;
       machines = machinesData;
       workOrders = ordersData;
       plans = plansData;
+      missions = missionsData;
+      loaded.agents = true;
+      loaded.missions = true;
       renderAll();
-    } catch (e) { toast('Failed to load agents', 'error'); }
+    } catch (e) {
+      errors.agents = 'Failed to load data';
+      loaded.agents = true;
+      loaded.missions = true;
+      renderAll();
+      toast('Failed to load agent data', 'error');
+    }
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
     try { const me = await get('/api/auth/me'); if (!me || !me.id) { window.location.href = '/'; return; } }
     catch { window.location.href = '/'; return; }
+
+    // Show initial loading spinners
+    ['ym-running-missions','ym-mission-queue-body','ym-activity-feed','ym-timeline','ym-mission-details','ym-ai-recommendations','ym-system-health'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.innerHTML.trim()) el.innerHTML = '<div class="flex items-center justify-center py-6"><div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div></div>';
+    });
+
     document.getElementById('ym-drawer-close')?.addEventListener('click', closeDrawer);
     document.getElementById('ym-drawer-backdrop')?.addEventListener('click', closeDrawer);
     document.getElementById('ym-new-mission-btn')?.addEventListener('click', () => openMissionModal(null));
     document.getElementById('ym-search-input')?.addEventListener('input', () => renderAll());
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen) closeDrawer(); });
+
+    // Wire buttons
+    document.querySelectorAll('button, span.text-\\[10px\\].text-primary').forEach(el => {
+      const txt = el.textContent.trim();
+      if (txt === 'View All') {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', function() {
+          document.querySelector('[class*="glass-panel"]:nth-child(2)')?.scrollIntoView({ behavior: 'smooth' });
+        });
+      }
+    });
+    document.querySelectorAll('button').forEach(btn => {
+      const txt = btn.textContent.trim();
+      if (txt === 'Priority' || txt === 'ETA') {
+        btn.addEventListener('click', function() {
+          const sortBy = txt.toLowerCase();
+          const tbody = document.querySelector('#ym-mission-queue-body');
+          if (!tbody) return;
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          rows.sort((a, b) => {
+            if (sortBy === 'priority') {
+              const pri = { critical: 0, high: 1, medium: 2, low: 3 };
+              const aP = a.querySelector('span.px-1\\.5')?.textContent?.trim().toLowerCase() || 'medium';
+              const bP = b.querySelector('span.px-1\\.5')?.textContent?.trim().toLowerCase() || 'medium';
+              return (pri[aP] ?? 99) - (pri[bP] ?? 99);
+            }
+            return 0;
+          });
+          rows.forEach(r => tbody.appendChild(r));
+        });
+      }
+      if (txt === '24h' || txt === '7d') {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('[class*="rounded-full"]').forEach(b => { b.classList.remove('bg-primary', 'text-on-primary'); b.classList.add('bg-white/50', 'border', 'border-outline-variant/30'); });
+          this.classList.remove('bg-white/50', 'border', 'border-outline-variant/30');
+          this.classList.add('bg-primary', 'text-on-primary');
+          timelineRange = txt;
+          loadTimeline();
+        });
+      }
+    });
+
     await loadAgents();
-    setInterval(async () => { await loadAgents(); }, 15000);
+    loadTimeline();
+    setInterval(async () => { await loadAgents(); loadTimeline(); }, 15000);
   });
 })();
