@@ -182,10 +182,7 @@
 <button class="p-2 rounded-full hover:bg-primary/10 transition-colors text-on-surface-variant">
 <span class="material-symbols-outlined">notifications</span>
 </button>
-              <div class="w-10 h-10 rounded-full border border-primary/20 overflow-hidden relative" id="ym-nav-avatar-container">
-<img class="w-full h-full object-cover" id="ym-nav-avatar" src="/assets/images/ym-operator-avatar.jpg" alt="User" onerror="this.style.display='none';document.getElementById('ym-nav-avatar-fallback').style.display='flex'">
-<div id="ym-nav-avatar-fallback" class="absolute inset-0 bg-primary/10 text-primary font-bold flex items-center justify-center text-sm" style="display:none">YM</div>
-</div>
+              <div class="w-10 h-10" id="ym-nav-avatar-container"></div>
 </div>
 </header>
 <!-- Main Content Canvas -->
@@ -241,6 +238,7 @@
             }
         });
     </script>
+<script src="/js/avatar.js" defer></script>
 <script src="/js/settings.js" defer></script>
 <script src="/js/app-shell.js" defer></script>
 </body></html>

@@ -103,9 +103,13 @@
     const skills = ['PLC Programming', 'Hydraulic Systems', 'CNC Calibration', 'Predictive Maintenance', 'Robotics', 'Welding'];
     const assignedMachines = machines.filter(m => m.workOrders?.some(o => o.assignedTo === tech.name)).slice(0, 4);
     const openOrders = orders.filter(o => o.assignedTo === tech.name && o.status !== 'completed');
+    const techUser = { name: tech.name, email: tech.email || '', role: 'maintenance', status: 'active' };
+    const techAvatarSrc = YMAvatar ? YMAvatar.dataURI(YMAvatar.generateSVG(techUser)) : '/assets/images/ym-operator-avatar.jpg';
+    const techInit = YMAvatar ? YMAvatar.initials(tech.name) : '';
+    const techS = YMAvatar ? YMAvatar.styleForRole('maintenance') : { primary: '#413fd6', bg: '#e1dfff' };
     openModal('Technician Profile', `
       <div class="flex items-center gap-md mb-md">
-        <img src="/assets/images/ym-operator-avatar.jpg" class="w-20 h-20 rounded-full border-2 border-primary/20 object-cover"/>
+        <div class="w-20 h-20 rounded-full overflow-hidden shrink-0" style="border:2px solid ${techS.primary}30"><img src="${techAvatarSrc}" alt="${tech.name}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:${techS.bg};color:${techS.primary};font-weight:800;font-size:26px;font-family:Inter,Geist,sans-serif">${techInit}</div></div>
         <div>
           <p class="font-bold text-lg text-on-surface">${tech.name}</p>
           <p class="text-sm text-on-surface-variant">${tech.role || 'Lead Technician'}</p>

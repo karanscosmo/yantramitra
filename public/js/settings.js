@@ -54,19 +54,21 @@
     showLoading(host);
     Promise.all([get('/api/user/profile'), get('/api/plants')]).then(([prof, pl]) => {
       profile = prof; plants = pl || [];
+      const navContainer = document.getElementById('ym-nav-avatar-container');
+      if (navContainer && typeof YMAvatar !== 'undefined') {
+        navContainer.innerHTML = '';
+        navContainer.appendChild(YMAvatar.render(profile, { size: 40, clickable: true, showStatus: true }));
+      }
       const orig = { name: profile.name, email: profile.email, phone: profile.phone || '' };
       let current = { ...orig };
       let hasChanged = false;
       function checkChanged() { hasChanged = current.name !== orig.name || current.email !== orig.email || current.phone !== orig.phone; setProfileDirty(hasChanged); saveBtn.disabled = !hasChanged; saveBtn.className = hasChanged ? 'shimmer-btn primary-gradient text-on-primary px-md py-2.5 rounded-lg font-bold shadow-[0_10px_20px_rgba(91,91,240,0.3)] cursor-pointer' : 'shimmer-btn primary-gradient text-on-primary/50 px-md py-2.5 rounded-lg font-bold cursor-not-allowed opacity-50'; }
 
-      const initials = (profile.name || '?').split(' ').map(s => s[0]).join('').toUpperCase().slice(0, 2) || '?';
       host.innerHTML = `
         <div class="md:col-span-4 space-y-gutter">
           <div class="glass-card rounded-xl p-md flex flex-col items-center text-center">
             <div class="relative mb-md group">
-              <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-white shadow-[0_0_30px_rgba(65,63,214,0.3)] ring-4 ring-primary/10">
-                <img class="w-full h-full object-cover" id="ym-profile-avatar" src="${profile.avatar || '/assets/images/ym-operator-avatar.jpg'}" alt="${escapeHtml(profile.name)}" style="${profile.avatar ? '' : 'display:none'}">
-                <div id="ym-avatar-fallback" class="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-bold" style="font-size:48px;${profile.avatar ? 'display:none' : ''}">${initials}</div>
+              <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-white shadow-[0_0_30px_rgba(65,63,214,0.3)] ring-4 ring-primary/10" id="ym-profile-avatar-wrap">
                 <input type="file" accept="image/*" id="ym-photo-input" style="display:none">
               </div>
               <div class="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-1">
@@ -171,12 +173,17 @@
         saveBtn.textContent = 'Save Changes'; saveBtn.disabled = !hasChanged;
       });
 
-      const avatarImg = document.getElementById('ym-profile-avatar');
-      const avatarFallback = document.getElementById('ym-avatar-fallback');
-      avatarImg.addEventListener('error', () => {
-        avatarImg.style.display = 'none';
-        avatarFallback.style.display = 'flex';
-      });
+      const wrap = document.getElementById('ym-profile-avatar-wrap');
+      const avatarEl = YMAvatar.render(profile, { size: 128, clickable: false, showStatus: true });
+      avatarEl.id = 'ym-profile-avatar-container';
+      wrap.prepend(avatarEl);
+      const refreshAvatar = () => {
+        const old = document.getElementById('ym-profile-avatar-container');
+        if (old) old.remove();
+        const el = YMAvatar.render(profile, { size: 128, clickable: false, showStatus: true });
+        el.id = 'ym-profile-avatar-container';
+        wrap.prepend(el);
+      };
       document.getElementById('ym-change-photo').addEventListener('click', () => document.getElementById('ym-photo-input').click());
       document.getElementById('ym-remove-photo').addEventListener('click', async function() {
         if (!confirm('Remove your profile photo?')) return;
@@ -184,9 +191,8 @@
           const r = await fetch('/api/user/profile/photo', { method: 'DELETE' });
           const res = await r.json();
           if (res && !res.error) {
-            avatarImg.style.display = 'none';
-            avatarFallback.style.display = 'flex';
             profile.avatar = null;
+            refreshAvatar();
             toast('Photo removed');
           } else toast(res.error || 'Remove failed', false);
         } catch { toast('Remove failed', false); }
@@ -199,10 +205,8 @@
           const r = await fetch('/api/user/profile/photo', { method: 'POST', body: fd });
           const res = await r.json();
           if (res.url) {
-            avatarImg.src = res.url + '?t=' + Date.now();
-            avatarImg.style.display = '';
-            avatarFallback.style.display = 'none';
             profile.avatar = res.url;
+            refreshAvatar();
             toast('Photo updated');
           } else toast(res.error || 'Upload failed', false);
         } catch { toast('Upload failed', false); }
@@ -341,17 +345,20 @@
 
   function renderTeamCard(m) {
     const status = m.status || 'active';
-    const statusColor = status === 'active' ? 'bg-secondary' : status === 'disabled' ? 'bg-error' : 'bg-tertiary-fixed-dim';
     const lastLogin = m.lastLogin ? new Date(m.lastLogin).toLocaleDateString() : 'Never';
     const plantNames = (m.assignedPlants || []).map(id => {
       const p = plants.find(x => x.id === id);
       return p ? p.name : null;
     }).filter(Boolean).join(', ') || '—';
+    const avatarSrc = m.avatar || YMAvatar.dataURI(YMAvatar.generateSVG(m));
+    const init = YMAvatar.initials(m.name);
+    const s = YMAvatar.styleForRole(m.role);
     return `<article class="ym-team-card rounded-xl border border-outline-variant/40 bg-white/70 p-md flex flex-col" data-id="${m.id}" data-name="${escapeHtml(m.name)}" data-email="${escapeHtml(m.email)}" data-role="${m.role}">
       <div class="flex items-start gap-3 mb-3">
-        <div class="relative">
-          <img src="${m.avatar || '/assets/images/ym-operator-avatar.jpg'}" alt="${escapeHtml(m.name)}" class="w-14 h-14 rounded-full border-2 border-primary/20 object-cover">
-          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${statusColor}"></span>
+        <div class="relative ym-team-avatar-wrap" data-user='${escapeHtml(JSON.stringify(m))}'>
+          <img src="${escapeHtml(avatarSrc)}" alt="${escapeHtml(m.name)}" class="ym-team-avatar-img w-14 h-14 rounded-full border-2 object-cover" style="border-color:${s.primary}30" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="ym-team-avatar-fallback" style="display:none;width:56px;height:56px;border-radius:9999px;align-items:center;justify-content:center;background:${s.bg};color:${s.primary};font-weight:800;font-size:18px;font-family:Inter,Geist,system-ui,sans-serif;border:2px solid ${s.primary}15">${init}</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white ${status === 'active' ? 'bg-[#006b5f]' : status === 'disabled' ? 'bg-[#ba1a1a]' : 'bg-[#986500]'}"></span>
         </div>
         <div class="flex-1 min-w-0">
           <h4 class="font-bold truncate" style="font-size:15px">${escapeHtml(m.name)}</h4>
@@ -384,8 +391,11 @@
         const m = team.find(x => x.id === id);
         if (!m) return;
         const plantNames = (m.assignedPlants || []).map(pid => { const p = plants.find(x => x.id === pid); return p ? p.name : null; }).filter(Boolean).join(', ') || 'None';
+        const mAvatarSrc = m.avatar || YMAvatar.dataURI(YMAvatar.generateSVG(m));
+        const mInit = YMAvatar.initials(m.name);
+        const mS = YMAvatar.styleForRole(m.role);
         openModal('Team Member: ' + m.name, `
-          <div class="flex items-center gap-3 mb-4"><img src="${m.avatar || '/assets/images/ym-operator-avatar.jpg'}" class="w-20 h-20 rounded-full border-2 border-primary/20 object-cover"><div><h3 style="font-size:20px;font-weight:700">${escapeHtml(m.name)}</h3><p style="font-size:13px" class="text-on-surface-variant">${escapeHtml(m.email)}</p><span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold uppercase" style="font-size:10px">${roleLabel(m.role)}</span></div></div>
+          <div class="flex items-center gap-3 mb-4"><div class="w-20 h-20 rounded-full overflow-hidden shrink-0" style="border:2px solid ${mS.primary}30"><img src="${escapeHtml(mAvatarSrc)}" alt="${escapeHtml(m.name)}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:${mS.bg};color:${mS.primary};font-weight:800;font-size:28px;font-family:Inter,Geist,sans-serif">${mInit}</div></div><div><h3 style="font-size:20px;font-weight:700">${escapeHtml(m.name)}</h3><p style="font-size:13px" class="text-on-surface-variant">${escapeHtml(m.email)}</p><span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold uppercase" style="font-size:10px">${roleLabel(m.role)}</span></div></div>
           <div class="grid grid-cols-2 gap-3 text-sm"><div><span class="font-bold text-on-surface-variant">Phone</span><p>${m.phone || '—'}</p></div><div><span class="font-bold text-on-surface-variant">Role</span><p>${roleLabel(m.role)}</p></div><div><span class="font-bold text-on-surface-variant">Member Since</span><p>${new Date(m.createdAt).toLocaleDateString()}</p></div><div><span class="font-bold text-on-surface-variant">Assigned Plants</span><p>${plantNames}</p></div></div>
           <div class="mt-4"><span class="font-bold text-on-surface-variant text-sm">Active Permissions</span><div class="flex flex-wrap gap-1 mt-1.5">${getPermissions(m.role).map(p => `<span class="px-2 py-0.5 rounded-full bg-primary/5 text-primary text-xs font-medium">${p}</span>`).join('')}</div></div>
         `);
@@ -462,6 +472,15 @@
           else toast(res.error || 'Failed to remove', false);
         } catch { toast('Failed to remove', false); }
       });
+    });
+    document.getElementById('ym-team-grid')?.addEventListener('click', function(e) {
+      const wrap = e.target.closest('.ym-team-avatar-wrap');
+      if (!wrap) return;
+      try {
+        const user = JSON.parse(wrap.dataset.user);
+        YMAvatar.closePopover();
+        YMAvatar.showPopover(user, wrap);
+      } catch {}
     });
   }
 

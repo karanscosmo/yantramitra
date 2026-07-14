@@ -616,12 +616,23 @@
         <a class="ym-ask-yantranklan" href="/ai-console"><img src="/assets/images/yantranklan-avatar-ai.jpg" alt="YantraNklan"><span>Ask YantraNklan</span></a>
         <button type="button" class="ym-standard-icon" data-ym-notifications aria-label="Notifications"><span class="material-symbols-outlined">notifications</span></button>
         <button type="button" class="ym-standard-icon" data-ym-factory aria-label="Plant map"><span class="material-symbols-outlined">factory</span></button>
-        <img class="ym-standard-avatar" src="/assets/images/ym-operator-avatar.jpg" alt="Profile">
+        <div class="ym-standard-avatar" id="ym-header-avatar"></div>
       </div>`;
     document.body.prepend(header);
     header.querySelector('.ym-logo').addEventListener('click', () => { window.location.href = '/dashboard'; });
     header.querySelector('[data-ym-factory]').addEventListener('click', () => { window.location.href = '/map'; });
-    header.querySelector('.ym-standard-avatar').addEventListener('click', () => { window.location.href = '/settings'; });
+    const headerAvatar = document.getElementById('ym-header-avatar');
+    if (headerAvatar) {
+      headerAvatar.addEventListener('click', () => { window.location.href = '/settings'; });
+      if (typeof YMAvatar !== 'undefined') {
+        fetch('/api/auth/me', { credentials: 'same-origin' }).then(r => r.json()).then(user => {
+          if (user && user.id) {
+            headerAvatar.innerHTML = '';
+            headerAvatar.appendChild(YMAvatar.render(user, { size: 42, clickable: true, showStatus: false }));
+          }
+        }).catch(() => {});
+      }
+    }
     header.querySelector('input').addEventListener('keydown', event => {
       if (event.key === 'Enter' && event.currentTarget.value.trim()) openCommandPalette();
     });

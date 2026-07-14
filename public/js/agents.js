@@ -32,17 +32,23 @@
 
   function openModal(title, body) {
     document.querySelector('.ym-modal-bd')?.remove();
+    if (window.__ymEscHandler) { document.removeEventListener('keydown', window.__ymEscHandler); window.__ymEscHandler = null; }
     const wrap = document.createElement('div');
-    wrap.className = 'modal-backdrop ym-modal-bd';
-    setTimeout(() => wrap.classList.add('open'), 10);
-    wrap.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">
+    wrap.className = 'ym-modal-backdrop ym-modal-bd';
+    wrap.innerHTML = `<div class="ym-modal-card" role="dialog" aria-modal="true">
       <div style="display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:14px">
         <h2 style="font:900 24px/1.2 Inter,system-ui,sans-serif;color:#191a28">${title}</h2>
         <button class="ym-close-modal" style="border:0;background:#eeecff;border-radius:999px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center"><span class="material-symbols-outlined">close</span></button>
       </div><div>${body}</div>
     </div>`;
-    wrap.addEventListener('click', e => { if (e.target === wrap || e.target.closest('.ym-close-modal')) { wrap.classList.remove('open'); setTimeout(() => wrap.remove(), 250); } });
+    const close = () => { wrap.remove(); document.body.style.overflow = ''; if (window.__ymEscHandler) { document.removeEventListener('keydown', window.__ymEscHandler); window.__ymEscHandler = null; } };
+    wrap.addEventListener('click', e => { if (e.target === wrap || e.target.closest('.ym-close-modal')) close(); });
     document.body.appendChild(wrap);
+    document.body.style.overflow = 'hidden';
+    wrap.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])')?.focus();
+    const escHandler = e => { if (e.key === 'Escape') close(); };
+    window.__ymEscHandler = escHandler;
+    document.addEventListener('keydown', escHandler);
     return wrap;
   }
 
@@ -516,8 +522,8 @@
           await post('/api/agents', { name, type, mission: desc, model: type + '-A1', status: 'active', progress: 0 });
           toast('New agent created: ' + name);
         }
-        wrap.classList.remove('open');
-        setTimeout(() => wrap.remove(), 250);
+        wrap.remove();
+        document.body.style.overflow = '';
         await loadAgents();
       } catch (e) { toast('Failed to create mission', 'error'); }
       btn.disabled = false;
