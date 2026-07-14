@@ -748,7 +748,7 @@
       }
       if (/approve/i.test(text)) { button.dataset.ymWired = 'true'; button.addEventListener('click', () => incidentAction('approve_plan')); return; }
       if (/reject/i.test(text)) { button.dataset.ymWired = 'true'; button.addEventListener('click', () => showModal('Decision Logged', '<p class="text-on-surface-variant">Rejection recorded in the review workflow. A revised plan can be generated from the incident replay.</p>')); return; }
-      if (/deploy scenario|advance state|auto-resolve|re-scan|latest snapshot|clear filters|restart/i.test(text)) {
+      if (!button.closest('.agent-card') && /deploy scenario|advance state|auto-resolve|re-scan|latest snapshot|clear filters|restart/i.test(text)) {
         button.dataset.ymWired = 'true';
         button.addEventListener('click', () => {
           if (/deploy scenario/i.test(text)) { window.location.href = '/simulator'; return; }

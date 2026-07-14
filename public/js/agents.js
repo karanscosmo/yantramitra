@@ -173,78 +173,6 @@
       if (countEl) countEl.textContent = items.length;
     });
 
-    document.querySelectorAll('.agent-card').forEach(card => {
-      card.addEventListener('dragstart', function(e) {
-        draggedAgentId = this.dataset.agentId;
-        this.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-      });
-      card.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
-      });
-    });
-
-    document.querySelectorAll('.drop-zone').forEach(zone => {
-      zone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
-      zone.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
-      zone.addEventListener('drop', async function(e) {
-        e.preventDefault();
-        this.classList.remove('drag-over');
-        if (!draggedAgentId) return;
-        const newStatus = this.closest('[data-status]')?.dataset.status || this.parentElement.dataset.status;
-        if (!newStatus) return;
-        const agent = agents.find(a => a.id === draggedAgentId);
-        if (!agent || agent.status === newStatus) { draggedAgentId = null; return; }
-        try {
-          await patch('/api/agents/' + draggedAgentId, { status: newStatus, progress: newStatus === 'done' ? 100 : newStatus === 'paused' ? 75 : 25 });
-          toast(`${agent.name} moved to ${newStatus}`);
-          await loadAgents();
-        } catch (e) { toast('Failed to update agent status', 'error'); }
-        draggedAgentId = null;
-      });
-    });
-
-    document.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', async function(e) {
-        e.stopPropagation();
-        const action = this.dataset.action;
-        const id = this.dataset.id;
-        const agent = agents.find(a => a.id === id);
-        if (!agent) return;
-        if (action === 'resume' || action === 'pause') {
-          const newStatus = action === 'resume' ? 'active' : 'paused';
-          try {
-            await patch('/api/agents/' + id, { status: newStatus, progress: newStatus === 'paused' ? 75 : 25 });
-            toast(`${agent.name} ${action === 'resume' ? 'resumed' : 'paused'}`);
-            await loadAgents();
-          } catch (e) { toast('Failed to ' + action, 'error'); }
-        } else if (action === 'restart') {
-          try {
-            await patch('/api/agents/' + id, { status: 'active', progress: 0 });
-            toast(`${agent.name} restarted`);
-            await loadAgents();
-          } catch (e) { toast('Failed to restart', 'error'); }
-        } else if (action === 'details') {
-          openDrawer(agent);
-        } else if (action === 'logs') {
-          toast('Live logs: ' + agent.name + ' — streaming 12 events/sec');
-        } else if (action === 'performance') {
-          const e = enrichAgent(agent);
-          openModal('Performance: ' + agent.name, `
-            <div class="grid grid-cols-2 gap-sm mb-md">
-              <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Efficiency</p><p class="font-bold text-lg" style="color:${e.agentColor}">${Math.round(e.progress)}%</p></div>
-              <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Success Rate</p><p class="font-bold text-lg text-secondary">${agent.successRate || Math.round(rn(80, 100))}%</p></div>
-              <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Confidence</p><p class="font-bold text-lg" style="color:${e.agentColor}">${Math.round(e.confidence)}%</p></div>
-              <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Health</p><p class="font-bold text-lg ${e.health > 80 ? 'text-secondary' : e.health > 60 ? 'text-tertiary' : 'text-error'}">${Math.round(e.health)}%</p></div>
-            </div>
-            <div class="bg-surface-container-low rounded-lg p-3 mb-md"><p class="font-label-caps text-[10px] text-on-surface-variant mb-1">MISSION HISTORY</p><p class="text-xs text-on-surface-variant">${agent.missionHistory ? JSON.stringify(agent.missionHistory).slice(0, 200) : 'No mission history available'}</p></div>
-          `);
-        } else if (action === 'mission') {
-          openMissionModal(agent);
-        }
-      });
-    });
   }
 
   function openDrawer(agent) {
@@ -688,6 +616,91 @@
           timelineRange = txt;
           loadTimeline();
         });
+      }
+    });
+
+    // Delegated drag/drop for agent cards (set up once, no accumulation)
+    document.addEventListener('dragstart', e => {
+      const card = e.target.closest('.agent-card');
+      if (!card) return;
+      draggedAgentId = card.dataset.agentId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    document.addEventListener('dragend', e => {
+      const card = e.target.closest('.agent-card');
+      if (!card) return;
+      card.classList.remove('dragging');
+      document.querySelectorAll('.drop-zone').forEach(dz => dz.classList.remove('drag-over'));
+    });
+    document.addEventListener('dragover', e => {
+      const zone = e.target.closest('.drop-zone');
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    document.addEventListener('dragleave', e => {
+      const zone = e.target.closest('.drop-zone');
+      if (!zone) return;
+      zone.classList.remove('drag-over');
+    });
+    document.addEventListener('drop', async e => {
+      const zone = e.target.closest('.drop-zone');
+      if (!zone) return;
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      if (!draggedAgentId) return;
+      const newStatus = zone.closest('[data-status]')?.dataset.status || zone.parentElement.dataset.status;
+      if (!newStatus) return;
+      const agent = agents.find(a => a.id === draggedAgentId);
+      if (!agent || agent.status === newStatus) { draggedAgentId = null; return; }
+      try {
+        await patch('/api/agents/' + draggedAgentId, { status: newStatus, progress: newStatus === 'done' ? 100 : newStatus === 'paused' ? 75 : 25 });
+        toast(`${agent.name} moved to ${newStatus}`);
+        await loadAgents();
+      } catch (e) { toast('Failed to update agent status', 'error'); }
+      draggedAgentId = null;
+    });
+
+    // Delegated click for [data-action] buttons (set up once, no accumulation)
+    document.addEventListener('click', async function(e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      const agent = agents.find(a => a.id === id);
+      if (!agent) return;
+      if (action === 'resume' || action === 'pause') {
+        const newStatus = action === 'resume' ? 'active' : 'paused';
+        try {
+          await patch('/api/agents/' + id, { status: newStatus, progress: newStatus === 'paused' ? 75 : 25 });
+          toast(`${agent.name} ${action === 'resume' ? 'resumed' : 'paused'}`);
+          await loadAgents();
+        } catch (e) { toast('Failed to ' + action, 'error'); }
+      } else if (action === 'restart') {
+        try {
+          await patch('/api/agents/' + id, { status: 'active', progress: 0 });
+          toast(`${agent.name} restarted`);
+          await loadAgents();
+        } catch (e) { toast('Failed to restart', 'error'); }
+      } else if (action === 'details') {
+        openDrawer(agent);
+      } else if (action === 'logs') {
+        toast('Live logs: ' + agent.name + ' — streaming 12 events/sec');
+      } else if (action === 'performance') {
+        const er = enrichAgent(agent);
+        openModal('Performance: ' + agent.name, `
+          <div class="grid grid-cols-2 gap-sm mb-md">
+            <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Efficiency</p><p class="font-bold text-lg" style="color:${er.agentColor}">${Math.round(er.progress)}%</p></div>
+            <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Success Rate</p><p class="font-bold text-lg text-secondary">${agent.successRate || Math.round(rn(80, 100))}%</p></div>
+            <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Confidence</p><p class="font-bold text-lg" style="color:${er.agentColor}">${Math.round(er.confidence)}%</p></div>
+            <div class="bg-primary/5 rounded-lg p-3 text-center"><p class="text-[10px] text-on-surface-variant">Health</p><p class="font-bold text-lg ${er.health > 80 ? 'text-secondary' : er.health > 60 ? 'text-tertiary' : 'text-error'}">${Math.round(er.health)}%</p></div>
+          </div>
+          <div class="bg-surface-container-low rounded-lg p-3 mb-md"><p class="font-label-caps text-[10px] text-on-surface-variant mb-1">MISSION HISTORY</p><p class="text-xs text-on-surface-variant">${agent.missionHistory ? JSON.stringify(agent.missionHistory).slice(0, 200) : 'No mission history available'}</p></div>
+        `);
+      } else if (action === 'mission') {
+        openMissionModal(agent);
       }
     });
 
