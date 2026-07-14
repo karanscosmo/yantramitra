@@ -28,7 +28,7 @@
 
   function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
-  let currentTab = 'Profile';
+  let currentTab = '';
   let profileDirty = false;
 
   function setProfileDirty(v) { profileDirty = v; }
