@@ -47,38 +47,51 @@
   }
 
   function buildAnomalyContext() {
-    if (!currentInvestigation) return '';
     const parts = [];
-    parts.push(`ANOMALY INVESTIGATION CONTEXT:`);
-    parts.push(`- Anomaly: ${currentInvestigation.title || 'Unknown'}`);
-    parts.push(`- Severity: ${currentInvestigation.severity || 'Unknown'}`);
-    parts.push(`- Status: ${currentInvestigation.status || 'Active'}`);
-    parts.push(`- Timestamp: ${currentInvestigation.timestamp || new Date().toISOString()}`);
-    parts.push(`- Plant: ${currentInvestigation.plant || 'Unknown'}`);
-    parts.push(`- Asset: ${currentInvestigation.asset || 'Unknown'}`);
-    parts.push(`- Description: ${currentInvestigation.description || 'No description'}`);
-    if (currentInvestigation.hypotheses?.length) {
-      parts.push(`\nCAUSAL HYPOTHESES:`);
-      currentInvestigation.hypotheses.forEach(h => {
-        parts.push(`- ${h.name}: ${h.confidence}% - ${h.evidence}`);
-      });
-    }
-    if (currentInvestigation.evidence?.length) {
-      parts.push(`\nEVIDENCE TIMELINE:`);
-      currentInvestigation.evidence.forEach(e => {
-        parts.push(`- ${e.timestamp}: ${e.description}`);
-      });
-    }
-    if (currentInvestigation.actions?.length) {
-      parts.push(`\nRECOMMENDED ACTIONS:`);
-      currentInvestigation.actions.forEach(a => {
-        parts.push(`- ${a.description} (Priority: ${a.priority})`);
-      });
-    }
-    if (currentInvestigation.assets?.length) {
-      parts.push(`\nAFFECTED ASSETS:`);
-      currentInvestigation.assets.forEach(a => {
-        parts.push(`- ${a.name} (${a.status})`);
+    if (currentInvestigation) {
+      parts.push(`ANOMALY INVESTIGATION CONTEXT:`);
+      parts.push(`- Anomaly: ${currentInvestigation.title || 'Unknown'}`);
+      parts.push(`- Severity: ${currentInvestigation.severity || 'Unknown'}`);
+      parts.push(`- Status: ${currentInvestigation.status || 'Active'}`);
+      parts.push(`- Timestamp: ${currentInvestigation.timestamp || new Date().toISOString()}`);
+      parts.push(`- Plant: ${currentInvestigation.plant || 'Unknown'}`);
+      parts.push(`- Asset: ${currentInvestigation.asset || 'Unknown'}`);
+      parts.push(`- Description: ${currentInvestigation.description || 'No description'}`);
+      if (currentInvestigation.hypotheses?.length) {
+        parts.push(`\nCAUSAL HYPOTHESES:`);
+        currentInvestigation.hypotheses.forEach(h => {
+          parts.push(`- ${h.name}: ${h.confidence}% - ${h.evidence}`);
+        });
+      }
+      if (currentInvestigation.evidence?.length) {
+        parts.push(`\nEVIDENCE TIMELINE:`);
+        currentInvestigation.evidence.forEach(e => {
+          parts.push(`- ${e.timestamp}: ${e.description}`);
+        });
+      }
+      if (currentInvestigation.actions?.length) {
+        parts.push(`\nRECOMMENDED ACTIONS:`);
+        currentInvestigation.actions.forEach(a => {
+          parts.push(`- ${a.description} (Priority: ${a.priority})`);
+        });
+      }
+      if (currentInvestigation.assets?.length) {
+        parts.push(`\nAFFECTED ASSETS:`);
+        currentInvestigation.assets.forEach(a => {
+          parts.push(`- ${a.name} (${a.status})`);
+        });
+      }
+    } else if (currentAlarms.length) {
+      parts.push(`ACTIVE ALARMS CONTEXT (${currentAlarms.length} total):`);
+      const bySeverity = {};
+      currentAlarms.forEach(a => { bySeverity[a.severity] = (bySeverity[a.severity] || 0) + 1; });
+      parts.push(`Severity breakdown: ${Object.entries(bySeverity).map(([s, c]) => `${s}: ${c}`).join(', ')}`);
+      const unresolved = currentAlarms.filter(a => a.status !== 'resolved');
+      parts.push(`Unresolved: ${unresolved.length} alarms`);
+      parts.push('\nActive Alarms:');
+      currentAlarms.slice(0, 10).forEach(a => {
+        const machineName = a.machine?.name || 'Unknown';
+        parts.push(`- ${a.title || 'Alarm'} | ${(a.severity || 'unknown').toUpperCase()} | ${machineName} | ${a.status || 'open'} | ${a.createdAt ? new Date(a.createdAt).toLocaleString() : '—'}`);
       });
     }
     return parts.join('\n');

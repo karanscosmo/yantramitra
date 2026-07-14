@@ -180,7 +180,7 @@
 <img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
 <div class="ml-lg relative hidden md:block">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="pl-10 pr-4 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low/50 focus:ring-2 focus:ring-primary/50 transition-all w-64 text-sm" placeholder="Search factory nodes (⌘K)" type="text"/>
+<input class="pl-10 pr-4 py-1.5 rounded-full border border-outline-variant/30 bg-surface-container-low/50 focus:ring-2 focus:ring-primary/50 transition-all w-64 text-sm" placeholder="Search factory nodes (⌘K)" type="text" id="global-search-input"/>
 </div>
 </div>
 <div class="flex items-center gap-md">
@@ -203,7 +203,7 @@
 <p class="text-on-surface-variant mt-1 text-sm">Live monitoring: 14 agents active across Zone-B Industrial Cluster.</p>
 </div>
 <div class="flex gap-sm">
-<button class="shimmer-btn text-white px-md py-2 rounded-lg font-label-caps flex items-center gap-2">
+<button class="shimmer-btn text-white px-md py-2 rounded-lg font-label-caps flex items-center gap-2" id="auto-resolve-btn">
 <span class="material-symbols-outlined text-sm" data-icon="bolt">bolt</span>
                 AUTO-RESOLVE ALL
             </button>
@@ -211,10 +211,10 @@
 </div>
 <section class="col-span-12 lg:col-span-3 flex flex-col gap-xs">
 <div class="flex items-center justify-between px-2">
-<span class="font-label-caps text-on-surface-variant text-[11px]">ACTIVE ALARMS (7)</span>
-<button class="text-primary text-[10px] font-semibold hover:underline">Clear Filters</button>
+<span class="font-label-caps text-on-surface-variant text-[11px]" id="alarm-count">ACTIVE ALARMS (7)</span>
+<button class="text-primary text-[10px] font-semibold hover:underline" id="clear-filters-btn">Clear Filters</button>
 </div>
-<div class="overflow-y-auto no-scrollbar flex flex-col gap-2 pr-1">
+<div class="overflow-y-auto no-scrollbar flex flex-col gap-2 pr-1" id="alarm-container">
 <div class="glass-card p-xs rounded-xl severity-critical border-primary/20 relative overflow-hidden cursor-pointer">
 <div class="flex justify-between items-start mb-1">
 <span class="px-2 py-0.5 rounded-full bg-error/10 text-error font-label-caps text-[10px]">CRITICAL</span>
@@ -281,15 +281,15 @@
 </div>
 </section>
 <section class="col-span-12 lg:col-span-6 flex flex-col gap-gutter">
-<div class="glass-card rounded-2xl p-md flex-1 relative overflow-hidden border-primary/30 flex flex-col min-h-[600px]">
+<div class="glass-card rounded-2xl p-md flex-1 relative overflow-hidden border-primary/30 flex flex-col min-h-[600px]" id="root-cause-graph">
 <div class="flex items-center justify-between mb-md shrink-0">
 <h2 class="font-section-header text-lg flex items-center gap-2">
 <span class="material-symbols-outlined text-primary" data-icon="account_tree">account_tree</span>
                         Root-Cause Intelligence
                     </h2>
 <div class="flex gap-2">
-<button type="button" class="px-3 py-1 rounded-full border border-outline-variant text-[10px] font-bold hover:bg-primary/10 transition-colors">RE-SCAN GRAPH</button>
-<button type="button" class="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-bold hover:bg-primary/90 transition-colors">LATEST SNAPSHOT</button>
+<button type="button" class="px-3 py-1 rounded-full border border-outline-variant text-[10px] font-bold hover:bg-primary/10 transition-colors" id="rescan-graph-btn">RE-SCAN GRAPH</button>
+<button type="button" class="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-bold hover:bg-primary/90 transition-colors" id="snapshot-graph-btn">LATEST SNAPSHOT</button>
 </div>
 </div>
 <div class="flex-grow relative">
@@ -333,12 +333,12 @@
 </div>
 </div>
 </div>
-<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="glass-card rounded-2xl p-md border-primary/20" id="causal-hypotheses-panel">
 <h2 class="font-section-header text-lg mb-sm flex items-center gap-2">
 <span class="material-symbols-outlined text-primary" data-icon="psychology">psychology</span>
                     Causal Hypotheses &amp; Intelligence Confidence
                 </h2>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md" id="causal-hypotheses-content">
 <div class="p-sm rounded-xl border border-outline-variant/30 bg-surface-container-low/30 cursor-pointer">
 <div class="flex justify-between items-center mb-2">
 <span class="font-label-caps text-xs text-on-surface">Main Bearing Inner-Race Wear</span>
@@ -383,12 +383,12 @@
 </div>
 </section>
 <aside class="col-span-12 lg:col-span-3 flex flex-col gap-gutter">
-<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="glass-card rounded-2xl p-md border-primary/20" id="investigation-path-panel">
 <div class="flex items-center gap-2 mb-sm">
 <span class="material-symbols-outlined text-primary text-lg" data-icon="account_tree">account_tree</span>
 <h3 class="font-label-caps text-xs text-on-surface">INVESTIGATION PATH</h3>
 </div>
-<div class="space-y-2">
+<div class="space-y-2" id="investigation-path-content">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-error shadow-[0_0_6px_rgba(186,26,26,0.5)]"></div>
 <div class="flex-1">
@@ -412,19 +412,19 @@
 </div>
 </div>
 </div>
-<div class="glass-card rounded-2xl p-md bg-primary-container/10 border-primary/20">
+<div class="glass-card rounded-2xl p-md bg-primary-container/10 border-primary/20" id="ai-reasoning-panel">
 <div class="flex items-center gap-2 mb-sm">
 <span class="material-symbols-outlined text-primary text-lg" data-icon="lightbulb">lightbulb</span>
 <h3 class="font-label-caps text-xs text-on-surface">AI REASONING</h3>
 </div>
-<p class="text-[10px] text-on-surface-variant leading-relaxed">Primary confidence pathway identified through high-frequency harmonics on Sensor S-1 during ramp-down. Pattern matches Main Bearing Inner-Race Wear signature with 88% confidence. Secondary path via Tachometer G-4 shows structural resonance at 45%.</p>
+<p class="text-[10px] text-on-surface-variant leading-relaxed" id="ai-reasoning-content">Primary confidence pathway identified through high-frequency harmonics on Sensor S-1 during ramp-down. Pattern matches Main Bearing Inner-Race Wear signature with 88% confidence. Secondary path via Tachometer G-4 shows structural resonance at 45%.</p>
 </div>
-<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="glass-card rounded-2xl p-md border-primary/20" id="evidence-timeline-panel">
 <div class="flex items-center gap-2 mb-sm">
 <span class="material-symbols-outlined text-primary text-lg" data-icon="schedule">schedule</span>
 <h3 class="font-label-caps text-xs text-on-surface">EVIDENCE TIMELINE</h3>
 </div>
-<div class="space-y-2">
+<div class="space-y-2" id="evidence-timeline-content">
 <div class="flex gap-2">
 <div class="text-[9px] font-bold text-on-surface-variant w-10 shrink-0">14:22</div>
 <p class="text-[10px] text-on-surface leading-tight">Critical alarm triggered — Turbine Shaft Eccentricity</p>
@@ -443,12 +443,12 @@
 </div>
 </div>
 </div>
-<div class="glass-card rounded-2xl p-md border-secondary/20 bg-secondary/5">
+<div class="glass-card rounded-2xl p-md border-secondary/20 bg-secondary/5" id="recommended-actions-panel">
 <div class="flex items-center gap-2 mb-sm">
 <span class="material-symbols-outlined text-secondary text-lg" data-icon="build">build</span>
 <h3 class="font-label-caps text-xs text-on-surface">RECOMMENDED ACTIONS</h3>
 </div>
-<div class="space-y-1.5">
+<div class="space-y-1.5" id="recommended-actions-content">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-[14px] text-primary">priority_high</span>
 <p class="text-[10px] text-on-surface flex-1">Inspect Main Bearing assembly on Unit 04-B</p>
@@ -463,12 +463,12 @@
 </div>
 </div>
 </div>
-<div class="glass-card rounded-2xl p-md border-primary/20">
+<div class="glass-card rounded-2xl p-md border-primary/20" id="affected-assets-panel">
 <div class="flex items-center gap-2 mb-sm">
 <span class="material-symbols-outlined text-primary text-lg" data-icon="precision_manufacturing">precision_manufacturing</span>
 <h3 class="font-label-caps text-xs text-on-surface">AFFECTED ASSETS</h3>
 </div>
-<div class="space-y-1.5">
+<div class="space-y-1.5" id="affected-assets-content">
 <div class="flex items-center gap-2">
 <div class="w-1.5 h-1.5 rounded-full bg-error"></div>
 <p class="text-[10px] text-on-surface flex-1">Unit 04-B · Turbine Assembly</p>
