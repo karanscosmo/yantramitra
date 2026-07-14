@@ -318,6 +318,19 @@
             const y = e.clientY / window.innerHeight;
             document.body.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, #eeecff 0%, #fbf8ff 45%, #ffffff 100%)`;
         });
+
+        // Google auth welcome message
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('source') === 'google') {
+                const headline = document.querySelector('h1');
+                const subtext = document.querySelector('h1 + p');
+                if (headline && subtext) {
+                    headline.textContent = "Let's personalize your workspace.";
+                    subtext.textContent = "You're signed in with Google. Tell us about yourself so we can tailor your industrial intelligence experience.";
+                }
+            }
+        })();
     </script>
 <script src="/js/onboarding.js" defer></script>
 <script src="/js/avatar.js" defer></script>

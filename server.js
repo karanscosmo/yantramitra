@@ -7,6 +7,7 @@ const multer = require('multer');
 const fs = require('fs');
 const crypto = require('crypto');
 const prisma = require('./services/prisma');
+const googleAuth = require('./services/google-auth');
 
 const isVercel = !!process.env.VERCEL;
 const uploadsDir = isVercel ? '/tmp/uploads' : path.join(__dirname, 'uploads');
@@ -23,6 +24,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 if (isProduction && JWT_SECRET === 'yantramitra-jwt-secret-2026') {
   throw new Error('JWT_SECRET must be set in production.');
 }
+
+const GOOGLE_AUTH_CONFIGURED = googleAuth.isConfigured();
 
 const allowedTeamRoles = ['admin', 'operator', 'maintenance', 'plant_manager', 'executive'];
 const allowedIntegrationKeys = ['SCADA', 'CMMS', 'ERP', 'Historian', 'MQTT'];
@@ -335,9 +338,20 @@ app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, keyPr
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+    if (user.provider === 'google' && !user.password) {
+      return res.status(401).json({ error: 'This account uses Google sign-in. Please use the Continue with Google button.', googleAccount: true });
+    }
+    if (!(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+    const prefs = safePrefs(user.prefs);
+    const sessions = Array.isArray(user.sessions) ? [...user.sessions] : [];
+    sessions.push({ device: req.headers['user-agent']?.slice(0, 80) || 'Unknown', city: '—', lastSeen: 'just now', current: true });
+    if (sessions.length > 20) sessions.splice(0, sessions.length - 20);
+    await prisma.user.update({ where: { id: user.id }, data: { sessions, lastLoginMethod: 'email', prefs: { ...prefs, lastLogin: new Date().toISOString() } } });
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     setAuthCookie(res, token);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
@@ -385,14 +399,98 @@ app.get('/api/auth/me', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { id: true, email: true, name: true, role: true } });
-    res.json(user);
+    const user = await prisma.user.findUnique({ where: { id: decoded.id }, select: { id: true, email: true, name: true, role: true, avatar: true, googleId: true, provider: true, lastLoginMethod: true, emailVerified: true, password: true } });
+    if (!user) return res.status(401).json({ error: 'User not found' });
+    res.json({ id: user.id, email: user.email, name: user.name, role: user.role, avatar: user.avatar, googleId: user.googleId, provider: user.provider, lastLoginMethod: user.lastLoginMethod, emailVerified: user.emailVerified, hasPassword: !!user.password });
   } catch { res.status(401).json({ error: 'Invalid token' }); }
 });
 
 app.post('/api/auth/logout', (req, res) => {
   clearAuthCookie(res);
   res.json({ message: 'Logged out' });
+});
+
+app.get('/api/auth/google', (req, res) => {
+  if (!GOOGLE_AUTH_CONFIGURED) {
+    return res.status(501).json({ error: 'Google authentication is not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.' });
+  }
+  const url = googleAuth.getGoogleAuthUrl();
+  if (!url) return res.status(500).json({ error: 'Failed to generate Google auth URL' });
+  res.redirect(url);
+});
+
+app.get('/api/auth/google/callback', rateLimit({ windowMs: 60 * 60 * 1000, max: 10, keyPrefix: 'google-callback' }), async (req, res) => {
+  try {
+    const { code, error } = req.query;
+    if (error) {
+      if (error === 'access_denied') return res.redirect('/login?error=google_cancelled');
+      return res.redirect('/login?error=google_error');
+    }
+    if (!code) return res.redirect('/login?error=missing_code');
+
+    const tokens = await googleAuth.exchangeCodeForTokens(code);
+    if (!tokens.id_token) return res.redirect('/login?error=missing_id_token');
+
+    const payload = await googleAuth.verifyGoogleToken(tokens.id_token);
+
+    let user = await prisma.user.findUnique({ where: { email: payload.email } });
+    let isNewUser = false;
+
+    if (user) {
+      if (!user.googleId) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: payload.googleId, provider: 'google', avatar: payload.avatar || user.avatar, emailVerified: true, lastLoginMethod: 'google' }
+        });
+        await createAudit(user.id, 'auth.google_link', 'User', user.id, { email: user.email });
+      } else {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginMethod: 'google', avatar: payload.avatar || user.avatar }
+        });
+      }
+      const prefs = safePrefs(user.prefs);
+      const sessions = Array.isArray(user.sessions) ? [...user.sessions] : [];
+      sessions.push({ device: 'Google OAuth', city: '—', lastSeen: 'just now', current: true });
+      if (sessions.length > 20) sessions.splice(0, sessions.length - 20);
+      const loginHistory = Array.isArray(prefs.loginHistory) ? [...prefs.loginHistory] : [];
+      loginHistory.push({ success: true, method: 'google', time: new Date().toISOString(), ip: req.ip || '—', device: 'Google OAuth' });
+      if (loginHistory.length > 50) loginHistory.splice(0, loginHistory.length - 50);
+      await prisma.user.update({ where: { id: user.id }, data: { sessions, prefs: { ...prefs, lastLogin: new Date().toISOString(), loginHistory } } });
+    } else {
+      const hashedPassword = await bcrypt.hash(crypto.randomUUID() + Date.now(), 10);
+      user = await prisma.user.create({
+        data: {
+          email: payload.email,
+          password: hashedPassword,
+          name: payload.name,
+          role: 'operator',
+          googleId: payload.googleId,
+          provider: 'google',
+          avatar: payload.avatar,
+          emailVerified: true,
+          lastLoginMethod: 'google',
+          prefs: {},
+          integrations: {},
+          sessions: [{ device: 'Google OAuth', city: '—', lastSeen: 'just now', current: true }],
+        }
+      });
+      isNewUser = true;
+      await createAudit(user.id, 'auth.google_signup', 'User', user.id, { email: user.email });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    setAuthCookie(res, token);
+
+    if (isNewUser) {
+      res.redirect('/onboarding?source=google');
+    } else {
+      res.redirect('/dashboard');
+    }
+  } catch (e) {
+    console.error('Google callback error:', e.message);
+    res.redirect('/login?error=google_auth_failed');
+  }
 });
 
 app.get('/api/public/stats', async (req, res) => {
@@ -1098,10 +1196,38 @@ app.post('/api/user/change-password', authApi, async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     if (!newPassword || newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user.provider === 'google' && !user.password) {
+      return res.status(400).json({ error: 'This account does not have a password. Use the Set Password option instead.' });
+    }
     const ok = currentPassword && await bcrypt.compare(currentPassword, user.password);
     if (!ok) return res.status(400).json({ error: 'Current password is incorrect' });
     const password = await bcrypt.hash(newPassword, 10);
-    await prisma.user.update({ where: { id: req.user.id }, data: { password } });
+    await prisma.user.update({ where: { id: req.user.id }, data: { password, provider: 'email', lastLoginMethod: 'email' } });
+    await createAudit(req.user.id, 'user.password_changed', 'User', req.user.id, {});
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/user/set-password', authApi, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (user.password) return res.status(400).json({ error: 'This account already has a password. Use Change Password instead.' });
+    const password = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: req.user.id }, data: { password, provider: 'google', lastLoginMethod: 'google' } });
+    await createAudit(req.user.id, 'user.password_set', 'User', req.user.id, {});
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/user/unlink-google', authApi, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user.googleId) return res.status(400).json({ error: 'No Google account linked' });
+    if (!user.password) return res.status(400).json({ error: 'Set a password first before unlinking Google' });
+    await prisma.user.update({ where: { id: req.user.id }, data: { googleId: null, provider: 'email', lastLoginMethod: 'email' } });
+    await createAudit(req.user.id, 'auth.google_unlink', 'User', req.user.id, {});
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -1112,11 +1238,15 @@ app.patch('/api/user/profile', authApi, async (req, res) => {
     const allowedProfileRoles = ['operator', 'maintenance', 'plant_manager', 'executive'];
     const data = {};
     if (name) data.name = name;
-    if (email) data.email = email;
+    if (email) {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing && existing.id !== req.user.id) return res.status(400).json({ error: 'Email already in use' });
+      data.email = email;
+    }
     if (role && allowedProfileRoles.includes(role)) data.role = role;
     if (phone != null) data.phone = phone;
     if (avatar != null) data.avatar = avatar;
-    const user = await prisma.user.update({ where: { id: req.user.id }, data, select: { id: true, email: true, name: true, role: true, avatar: true, phone: true } });
+    const user = await prisma.user.update({ where: { id: req.user.id }, data, select: { id: true, email: true, name: true, role: true, avatar: true, phone: true, googleId: true, provider: true } });
     const newToken = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     setAuthCookie(res, newToken);
     await createAudit(req.user.id, 'user.profile_updated', 'User', user.id, Object.keys(data));

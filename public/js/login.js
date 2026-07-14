@@ -12,6 +12,21 @@
     errorEl.className = 'text-error text-sm mt-2 hidden';
     form.appendChild(errorEl);
 
+    const googleErrors = {
+      google_cancelled: 'Google sign-in was cancelled. Please try again or use email login.',
+      google_error: 'Google sign-in encountered an error. Please try again.',
+      google_auth_failed: 'Google authentication failed. Please try again.',
+      missing_code: 'Authentication failed. Missing authorization code.',
+      missing_id_token: 'Authentication failed. Invalid response from Google.',
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const errorParam = params.get('error');
+    if (errorParam && googleErrors[errorParam]) {
+      errorEl.textContent = googleErrors[errorParam];
+      errorEl.classList.remove('hidden');
+    }
+
     const forgotLink = document.querySelector('a[href="#"]');
     if (forgotLink) {
       forgotLink.setAttribute('href', '/reset-password');
@@ -37,16 +52,18 @@
       } else {
         errorEl.textContent = data.error || 'Invalid credentials';
         errorEl.classList.remove('hidden');
+        if (data.googleAccount) {
+          errorEl.innerHTML = 'This account uses Google sign-in. <a class="font-bold underline" href="/api/auth/google">Continue with Google</a>.';
+        }
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<span>Initialize Session</span><span class="material-symbols-outlined">arrow_forward</span>';
       }
     });
 
-    const ssoBtn = form.querySelector('button[type="button"]');
-    if (ssoBtn) {
-      ssoBtn.addEventListener('click', () => {
-        errorEl.textContent = 'SSO is ready for your identity provider configuration. Use email login or request access from an administrator.';
-        errorEl.classList.remove('hidden');
+    const googleBtn = document.getElementById('google-login-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        window.location.href = '/api/auth/google';
       });
     }
   });

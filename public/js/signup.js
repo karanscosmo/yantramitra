@@ -78,5 +78,12 @@
         if (!submitBtn.classList.contains('signup-success')) resetSubmitButton();
       }
     });
+
+    const googleBtn = document.getElementById('google-signup-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        window.location.href = '/api/auth/google';
+      });
+    }
   });
 })();
