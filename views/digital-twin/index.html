@@ -1,329 +1,37 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>YantraMitra | Live Ops 3D Digital Twin</title>
+<title>YantraMitra | Digital Twin · Live Operations</title>
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
-<!-- Material Symbols & Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Geist:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Geist:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-low": "#f4f2ff",
-                        "surface-variant": "#e2e1f4",
-                        "on-background": "#191a28",
-                        "on-secondary-fixed": "#00201c",
-                        "on-error": "#ffffff",
-                        "on-secondary": "#ffffff",
-                        "surface-container-lowest": "#ffffff",
-                        "primary-container": "#5b5bf0",
-                        "error": "#ba1a1a",
-                        "on-surface-variant": "#464555",
-                        "error-container": "#ffdad6",
-                        "on-surface": "#191a28",
-                        "tertiary": "#774f00",
-                        "surface-container-highest": "#e2e1f4",
-                        "tertiary-fixed": "#ffddb1",
-                        "on-secondary-container": "#007165",
-                        "surface-container": "#eeecff",
-                        "surface": "#fbf8ff",
-                        "primary-fixed": "#e1dfff",
-                        "inverse-on-surface": "#f1efff",
-                        "surface-tint": "#4948de",
-                        "secondary-fixed": "#5efae4",
-                        "tertiary-fixed-dim": "#ffba4b",
-                        "primary": "#413fd6",
-                        "on-primary-container": "#f6f2ff",
-                        "on-error-container": "#93000a",
-                        "primary-fixed-dim": "#c1c1ff",
-                        "on-primary-fixed": "#09006b",
-                        "background": "#fbf8ff",
-                        "on-tertiary": "#ffffff",
-                        "secondary-fixed-dim": "#36ddc8",
-                        "on-primary-fixed-variant": "#2e29c6",
-                        "surface-bright": "#fbf8ff",
-                        "inverse-primary": "#c1c1ff",
-                        "secondary-container": "#5efae4",
-                        "on-tertiary-container": "#fff2e5",
-                        "surface-container-high": "#e8e6fa",
-                        "tertiary-container": "#986500",
-                        "outline": "#767586",
-                        "secondary": "#006b5f",
-                        "on-tertiary-fixed-variant": "#624000",
-                        "inverse-surface": "#2e2f3e",
-                        "on-secondary-fixed-variant": "#005047",
-                        "outline-variant": "#c7c4d7",
-                        "surface-dim": "#d9d8ec",
-                        "on-tertiary-fixed": "#291800",
-                        "on-primary": "#ffffff"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "xs": "8px",
-                        "sm": "16px",
-                        "md": "24px",
-                        "lg": "40px",
-                        "gutter": "24px",
-                        "nav-width": "72px",
-                        "base": "4px",
-                        "xl": "64px"
-                    },
-                    "fontFamily": {
-                        "body-md": ["Inter"],
-                        "headline-lg-mobile": ["Geist"],
-                        "section-header": ["Geist"],
-                        "headline-lg": ["Geist"],
-                        "label-caps": ["Space Grotesk"],
-                        "kpi-numeric": ["Space Grotesk"],
-                        "display-hero": ["Geist"]
-                    },
-                    "fontSize": {
-                        "body-md": ["15px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
-                        "section-header": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
-                        "kpi-numeric": ["20px", {"lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600"}],
-                        "display-hero": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
-                    }
-                },
-            },
-        }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(16px);
-            border: 1px solid #E7E9F5;
-        }
-
-        .chart-grid {
-            background-image: linear-gradient(#E7E9F5 1px, transparent 1px), linear-gradient(90deg, #E7E9F5 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        .glow-indigo {
-            box-shadow: 0 0 15px rgba(65, 63, 214, 0.3);
-        }
-
-        .shimmer-btn:hover::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: skewX(-20deg);
-            animation: shimmer 0.8s forwards;
-        }
-
-        @keyframes shimmer {
-            100% { left: 150%; }
-        }
-
-        .pulse-node {
-            animation: pulse-glow 2s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(91, 91, 240, 0.7); }
-            70% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 10px rgba(91, 91, 240, 0); }
-            100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(91, 91, 240, 0); }
-        }
-
-        body {
-            background-color: #fbf8ff;
-            overflow: hidden;
-        }
-    </style>
-</head>
-<body class="font-body-md text-on-surface">
-<!-- Atmospheric Background Blobs -->
-<div class="fixed inset-0 overflow-hidden -z-10">
-<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]"></div>
-<div class="absolute bottom-[10%] right-[-5%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[100px]"></div>
-<div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-tertiary/5 rounded-full blur-[80px]"></div>
-</div>
-<!-- Top Navigation Bar -->
-<header class="fixed top-0 w-full h-16 z-50 bg-white/70 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md shadow-[0_8px_32px_0_rgba(65,63,214,0.1)]">
-<div class="flex items-center gap-sm">
-<img src="/assets/logos/logo.svg" alt="YantraMitra" class="h-8 md:h-9"/>
-<div class="ml-md hidden md:flex items-center gap-md">
-<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary py-1" href="/digital-twin">Operations</a>
-<a class="font-body-md text-body-md text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-2 rounded" href="/reliability">Analytics</a>
-<a class="font-body-md text-body-md text-on-surface-variant font-medium hover:bg-primary/10 transition-colors px-2 rounded" href="/maintenance">Maintenance</a>
-</div>
-</div>
-<div class="flex items-center gap-sm">
-<!-- Search Pill -->
-<div class="relative hidden lg:flex items-center bg-white/50 border border-outline-variant/50 rounded-full px-sm py-xs focus-within:ring-2 focus-within:ring-primary/50 transition-all">
-<span class="material-symbols-outlined text-on-surface-variant mr-xs">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-on-surface-variant/60" placeholder="Search Assets (⌘K)" type="text"/>
-</div>
-<button class="p-2 rounded-full hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined text-primary">notifications</span>
-</button>
-<button class="p-2 rounded-full hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined text-primary">factory</span>
-</button>
-<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border border-primary/20">
-<img class="w-full h-full object-cover" data-alt="A professional profile avatar of a female factory manager wearing smart casual business attire, soft cinematic lighting, blurred high-tech industrial background, hyper-realistic, 4k." src="/assets/images/ym-operator-avatar.jpg"/>
-</div>
-</div>
-</header>
-<!-- Main Viewport Area -->
-<main class="pb-0 px-0 h-screen w-full relative">
-<!-- 3D Digital Twin Viewer -->
-<div class="absolute inset-0 bg-[#f4f2ff] flex items-center justify-center overflow-hidden">
-<!-- Central Digital Twin Image -->
-<div class="relative w-full h-full flex items-center justify-center">
-<img alt="Live Factory Floor Digital Twin" class="w-full h-full object-cover" src="/assets/images/home-pune-automotive.jpg"/>
-<!-- Interactive Nodes Overlay (Absolute positions matched to equipment in the image) -->
-<div class="absolute top-[42%] left-[45%]">
-<div class="pulse-node w-5 h-5 bg-primary rounded-full cursor-pointer flex items-center justify-center border-2 border-white" onclick="toggleInspector('CNC-Alpha-01')">
-<div class="w-2 h-2 bg-white rounded-full"></div>
-</div>
-<div class="absolute top-8 left-0 glass-panel px-3 py-1 rounded-lg border border-primary/20 shadow-lg">
-<span class="font-label-caps text-label-caps text-primary">CNC ALPHA 01</span>
-</div>
-</div>
-<div class="absolute top-[58%] left-[62%]">
-<div class="pulse-node w-5 h-5 bg-secondary rounded-full cursor-pointer flex items-center justify-center border-2 border-white" onclick="toggleInspector('ARM-Delta-04')">
-<div class="w-2 h-2 bg-white rounded-full"></div>
-</div>
-<div class="absolute top-8 left-0 glass-panel px-3 py-1 rounded-lg border border-secondary/20 shadow-lg">
-<span class="font-label-caps text-label-caps text-secondary">ARM DELTA 04</span>
-</div>
-</div>
-<div class="absolute top-[35%] left-[28%]">
-<div class="pulse-node w-4 h-4 bg-primary/40 rounded-full cursor-pointer flex items-center justify-center border-2 border-white" onclick="toggleInspector('LINE-Omega-02')">
-<div class="w-1.5 h-1.5 bg-white rounded-full"></div>
-</div>
-</div>
-</div>
-</div>
-<!-- Right Inspector Panel -->
-<aside class="fixed right-[calc(var(--sidebar-width)+16px)] top-24 bottom-28 w-80 glass-panel rounded-2xl p-md flex flex-col gap-3 transition-transform translate-x-0 z-40" id="inspector-panel">
-<div class="flex justify-between items-start">
-<div>
-<h3 class="text-base font-bold text-on-surface" id="asset-name">CNC Alpha 01</h3>
-<p class="font-label-caps text-label-caps text-secondary uppercase tracking-widest mt-1">Operational • 98.4% Eff.</p>
-</div>
-<button class="p-1 hover:bg-surface-variant rounded-lg" onclick="togglePanel()">
-<span class="material-symbols-outlined text-on-surface-variant">close</span>
-</button>
-</div>
-<div class="space-y-sm">
-<div class="flex justify-between items-center">
-<span class="text-on-surface-variant text-xs font-medium">Power Usage</span>
-<span class="font-kpi-numeric text-kpi-numeric text-primary">4.2 kW</span>
-</div>
-<div class="flex justify-between items-center">
-<span class="text-on-surface-variant text-xs font-medium">Temp Spike</span>
-<span class="font-kpi-numeric text-kpi-numeric text-error">72°C</span>
-</div>
-</div>
-<!-- Sensor Chart Simulation -->
-<div class="flex-grow bg-white/40 rounded-xl border border-outline-variant/30 p-2 relative overflow-hidden chart-grid">
-<div class="absolute inset-0 flex items-end px-2 pb-4 gap-1">
-<!-- Fake Multi-Series Bars/Lines -->
-<div class="w-full h-full flex items-end justify-between">
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 60%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 45%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 70%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 65%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 85%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 55%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 40%;"></div>
-<div class="w-2 bg-primary/40 rounded-t-sm" style="height: 60%;"></div>
-</div>
-</div>
-<div class="absolute inset-0 p-3 pointer-events-none">
-<div class="w-full h-[1px] bg-error/30 absolute top-[30%]"></div>
-<span class="text-[8px] text-error font-bold absolute top-[20%] right-2 uppercase">Limit</span>
-</div>
-<div class="absolute bottom-2 left-2 flex gap-2">
-<div class="flex items-center gap-1">
-<div class="w-2 h-2 rounded-full bg-primary"></div>
-<span class="text-[9px] font-bold uppercase text-on-surface-variant">Vibration</span>
-</div>
-<div class="flex items-center gap-1">
-<div class="w-2 h-2 rounded-full bg-secondary"></div>
-<span class="text-[9px] font-bold uppercase text-on-surface-variant">Heat</span>
-</div>
-</div>
-</div>
-<button class="w-full py-2 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-bold shimmer-btn relative overflow-hidden glow-indigo flex items-center justify-center gap-2 group">
-<span class="material-symbols-outlined text-sm">construction</span>
-<span>Open Maintenance Log</span>
-</button>
-</aside>
-<!-- Bottom Mode Switcher Toolbar -->
-<div class="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-sm bg-white/40 backdrop-blur-2xl border border-white/40 p-2 rounded-full shadow-2xl z-40">
-<button class="px-md py-2 glass-panel border-primary/40 rounded-full flex items-center gap-2 text-primary font-bold transition-all hover:scale-105 active:scale-95 shadow-inner">
-<span class="material-symbols-outlined">3d_rotation</span>
-<span class="text-sm font-label-caps uppercase">3D View</span>
-</button>
-<button class="px-md py-2 rounded-full flex items-center gap-2 text-on-surface-variant font-medium transition-all hover:bg-white/40 hover:scale-105 active:scale-95">
-<span class="material-symbols-outlined">schema</span>
-<span class="text-sm font-label-caps uppercase">P&amp;ID</span>
-</button>
-<button class="px-md py-2 rounded-full flex items-center gap-2 text-on-surface-variant font-medium transition-all hover:bg-white/40 hover:scale-105 active:scale-95">
-<span class="material-symbols-outlined">thermostat</span>
-<span class="text-sm font-label-caps uppercase">Heatmap</span>
-</button>
-</div>
-</main>
-<!-- Minimal Footer (Internal Context) -->
-<footer class="fixed bottom-0 left-0 w-full py-xs px-md flex justify-between items-center text-[10px] font-label-caps text-on-surface-variant/60 pointer-events-none">
-<div class="flex gap-md">
-<span>Lat: 34.0522° N</span>
-<span>Lon: 118.2437° W</span>
-<span>Uptime: 99.98%</span>
-</div>
-<div>© 2024 YANTRAMITRA OP INTEL</div>
-</footer>
 <script>
-        function toggleInspector(name) {
-            const panel = document.getElementById('inspector-panel');
-            const title = document.getElementById('asset-name');
-            title.innerText = name.replace(/-/g, ' ');
-            panel.classList.remove('translate-x-full');
-            panel.classList.add('translate-x-0');
-        }
-
-        function togglePanel() {
-            const panel = document.getElementById('inspector-panel');
-            panel.classList.toggle('translate-x-[calc(100%+var(--sidebar-width))]');
-        }
-
-        // Add a subtle drift effect to background blobs
-        window.addEventListener('mousemove', (e) => {
-            const blobs = document.querySelectorAll('div[class*="blur-"]');
-            const x = (e.clientX / window.innerWidth) - 0.5;
-            const y = (e.clientY / window.innerHeight) - 0.5;
-            
-            blobs.forEach((blob, index) => {
-                const speed = (index + 1) * 20;
-                blob.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
-            });
-        });
-    </script>
+tailwind.config = { darkMode:"class", theme:{ extend:{ colors:{ "surface-container-low":"#f4f2ff","surface-variant":"#e2e1f4","on-background":"#191a28","on-secondary-fixed":"#00201c","on-error":"#ffffff","on-secondary":"#ffffff","surface-container-lowest":"#ffffff","primary-container":"#5b5bf0","error":"#ba1a1a","on-surface-variant":"#464555","error-container":"#ffdad6","on-surface":"#191a28","tertiary":"#774f00","surface-container-highest":"#e2e1f4","tertiary-fixed":"#ffddb1","on-secondary-container":"#007165","surface-container":"#eeecff","surface":"#fbf8ff","primary-fixed":"#e1dfff","inverse-on-surface":"#f1efff","surface-tint":"#4948de","secondary-fixed":"#5efae4","tertiary-fixed-dim":"#ffba4b","primary":"#413fd6","on-primary-container":"#f6f2ff","on-error-container":"#93000a","primary-fixed-dim":"#c1c1ff","on-primary-fixed":"#09006b","background":"#fbf8ff","on-tertiary":"#ffffff","secondary-fixed-dim":"#36ddc8","on-primary-fixed-variant":"#2e29c6","surface-bright":"#fbf8ff","inverse-primary":"#c1c1ff","secondary-container":"#5efae4","on-tertiary-container":"#fff2e5","surface-container-high":"#e8e6fa","tertiary-container":"#986500","outline":"#767586","secondary":"#006b5f","on-tertiary-fixed-variant":"#624000","inverse-surface":"#2e2f3e","on-secondary-fixed-variant":"#005047","outline-variant":"#c7c4d7","surface-dim":"#d9d8ec","on-tertiary-fixed":"#291800","on-primary":"#ffffff" }, borderRadius:{ DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px" }, fontFamily:{ "body-md":["Inter"],"section-header":["Geist"],"headline-lg":["Geist"],"label-caps":["Space Grotesk"],"kpi-numeric":["Space Grotesk"],"display-hero":["Geist"] } } } };
+</script>
+<style>
+  body { background:#13131f; overflow:hidden; }
+  .glass-panel { background:rgba(255,255,255,0.92); backdrop-filter:blur(20px); border:1px solid rgba(199,196,215,0.5); }
+  .glass-dark { background:rgba(25,26,40,0.75); backdrop-filter:blur(16px); border:1px solid rgba(199,196,215,0.12); }
+  .custom-scrollbar::-webkit-scrollbar { width:3px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background:transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background:rgba(199,196,215,0.3); border-radius:10px; }
+  @keyframes fadeSlideIn { 0%{opacity:0;transform:translateY(6px)} 100%{opacity:1;transform:translateY(0)} }
+  @keyframes healthPulse { 0%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.05);opacity:1} 100%{transform:scale(1);opacity:0.8} }
+  @keyframes breatheRed { 0%{box-shadow:0 0 0 0 rgba(186,26,26,0.4)} 50%{box-shadow:0 0 0 10px rgba(186,26,26,0)} 100%{box-shadow:0 0 0 0 rgba(186,26,26,0.4)} }
+  @keyframes breatheAmber { 0%{box-shadow:0 0 0 0 rgba(255,186,75,0.4)} 50%{box-shadow:0 0 0 8px rgba(255,186,75,0)} 100%{box-shadow:0 0 0 0 rgba(255,186,75,0.4)} }
+  .twin-tile { animation:fadeSlideIn .35s ease forwards; opacity:0; }
+  .health-ring-svg { transform:rotate(-90deg); }
+  .scene-transition { transition:opacity .4s ease; }
+  .status-dot-critical { animation:breatheRed 2s infinite; }
+  .status-dot-warning { animation:breatheAmber 2s infinite; }
+</style>
+</head>
+<body class="font-body-md text-on-surface overflow-hidden">
+<main class="h-screen w-full relative overflow-hidden">
+<!-- Mount point for initTwin -->
+</main>
 <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script src="/js/factory-3d.js"></script>
 <script src="/js/digital-twin.js" defer></script>
