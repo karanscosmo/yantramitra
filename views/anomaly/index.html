@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>YantraMitra | Anomaly Investigation</title>
 <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml"/>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -171,6 +172,26 @@
         .ym-pill { padding: 8px 18px; border-radius: 9999px; font-size: 13px; font-weight: 700; white-space: nowrap; letter-spacing: 0.03em; }
         .animate-bounce-dot { animation: bounceDot 1.4s infinite ease-in-out both; }
         @keyframes bounceDot { 0%,80%,100% { transform: scale(0.6); } 40% { transform: scale(1); } }
+        .rc-node { cursor: pointer; transition: opacity 0.3s; }
+        .rc-node:hover .rc-node-bg { filter: brightness(1.15); }
+        .rc-node-label { font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; fill: #191a28; text-anchor: middle; pointer-events: none; }
+        .rc-node-sublabel { font-family: 'Inter', sans-serif; font-size: 7px; fill: #767586; text-anchor: middle; pointer-events: none; }
+        .rc-edge { fill: none; stroke-width: 2; stroke-linecap: round; }
+        .rc-edge-causal { stroke: #413fd6; stroke-width: 2.5; }
+        .rc-edge-correlated { stroke: #006b5f; stroke-width: 1.5; stroke-dasharray: 6,4; }
+        .rc-edge-inferred { stroke: #774f00; stroke-width: 1.5; stroke-dasharray: 2,4; }
+        .rc-edge-propagated { stroke: #ba1a1a; stroke-width: 2; stroke-dasharray: 8,4,2,4; }
+        .rc-edge-downstream { stroke: #767586; stroke-width: 1.5; stroke-dasharray: 3,4; opacity: 0.6; }
+        .rc-edge-dimmed { opacity: 0.1 !important; }
+        .rc-node-dimmed { opacity: 0.2 !important; }
+        .rc-particle { fill: #413fd6; r: 3; }
+        @keyframes rc-pulse-ring { 0% { r: var(--r); opacity: 0.6; } 100% { r: calc(var(--r) + 14); opacity: 0; } }
+        .rc-pulse-ring { animation: rc-pulse-ring 2s ease-out infinite; }
+        .rc-glow-filter { filter: drop-shadow(0 0 8px rgba(186,26,26,0.5)); }
+        .rc-tooltip-bg { fill: #191a28; rx: 6; }
+        .rc-tooltip-text { fill: #ffffff; font-size: 8px; font-family: 'Inter', sans-serif; }
+        .rc-tooltip-title { fill: #c1c1ff; font-size: 9px; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+        #root-cause-svg { display: block; }
     </style>
 </head>
 <body class="font-body-md text-on-background selection:bg-primary/20">
@@ -292,44 +313,15 @@
 <button type="button" class="px-3 py-1 rounded-full bg-primary text-white text-[10px] font-bold hover:bg-primary/90 transition-colors" id="snapshot-graph-btn">LATEST SNAPSHOT</button>
 </div>
 </div>
-<div class="flex-grow relative">
-<svg class="absolute inset-0 w-full h-full pointer-events-none">
-<path class="node-line" d="M 150 150 L 350 100"></path>
-<path class="node-line" d="M 150 150 L 350 200"></path>
-<path class="node-line" d="M 350 100 L 550 150"></path>
-<path class="node-line" d="M 350 200 L 550 150"></path>
-<path class="node-line" d="M 550 150 L 750 150" style="stroke: #ba1a1a; opacity: 0.6;"></path>
-</svg>
-<div class="absolute left-[15%] top-[35%] flex flex-col items-center">
-<div class="w-16 h-16 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
-<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="factory">factory</span>
-<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Unit 04-B</div>
+<div class="flex-grow relative" id="root-cause-svg-container">
+<svg class="w-full h-full" id="root-cause-svg"></svg>
+<div class="absolute bottom-3 right-3 flex gap-1 z-10" id="rc-graph-controls">
+<button class="w-7 h-7 rounded-full bg-white/90 shadow text-xs font-bold hover:bg-white flex items-center justify-center" data-zoom="in">+</button>
+<button class="w-7 h-7 rounded-full bg-white/90 shadow text-xs font-bold hover:bg-white flex items-center justify-center" data-zoom="out">&minus;</button>
+<button class="w-7 h-7 rounded-full bg-white/90 shadow text-xs font-bold hover:bg-white flex items-center justify-center" data-zoom="reset">&looparrow;</button>
 </div>
-</div>
-<div class="absolute left-[40%] top-[22%] flex flex-col items-center">
-<div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
-<span class="material-symbols-outlined text-primary" data-icon="sensors">sensors</span>
-<div class="absolute -top-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Radial Vib S-1</div>
-</div>
-</div>
-<div class="absolute left-[40%] top-[52%] flex flex-col items-center">
-<div class="w-14 h-14 rounded-full glass-card flex items-center justify-center border-2 border-primary/40 relative group cursor-pointer">
-<span class="material-symbols-outlined text-primary" data-icon="speed">speed</span>
-<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps bg-white/80 px-2 py-1 rounded border border-outline-variant shadow-sm">Tachometer G-4</div>
-</div>
-</div>
-<div class="absolute left-[65%] top-[35%] flex flex-col items-center">
-<div class="w-20 h-20 rounded-full glass-card flex items-center justify-center border-4 border-error/50 relative group cursor-pointer z-10">
-<div class="absolute inset-0 bg-error/10 rounded-full animate-pulse"></div>
-<span class="material-symbols-outlined text-error text-3xl font-bold" data-icon="report" style="font-variation-settings: 'FILL' 1;">report</span>
-<div class="absolute -top-10 whitespace-nowrap text-[11px] font-bold text-error bg-white/95 px-3 py-1.5 rounded-lg border border-error/20 shadow-lg">ECCENTRICITY FAULT</div>
-</div>
-</div>
-<div class="absolute left-[85%] top-[35%] flex flex-col items-center">
-<div class="w-12 h-12 rounded-full glass-card flex items-center justify-center border-2 border-outline/30 relative opacity-50 group cursor-pointer">
-<span class="material-symbols-outlined text-outline" data-icon="electrical_services">electrical_services</span>
-<div class="absolute -bottom-8 whitespace-nowrap text-[10px] font-label-caps">Grid Impact</div>
-</div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="rc-graph-empty">
+<span class="text-on-surface-variant text-sm">Select an alarm to load investigation graph</span>
 </div>
 </div>
 </div>
@@ -549,19 +541,6 @@
 <a class="font-body-md text-primary underline" href="/api-status">API Status</a>
 </div>
 </footer>
-<!-- Interactive script for node micro-interactions -->
-<script>
-        document.querySelectorAll('.group').forEach(node => {
-            node.addEventListener('mouseenter', () => {
-                const icon = node.querySelector('.material-symbols-outlined');
-                if(icon) icon.style.textShadow = '0 0 8px currentColor';
-            });
-            node.addEventListener('mouseleave', () => {
-                const icon = node.querySelector('.material-symbols-outlined');
-                if(icon) icon.style.textShadow = 'none';
-            });
-        });
-    </script>
 <script src="/js/anomaly.js" defer></script>
 <script src="/js/anomaly-chat.js" defer></script>
 <script src="/js/app-shell.js" defer></script>
