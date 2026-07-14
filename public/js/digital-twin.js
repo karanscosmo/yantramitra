@@ -140,6 +140,9 @@
           <!-- Scene fade overlay -->
           <div id="ym-scene-fade" class="absolute inset-0 z-20 bg-[#13131f] pointer-events-none opacity-0 scene-transition"></div>
 
+          <!-- Three.js container (behind UI overlays) -->
+          <div id="ym-three-container" class="absolute inset-0 z-[1]"></div>
+
           <!-- Floating Plant Panel -->
           <div id="ym-plant-panel" class="absolute top-3 left-3 z-30 w-[240px] glass-dark rounded-2xl flex flex-col overflow-hidden shadow-2xl shadow-black/30 border border-white/5" style="max-height:calc(100vh - 140px)">
             <div class="px-3 pt-3 pb-1.5 border-b border-white/5 shrink-0">
@@ -199,8 +202,9 @@
 
       <div id="ym-toast" class="fixed top-24 left-1/2 -translate-x-1/2 z-50 glass-panel rounded-xl px-5 py-3 font-bold shadow-2xl transition-all duration-300 translate-y-32 opacity-0 text-sm"><span id="ym-toast-msg"></span></div>`;
 
-    const canvasHost = document.getElementById('ym-twin-canvas');
-    canvasHost.style.background = '#13131f';
+    const canvasHost = document.getElementById('ym-three-container');
+    const canvasWrapper = document.getElementById('ym-twin-canvas');
+    if (canvasWrapper) canvasWrapper.style.background = '#13131f';
     if (!window.THREE || !window.YMFactory3D) {
       canvasHost.innerHTML = '<div class="h-full flex items-center justify-center"><div class="text-center p-10"><p class="text-2xl font-black text-error">3D engine unavailable</p><p class="text-white/50 mt-2">Three.js could not load.</p></div></div>';
       return;
