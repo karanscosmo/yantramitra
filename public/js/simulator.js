@@ -3,6 +3,7 @@
   let simRunning = false, simIteration = 0, simTimer = null;
   let baselineKPIs = null, kpiHistory = [];
   let detailPanelOpen = false, selectedMachine = null;
+  let plantSearchQuery = '';
 
   const sliderConfig = {
     speed: { min: 0, max: 100, default: 85, unit: '%', label: 'Production Speed' },
@@ -81,15 +82,21 @@
 
   const kpiDefs = [
     { key: 'oee', label: 'OEE', icon: 'speed', color: '#413fd6', unit: '%', max: 100 },
-    { key: 'throughput', label: 'Throughput', icon: 'production_quantity_limits', color: '#006b5f', unit: ' units', max: 200 },
+    { key: 'throughput', label: 'Throughput', icon: 'production_quantity_limits', color: '#006b5f', unit: ' u', max: 200 },
     { key: 'energy', label: 'Energy', icon: 'bolt', color: '#774f00', unit: ' kWh', max: 1500 },
     { key: 'downtime', label: 'Downtime', icon: 'schedule', color: '#ba1a1a', unit: ' min', max: 80, inverse: true },
-    { key: 'profit', label: 'Profit', icon: 'trending_up', color: '#006b5f', unit: ' ₹', max: 6000 },
-    { key: 'qualityLoss', label: 'Quality Loss', icon: 'close', color: '#ba1a1a', unit: ' units', max: 50, inverse: true },
+    { key: 'profit', label: 'Profit', icon: 'trending_up', color: '#006b5f', unit: ' \u20b9', max: 6000 },
+    { key: 'qualityLoss', label: 'Quality Loss', icon: 'close', color: '#ba1a1a', unit: ' u', max: 50, inverse: true },
     { key: 'failureRate', label: 'Failure Rate', icon: 'warning', color: '#774f00', unit: '%', max: 100, inverse: true },
-    { key: 'carbon', label: 'CO₂', icon: 'co2', color: '#464555', unit: ' kg', max: 600 },
-    { key: 'maintenanceCost', label: 'Maint. Cost', icon: 'build', color: '#413fd6', unit: ' ₹', max: 4000, inverse: true },
+    { key: 'carbon', label: 'CO\u2082', icon: 'co2', color: '#464555', unit: ' kg', max: 600 },
+    { key: 'maintenanceCost', label: 'Maint. Cost', icon: 'build', color: '#413fd6', unit: ' \u20b9', max: 4000, inverse: true },
   ];
+
+  function autoScaleValue(val, unit) {
+    if (Math.abs(val) >= 100000) return Math.round(val / 1000) + 'k' + unit;
+    if (Math.abs(val) >= 1000) return (val / 1000).toFixed(1) + 'k' + unit;
+    return val + unit;
+  }
 
   function renderKPIs(kpis) {
     const grid = document.getElementById('ym-charts-grid');
@@ -97,19 +104,20 @@
     const prevVals = grid.__prevVals || {};
     grid.innerHTML = kpiDefs.map(def => {
       const val = kpis[def.key] || 0;
-      const pct = Math.min(100, Math.round(val / def.max * 100));
+      const pct = Math.min(100, Math.round(Math.abs(val) / def.max * 100));
       const prev = prevVals[def.key] || 0;
       const dir = val > prev ? 'up' : val < prev ? 'down' : '';
       const flash = dir ? (dir === 'up' ? 'text-secondary' : 'text-error') : '';
+      const displayVal = def.key === 'profit' ? (val >= 0 ? '\u20b9' : '-\u20b9') + Math.abs(val).toLocaleString() : autoScaleValue(val, def.unit);
       grid.__prevVals = grid.__prevVals || {};
       grid.__prevVals[def.key] = val;
-      return '<div class="glass-panel rounded-xl p-3 bg-white/70 kpi-card"><div class="flex items-center justify-between mb-1.5"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined" style="font-size:20px;color:' + def.color + '">' + def.icon + '</span><span class="font-bold text-on-surface-variant" style="font-size:12px">' + def.label + '</span></div><span class="font-kpi-numeric font-bold kpi-value" style="font-size:18px;color:' + def.color + '">' + val + (def.unit || '') + '</span></div><div style="height:5px;background:#e1dfff;border-radius:3px;overflow:hidden"><div class="kpi-bar" style="height:100%;width:' + pct + '%;background:' + def.color + ';border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div></div>';
+      return '<div class="glass-panel rounded-xl p-2.5 bg-white/70 kpi-card overflow-hidden min-w-0"><div class="flex items-center gap-2 mb-1 min-w-0"><span class="material-symbols-outlined shrink-0" style="font-size:16px;color:' + def.color + '">' + def.icon + '</span><span class="font-bold text-on-surface-variant truncate" style="font-size:10px">' + def.label + '</span><span class="ml-auto font-kpi-numeric font-bold kpi-value-text truncate" style="font-size:' + (displayVal.length > 8 ? '13px' : '16px') + ';color:' + def.color + '">' + displayVal + '</span></div><div style="height:4px;background:#e1dfff;border-radius:2px;overflow:hidden"><div class="kpi-bar" style="height:100%;width:' + pct + '%;background:' + def.color + ';border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1)"></div></div></div>';
     }).join('');
     grid.querySelectorAll('.kpi-card').forEach((card, i) => {
       card.style.animation = 'none';
       card.offsetHeight;
-      card.style.animation = 'kpiSlideIn .4s cubic-bezier(.4,0,.2,1) forwards';
-      card.style.animationDelay = (i * 50) + 'ms';
+      card.style.animation = 'kpiSlideIn .35s cubic-bezier(.4,0,.2,1) forwards';
+      card.style.animationDelay = (i * 40) + 'ms';
     });
   }
 
@@ -174,11 +182,27 @@
     });
   }
 
-  function renderPlantPills() {
-    const container = document.getElementById('ym-plant-pills');
+  /* ─── Plant Panel (replaces plant pills) ─── */
+  function renderPlantPanel() {
+    const container = document.getElementById('ym-plant-list');
     if (!container) return;
-    container.innerHTML = plants.map(p => '<button class="plant-pill' + (currentPlant && p.id === currentPlant.id ? ' active' : '') + '" data-id="' + p.id + '">' + escapeHtml(p.name) + '</button>').join('');
-    container.querySelectorAll('.plant-pill').forEach(btn => {
+    const q = plantSearchQuery.toLowerCase();
+    const filtered = plants.filter(p => p.name.toLowerCase().includes(q));
+    container.innerHTML = filtered.map(p => {
+      const active = currentPlant && p.id === currentPlant.id;
+      const pm = (machines || []).filter(m => m.plantId === p.id);
+      const avgHealth = pm.length ? Math.round(pm.reduce((s, m) => s + (m.health || 80), 0) / pm.length) : 85;
+      const hColor = avgHealth >= 85 ? '#006b5f' : avgHealth >= 65 ? '#774f00' : '#ba1a1a';
+      return '<button class="w-full text-left px-3.5 py-2.5 flex items-center gap-3 hover:bg-primary/5 transition-all duration-150 border-b border-outline-variant/10 last:border-0 ' + (active ? 'bg-primary/8 border-l-2 border-l-primary' : 'border-l-2 border-l-transparent') + '" data-id="' + p.id + '">'
+        + '<span class="material-symbols-outlined shrink-0 ' + (active ? 'text-primary' : 'text-on-surface-variant') + '" style="font-variation-settings:\'FILL\' 1;font-size:22px">factory</span>'
+        + '<div class="min-w-0 flex-1"><div class="font-bold text-xs truncate ' + (active ? 'text-primary' : 'text-on-surface') + '">' + escapeHtml(p.name) + '</div><div class="flex items-center gap-2 text-[9px] text-on-surface-variant"><span>' + pm.length + ' machines</span><span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full" style="background:' + hColor + '"></span>' + avgHealth + '%</span></div></div>'
+        + '<div class="w-2 h-2 rounded-full shrink-0 ' + (active ? 'bg-primary pulse-glow' : 'bg-outline-variant/40') + '"></div>'
+        + '</button>';
+    }).join('');
+    if (!filtered.length) {
+      container.innerHTML = '<div class="text-xs text-on-surface-variant text-center py-8 px-4">No factories match your search</div>';
+    }
+    container.querySelectorAll('[data-id]').forEach(btn => {
       btn.addEventListener('click', function() { switchPlant(this.dataset.id); });
     });
   }
@@ -186,13 +210,44 @@
   function switchPlant(plantId) {
     const plant = plants.find(p => p.id === plantId);
     if (!plant || plant.id === currentPlant?.id) return;
+
+    // Scene fade out
+    const fade = document.getElementById('ym-scene-fade');
+    if (fade) { fade.classList.remove('opacity-0'); fade.classList.add('opacity-80'); }
+
     currentPlant = plant;
     plantMachines = (machines || []).filter(m => m.plantId === plant.id);
-    if (scene && scene.destroy) { scene.destroy(); scene = null; }
-    document.getElementById('ym-plant-name').textContent = plant.name;
-    renderPlantPills();
-    resetSimulation();
-    buildScene();
+
+    setTimeout(() => {
+      if (scene && scene.destroy) { scene.destroy(); scene = null; }
+      renderPlantPanel();
+      resetSimulation();
+
+      // KPI count-up animation
+      const kpis = getKPIs();
+      renderKPIs(kpis);
+      animateKPIValues(kpis);
+
+      buildScene();
+
+      // Scene fade in
+      setTimeout(() => {
+        if (fade) { fade.classList.remove('opacity-80'); fade.classList.add('opacity-0'); }
+      }, 200);
+    }, 350);
+  }
+
+  function animateKPIValues(kpis) {
+    const valueEls = document.querySelectorAll('#ym-charts-grid .kpi-value-text');
+    valueEls.forEach((el, i) => {
+      const key = kpiDefs[i];
+      if (!key) return;
+      const target = kpis[key.key] || 0;
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = 'countUp .4s cubic-bezier(.34,1.56,.64,1) forwards';
+      el.style.animationDelay = (i * 60) + 'ms';
+    });
   }
 
   function buildScene() {
@@ -211,18 +266,23 @@
     } catch (e) { console.error('Scene build error:', e); }
   }
 
+  /* ─── Machine Detail Bottom Drawer ─── */
   function showMachineDetail(machine) {
     selectedMachine = machine;
     detailPanelOpen = true;
-    const panel = document.getElementById('ym-machine-detail');
-    if (!panel) return;
-    panel.style.display = 'block';
+    const drawer = document.getElementById('ym-machine-detail');
+    const body = document.getElementById('ym-detail-content');
+    if (!drawer || !body) return;
     const health = machine.health || 80;
     const color = health >= 85 ? '#006b5f' : health >= 65 ? '#774f00' : '#ba1a1a';
     const record = window.findPlantRecord ? window.findPlantRecord(currentPlant) : null;
-    const img = record ? record.image : (currentPlant.image || '/assets/images/home-pune-automotive.jpg');
-    panel.innerHTML = '<div class="flex gap-3 mb-3"><img src="' + img + '" class="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0"/><div class="min-w-0 flex-1"><h4 class="text-white font-bold" style="font-size:16px">' + escapeHtml(machine.name) + '</h4><p class="text-white/60" style="font-size:12px">' + escapeHtml(machine.type || 'Machine') + ' · ' + escapeHtml(machine.status || 'operational') + '</p></div><button class="text-white/40 hover:text-white" id="ym-close-detail"><span class="material-symbols-outlined" style="font-size:20px">close</span></button></div><div class="grid grid-cols-2 gap-2 mb-3"><div class="bg-white/10 rounded-lg p-2 text-center"><p class="text-white/50 font-bold" style="font-size:10px">HEALTH</p><p class="text-white font-bold" style="font-size:15px;color:' + color + '">' + health + '%</p></div><div class="bg-white/10 rounded-lg p-2 text-center"><p class="text-white/50 font-bold" style="font-size:10px">OEE</p><p class="text-white font-bold" style="font-size:15px">' + (machine.oee || 0) + '%</p></div><div class="bg-white/10 rounded-lg p-2 text-center"><p class="text-white/50 font-bold" style="font-size:10px">RUL</p><p class="text-white font-bold" style="font-size:15px">' + (machine.remainingUsefulLife || 'N/A') + 'd</p></div><div class="bg-white/10 rounded-lg p-2 text-center"><p class="text-white/50 font-bold" style="font-size:10px">FAILURE</p><p class="text-white font-bold" style="font-size:15px">' + (machine.failureProbability || 0) + '%</p></div></div><div class="flex gap-2"><button class="flex-1 bg-primary rounded-lg py-2 text-white font-bold hover:opacity-90 transition-opacity" style="font-size:12px" onclick="window.location.href=\'/assets/' + machine.id + '\'">VIEW ASSET</button><button class="flex-1 bg-white/10 rounded-lg py-2 text-white/80 font-bold hover:bg-white/20 transition-all" style="font-size:12px" onclick="window.location.href=\'/digital-twin?machine=' + encodeURIComponent(machine.name) + '\'">DIGITAL TWIN</button></div>';
-    document.getElementById('ym-close-detail')?.addEventListener('click', function() { panel.style.display = 'none'; detailPanelOpen = false; });
+    const img = record ? record.image : (currentPlant?.image || '/assets/images/home-pune-automotive.jpg');
+    body.innerHTML = '<div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/10"><img src="' + img + '" class="w-full h-full object-cover"/></div>'
+      + '<div class="min-w-0 flex-1"><div class="flex items-center gap-2"><h4 class="text-white font-bold truncate" style="font-size:15px">' + escapeHtml(machine.name) + '</h4><span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:' + color + '"></span></div><p class="text-white/50 text-xs truncate">' + escapeHtml(machine.type || 'Machine') + ' &middot; ' + escapeHtml(machine.status || 'operational') + '</p></div>'
+      + '<div class="flex items-center gap-3 shrink-0"><div class="text-center px-3 py-1.5 bg-white/10 rounded-xl min-w-[52px]"><p class="text-white/50 text-[8px] font-bold">HEALTH</p><p class="text-white font-bold text-sm" style="color:' + color + '">' + health + '%</p></div><div class="text-center px-3 py-1.5 bg-white/10 rounded-xl min-w-[52px]"><p class="text-white/50 text-[8px] font-bold">OEE</p><p class="text-white font-bold text-sm">' + (machine.oee || 0) + '%</p></div><div class="text-center px-3 py-1.5 bg-white/10 rounded-xl min-w-[52px]"><p class="text-white/50 text-[8px] font-bold">RUL</p><p class="text-white font-bold text-sm">' + (machine.remainingUsefulLife || 'N/A') + 'd</p></div></div>'
+      + '<div class="flex gap-2 shrink-0 ml-auto"><button class="bg-primary/90 hover:bg-primary rounded-lg px-3.5 py-2 text-white font-bold text-[11px] transition-all whitespace-nowrap" onclick="window.location.href=\'/assets/' + machine.id + '\'">View Asset</button><button class="bg-white/10 hover:bg-white/20 rounded-lg px-3.5 py-2 text-white/80 font-bold text-[11px] transition-all whitespace-nowrap" onclick="window.location.href=\'/digital-twin?machine=' + encodeURIComponent(machine.name) + '\'">Digital Twin</button><button class="text-white/40 hover:text-white transition-colors" id="ym-close-detail"><span class="material-symbols-outlined" style="font-size:20px">close</span></button></div>';
+    drawer.classList.add('open');
+    document.getElementById('ym-close-detail')?.addEventListener('click', function() { drawer.classList.remove('open'); detailPanelOpen = false; selectedMachine = null; });
   }
 
   function getKPIs() {
@@ -230,8 +290,8 @@
   }
 
   function formatProfit(val) {
-    if (val >= 0) return '₹' + val.toLocaleString();
-    return '-₹' + Math.abs(val).toLocaleString();
+    if (val >= 0) return '\u20b9' + val.toLocaleString();
+    return '-\u20b9' + Math.abs(val).toLocaleString();
   }
 
   function renderAIPrediction(kpis) {
@@ -263,8 +323,8 @@
     const el = document.getElementById('ym-event-log');
     if (!el) return;
     if (!eventLog.length) { el.innerHTML = '<div class="text-on-surface-variant/50">No events yet</div>'; return; }
-    el.innerHTML = eventLog.slice(0, 10).map(e =>
-      '<div class="flex items-center gap-1"><span class="text-on-surface-variant/50 shrink-0">' + e.time + '</span><span class="text-on-surface-variant font-medium">' + e.label + '</span><span class="text-on-surface-variant/60 truncate">' + e.summary + '</span></div>'
+    el.innerHTML = eventLog.slice(0, 8).map(e =>
+      '<div class="flex items-center gap-1"><span class="text-on-surface-variant/40 shrink-0 font-mono text-[8px]">' + e.time + '</span><span class="text-on-surface-variant font-medium truncate">' + e.label + '</span><span class="text-on-surface-variant/60 truncate hidden sm:inline">' + e.summary + '</span></div>'
     ).join('');
   }
 
@@ -353,7 +413,7 @@
       const cur = current[def.key] || 0;
       const diff = cur - base;
       const pct = base ? Math.round(diff / base * 100) : 0;
-      const arrow = diff > 0 ? (!def.inverse ? '↑' : '↓') : diff < 0 ? (!def.inverse ? '↓' : '↑') : '→';
+      const arrow = diff > 0 ? (!def.inverse ? '\u2191' : '\u2193') : diff < 0 ? (!def.inverse ? '\u2193' : '\u2191') : '\u2192';
       const color = diff === 0 ? '#767586' : ((diff > 0 && !def.inverse) || (diff < 0 && def.inverse)) ? '#006b5f' : '#ba1a1a';
       return '<tr class="border-b border-outline-variant/10"><td class="py-1.5 text-xs font-medium">' + def.label + '</td><td class="py-1.5 text-xs text-center">' + base + '</td><td class="py-1.5 text-xs text-center">' + cur + '</td><td class="py-1.5 text-xs text-center" style="color:' + color + ';font-weight:700">' + arrow + ' ' + Math.abs(diff) + ' (' + (pct >= 0 ? '+' : '') + pct + '%)</td></tr>';
     }).join('');
@@ -363,7 +423,7 @@
       const diff = cur - base;
       return '<tr class="border-b border-outline-variant/10"><td class="py-1 text-[10px] text-on-surface-variant">' + sliderConfig[key].label + '</td><td class="py-1 text-[10px] text-center text-on-surface-variant">' + formatSliderValue(key, base) + '</td><td class="py-1 text-[10px] text-center text-on-surface-variant">' + formatSliderValue(key, cur) + '</td><td class="py-1 text-[10px] text-center text-on-surface-variant">' + (diff > 0 ? '+' : '') + diff + '</td></tr>';
     }).join('');
-    openModal('Baseline Comparison', '<div style="margin-bottom:16px"><p class="text-xs text-on-surface-variant mb-2">KPI Comparison</p><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid #e1dfff"><th class="py-1.5 text-[9px] text-left text-on-surface-variant">KPI</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Baseline</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Current</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Change</th></tr></thead><tbody>' + rows + '</tbody></table></div><div><p class="text-xs text-on-surface-variant mb-2">Slider Settings</p><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid #e1dfff"><th class="py-1 text-[9px] text-left text-on-surface-variant">Parameter</th><th class="py-1 text-[9px] text-center text-on-surface-variant">Baseline</th><th class="py-1 text-[9px] text-center text-on-surface-variant">Current</th><th class="py-1 text-[9px] text-center text-on-surface-variant">Δ</th></tr></thead><tbody>' + sliderRows + '</tbody></table></div>');
+    openModal('Baseline Comparison', '<div style="margin-bottom:16px"><p class="text-xs text-on-surface-variant mb-2">KPI Comparison</p><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid #e1dfff"><th class="py-1.5 text-[9px] text-left text-on-surface-variant">KPI</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Baseline</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Current</th><th class="py-1.5 text-[9px] text-center text-on-surface-variant">Change</th></tr></thead><tbody>' + rows + '</tbody></table></div><div><p class="text-xs text-on-surface-variant mb-2">Slider Settings</p><table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid #e1dfff"><th class="py-1 text-[9px] text-left text-on-surface-variant">Parameter</th><th class="py-1 text-[9px] text-center text-on-surface-variant">Baseline</th><th class="py-1 text-[9px] text-center text-on-surface-variant">Current</th><th class="py-1 text-[9px] text-center text-on-surface-variant">\u0394</th></tr></thead><tbody>' + sliderRows + '</tbody></table></div>');
   }
 
   function exportCSV() {
@@ -434,11 +494,7 @@
       plants = plantsData;
       machines = machinesData;
       currentPlant = plants[0] || null;
-      if (currentPlant) {
-        plantMachines = machines.filter(m => m.plantId === currentPlant.id);
-        document.getElementById('ym-plant-name').textContent = currentPlant.name;
-      }
-      renderPlantPills();
+      renderPlantPanel();
       renderAll();
       buildScene();
     } catch (e) { console.error('Data load error:', e); }
@@ -466,5 +522,11 @@
     });
     document.getElementById('ym-sim-export')?.addEventListener('click', exportCSV);
     document.getElementById('ym-sim-history')?.addEventListener('click', showHistory);
+
+    // Plant search
+    document.getElementById('ym-plant-search')?.addEventListener('input', function() {
+      plantSearchQuery = this.value;
+      renderPlantPanel();
+    });
   });
 })();

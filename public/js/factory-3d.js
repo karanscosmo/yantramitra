@@ -64,22 +64,29 @@
 
   function labelSprite(text, color = '#191a28') {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
+    canvas.width = 640;
     canvas.height = 128;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(255,255,255,.88)';
-    ctx.roundRect(8, 18, 496, 92, 22);
+    ctx.shadowColor = 'rgba(0,0,0,0.12)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = 'rgba(255,255,255,.92)';
+    ctx.roundRect(8, 18, 624, 92, 22);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(65,63,214,.28)';
-    ctx.lineWidth = 4;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(65,63,214,.22)';
+    ctx.lineWidth = 3;
     ctx.stroke();
-    ctx.font = '700 30px Inter, Arial, sans-serif';
+    ctx.font = '700 32px Inter, Arial, sans-serif';
     ctx.fillStyle = color;
-    const short = text.length > 24 ? `${text.slice(0, 22)}...` : text;
-    ctx.fillText(short, 30, 74);
+    const short = text.length > 32 ? `${text.slice(0, 30)}...` : text;
+    ctx.fillText(short, 28, 74);
     const texture = new THREE.CanvasTexture(canvas);
-    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-    sprite.scale.set(4.2, 1.05, 1);
+    texture.needsUpdate = true;
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+    sprite.scale.set(5.0, 1.0, 1);
+    sprite.renderOrder = 10;
     return sprite;
   }
 
@@ -236,11 +243,27 @@
     const light = new THREE.PointLight(beaconColor, fault ? 2.2 : 0.9, 6);
     light.position.set(0, 3, 0);
     group.add(beacon, light);
+    const ringGroup = new THREE.Group();
+    ringGroup.position.y = 0.09;
+    const glowColor = fault ? 0xff2a2a : (machine.status === 'idle' ? 0xffba4b : 0x5efae4);
+    const ringMat = new THREE.MeshBasicMaterial({ color: glowColor, transparent: true, opacity: 0.7 });
+    const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(2.55, 0.08, 18, 60), ringMat);
+    ringOuter.rotation.x = Math.PI / 2;
+    const ringInner = new THREE.Mesh(new THREE.TorusGeometry(2.35, 0.04, 12, 48), new THREE.MeshBasicMaterial({ color: glowColor, transparent: true, opacity: 0.35 }));
+    ringInner.rotation.x = Math.PI / 2;
+    ringGroup.add(ringOuter, ringInner);
+    ringGroup.userData.isGlowRing = true;
+    ringGroup.userData._baseOpacity = fault ? 0.7 : 0.5;
+    ringGroup.userData._pulseSpeed = fault ? 3 : 2;
+    group.add(ringGroup);
     if (fault) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(2.45, 0.06, 12, 54), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
-      ring.rotation.x = Math.PI / 2;
-      ring.position.y = 0.09;
-      group.add(ring);
+      const warnRing = new THREE.Mesh(new THREE.TorusGeometry(2.65, 0.03, 8, 40), new THREE.MeshBasicMaterial({ color: 0xff5555, transparent: true, opacity: 0.5 }));
+      warnRing.rotation.x = Math.PI / 2;
+      warnRing.position.y = 0.09;
+      warnRing.userData.isGlowRing = true;
+      warnRing.userData._baseOpacity = 0.5;
+      warnRing.userData._pulseSpeed = 4;
+      group.add(warnRing);
     }
 
     const label = labelSprite(machine.name || 'Machine', fault ? '#ba1a1a' : '#191a28');
@@ -262,7 +285,7 @@
       group.add(sprite);
     }
 
-    group.position.set((machine.posX ?? 0) * 1.6, 0, (machine.posZ ?? 0) * 1.6);
+    group.position.set((machine.posX ?? 0) * 2.1, 0, (machine.posZ ?? 0) * 2.1);
     group.rotation.y = machine.rotation || 0;
     group.userData.machine = machine;
     group.traverse(child => { child.userData.machine = machine; });
@@ -386,7 +409,7 @@
         const hit = pick(event);
         if (hit && sceneObj && typeof sceneObj.flyTo === 'function') {
           const m = hit.object.userData.machine;
-          sceneObj.flyTo((m.posX ?? 0) * 1.6, (m.posZ ?? 0) * 1.6);
+          sceneObj.flyTo((m.posX ?? 0) * 2.1, (m.posZ ?? 0) * 2.1);
         }
       } else {
         clickTimer = setTimeout(() => {
@@ -434,8 +457,8 @@
         const m = mg.userData.machine || {};
         if (includes(m, ['agv'])) {
           const t = Date.now() * 0.0005 * speedFactor + i;
-          mg.position.x = (m.posX ?? 0) * 1.6 + Math.sin(t) * 0.5;
-          mg.position.z = (m.posZ ?? 0) * 1.3 + Math.cos(t) * 0.5;
+          mg.position.x = (m.posX ?? 0) * 2.1 + Math.sin(t) * 0.5;
+          mg.position.z = (m.posZ ?? 0) * 2.1 + Math.cos(t) * 0.5;
         }
       });
       group.children.forEach(mg => {
@@ -449,6 +472,19 @@
         mg.traverse(child => {
           if (child.userData.isSensor) {
             child.material.opacity = 0.2 + Math.sin(Date.now() * 0.004 * speedFactor + (child.userData._sIdx || 0)) * 0.15;
+          }
+        });
+      });
+      group.children.forEach(mg => {
+        mg.traverse(child => {
+          if (child.userData.isGlowRing && child.material) {
+            const base = child.userData._baseOpacity || 0.5;
+            const speed = child.userData._pulseSpeed || 2;
+            child.material.opacity = base + Math.sin(Date.now() * 0.002 * speed) * base * 0.4;
+            if (child.material.color) {
+              const hue = (Math.sin(Date.now() * 0.001 * speed) * 0.03);
+              child.material.color.offsetHSL(hue, 0, 0);
+            }
           }
         });
       });

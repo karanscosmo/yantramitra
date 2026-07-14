@@ -15,94 +15,147 @@ tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-primary-
   body { background: #fbf8ff; }
   .glass-panel { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); border: 1px solid #E7E9F5; box-shadow: 0 8px 32px 0 rgba(65,63,214,0.05); }
   .glass-dark { background: rgba(25,26,40,0.7); backdrop-filter: blur(16px); border: 1px solid rgba(199,196,215,0.2); }
+  .glass-plant { background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border: 1px solid rgba(199,196,215,0.55); box-shadow: 0 12px 40px -8px rgba(25,26,40,0.2); }
   .shimmer-btn { background: linear-gradient(135deg, #5B5BF0, #7C7CFA); transition: all 0.3s ease; }
   .shimmer-btn:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(65,63,214,0.3); }
   input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
-  input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #e1dfff; border-radius: 4px; }
-  input[type="range"]::-webkit-slider-thumb { height: 22px; width: 22px; border-radius: 50%; background: #413fd6; cursor: pointer; -webkit-appearance: none; margin-top: -7px; box-shadow: 0 0 12px rgba(65,63,214,0.4); border: 3px solid #fff; }
-  .kpi-bar { transition: height .4s ease; }
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e1dfff; border-radius: 3px; }
+  input[type="range"]::-webkit-slider-thumb { height: 18px; width: 18px; border-radius: 50%; background: #413fd6; cursor: pointer; -webkit-appearance: none; margin-top: -6px; box-shadow: 0 0 8px rgba(65,63,214,0.3); border: 2px solid #fff; }
+  .custom-scrollbar::-webkit-scrollbar { width: 3px; }
   .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c4d7; border-radius: 10px; }
   .modal-backdrop { position: fixed; inset: 0; z-index: 100; background: rgba(25,26,40,0.36); display: flex; align-items: center; justify-content: center; padding: 18px; }
   .modal-card { width: min(720px, calc(100vw - 32px)); max-height: min(85vh, 720px); overflow-y: auto; border-radius: 18px; border: 1px solid rgba(199,196,215,0.72); background: rgba(255,255,255,0.96); box-shadow: 0 30px 90px rgba(25,26,40,0.28); padding: 24px; }
-  .plant-pill { padding: 7px 18px; border-radius: 9999px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.18s ease; border: 1px solid transparent; white-space: nowrap; background: rgba(199,196,215,0.2); color: #464555; }
-  .plant-pill:hover { border-color: rgba(65,63,214,0.3); background: rgba(65,63,214,0.06); }
-  .plant-pill.active { background: #413fd6; color: #fff; border-color: #413fd6; }
-  .ym-preset-btn { padding: 6px 16px; border-radius: 9999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.18s ease; border: 1px solid transparent; white-space: nowrap; background: rgba(199,196,215,0.2); color: #464555; }
+  #ym-three-container canvas { border-radius: 0; }
+  .ym-preset-btn { padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.18s ease; border: 1px solid transparent; white-space: nowrap; background: rgba(199,196,215,0.2); color: #464555; }
   .ym-preset-btn:hover { border-color: rgba(65,63,214,0.3); background: rgba(65,63,214,0.06); }
   .ym-preset-btn.active { background: #413fd6; color: #fff; border-color: #413fd6; }
-  #ym-three-container canvas { border-radius: 0; }
-  @keyframes kpiSlideIn { 0%{opacity:0;transform:translateY(10px) scale(.95)} 100%{opacity:1;transform:translateY(0) scale(1)} }
-  .kpi-card { opacity:0; }
+  @keyframes kpiSlideIn { 0%{opacity:0;transform:translateY(8px) scale(.97);} 100%{opacity:1;transform:translateY(0) scale(1);} }
+  @keyframes plantFadeIn { 0%{opacity:0;transform:translateX(-12px);} 100%{opacity:1;transform:translateX(0);} }
+  @keyframes drawerSlideUp { 0%{transform:translateY(100%);opacity:0;} 100%{transform:translateY(0);opacity:1;} }
+  @keyframes countUp { 0%{opacity:0;transform:scale(0.6);} 100%{opacity:1;transform:scale(1);} }
+  @keyframes pulseGlow { 0%{box-shadow:0 0 0 0 rgba(65,63,214,0.4);} 70%{box-shadow:0 0 0 12px rgba(65,63,214,0);} 100%{box-shadow:0 0 0 0 rgba(65,63,214,0);} }
+  .health-ring { transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .kpi-value-text { font-variant-numeric: tabular-nums; }
+  .kpi-trend-dot { transition: all 0.3s ease; }
+  #ym-machine-detail { transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease; opacity: 0; }
+  #ym-machine-detail.open { transform: translateY(0); opacity: 1; }
+  #ym-plant-panel { animation: plantFadeIn 0.3s ease; }
+  .scene-transition { transition: opacity 0.4s ease; }
 </style>
 </head>
 <body class="font-body-md text-on-surface overflow-hidden">
 <div class="flex h-screen" id="ym-app" style="padding-right:calc(var(--sidebar-width) + var(--sidebar-gap))">
+
+<!-- ─── VIEWPORT / SCENE ─── -->
 <div class="flex-1 min-w-0 relative overflow-hidden bg-[#13131f]" id="ym-viewport">
-<div class="absolute inset-0 z-0 flex items-center justify-center" id="ym-scene-loading">
-<div class="flex items-center gap-2 text-on-surface-variant text-sm"><span class="material-symbols-outlined animate-spin text-primary">sync</span> Loading factory floor...</div>
-</div>
-<div id="ym-three-container" class="absolute inset-0 z-[1]"></div>
-<div class="absolute top-2 left-2 flex items-center gap-1.5 z-10">
-<div class="glass-dark px-2 py-1 rounded-lg flex items-center gap-1.5">
-<span class="w-1.5 h-1.5 rounded-full" id="ym-sim-indicator"></span>
-<span class="text-white/80 font-bold text-[10px]" id="ym-sim-status">READY</span>
-<span class="w-px h-2.5 bg-white/20 mx-0.5"></span>
-<span class="font-kpi-numeric text-white/60 text-[10px]" id="ym-iteration">#0</span>
-</div>
-<div class="glass-dark px-2 py-1 rounded-lg flex items-center gap-1.5" id="ym-plant-badge">
-<span class="material-symbols-outlined text-white/50 text-sm">factory</span>
-<span class="text-white/80 font-semibold text-[11px]" id="ym-plant-name">Loading...</span>
-</div>
-</div>
-<div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
-<div class="glass-dark p-1 rounded-full flex gap-1 shadow-lg">
-<button class="px-3 py-1.5 rounded-full bg-primary text-white font-bold flex items-center gap-1 hover:opacity-90 transition-all text-[11px]" id="ym-sim-run"><span class="material-symbols-outlined text-sm">play_arrow</span>RUN</button>
-<button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold flex items-center gap-1 hover:bg-white/10 transition-all text-[11px]" id="ym-sim-pause"><span class="material-symbols-outlined text-sm">pause</span>PAUSE</button>
-<button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-reset"><span class="material-symbols-outlined text-sm">restart_alt</span></button>
-<button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-compare"><span class="material-symbols-outlined text-sm">compare_arrows</span></button>
-<button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-export"><span class="material-symbols-outlined text-sm">download</span></button>
-<button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-history"><span class="material-symbols-outlined text-sm">history</span></button>
-</div>
-</div>
-<div id="ym-machine-detail" class="absolute right-2 bottom-16 w-[300px] max-h-[360px] z-20 glass-dark rounded-xl p-3 overflow-y-auto custom-scrollbar hidden text-xs"></div>
-</div>
-<aside class="w-[300px] shrink-0 flex flex-col overflow-y-auto custom-scrollbar bg-white/50 border-l border-outline-variant/30 backdrop-blur-md">
-<div class="p-3 pb-1.5 border-b border-outline-variant/10">
-<div class="flex items-center justify-between">
-<h2 class="font-bold text-on-surface text-sm" style="font-family:Geist,sans-serif">Scenario Simulator</h2>
-<div class="flex gap-1" id="ym-presets"></div>
-</div>
-<p class="text-on-surface-variant text-[10px] mt-0.5">Adjust parameters · factory updates live</p>
-</div>
-<div class="flex gap-1 px-3 py-1.5 overflow-x-auto no-scrollbar border-b border-outline-variant/10" id="ym-plant-pills"></div>
-<div class="px-3 py-2 space-y-2.5" id="ym-sliders">
-<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary">settings</span>Operations</div>
-<div class="pl-2 space-y-2">
-<div><div class="flex justify-between items-center"><label class="text-[11px] text-on-surface font-medium">Production Speed</label><span class="font-kpi-numeric text-primary font-bold text-xs" id="slider-speed">85%</span></div><input type="range" min="0" max="100" value="85" data-slider="speed"/></div>
-<div><div class="flex justify-between items-center"><label class="text-[11px] text-on-surface font-medium">Machine Load</label><span class="font-kpi-numeric text-primary font-bold text-xs" id="slider-load">65%</span></div><input type="range" min="0" max="100" value="65" data-slider="load"/></div>
-</div>
-<div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary">build</span>Maintenance</div>
-<div class="pl-2 space-y-2">
-<div><div class="flex justify-between items-center"><label class="text-[11px] text-on-surface font-medium">Maintenance Delay</label><span class="font-kpi-numeric text-primary font-bold text-xs" id="slider-delay">12h</span></div><input type="range" min="0" max="72" value="12" data-slider="delay"/></div>
-<div><div class="flex justify-between items-center"><label class="text-[11px] text-on-surface font-medium">Operator Count</label><span class="font-kpi-numeric text-primary font-bold text-xs" id="slider-operators">12</span></div><input type="range" min="2" max="30" value="12" data-slider="operators"/></div>
-</div>
+  <div class="absolute inset-0 z-0 flex items-center justify-center" id="ym-scene-loading">
+    <div class="flex items-center gap-2 text-on-surface-variant text-sm"><span class="material-symbols-outlined animate-spin text-primary">sync</span> Loading factory floor...</div>
   </div>
-<div class="px-3 py-2 border-t border-outline-variant/10">
-    <div class="flex items-center justify-between mb-1.5"><span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Projected KPIs</span><span class="text-[9px] text-on-surface-variant" id="ym-kpi-iteration">iter #0</span></div>
-    <div class="grid grid-cols-2 gap-1.5" id="ym-charts-grid"></div>
-    <div class="mt-2 pt-2 border-t border-outline-variant/10">
-      <div class="flex items-center gap-1 mb-1"><span class="material-symbols-outlined text-[14px] text-primary">psychology</span><span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">AI Prediction</span></div>
-      <div id="ym-ai-prediction" class="text-[10px] text-on-surface-variant leading-relaxed min-h-[20px]">Adjust parameters to see predictions</div>
+  <div id="ym-three-container" class="absolute inset-0 z-[1]"></div>
+
+  <!-- Scene overlay fade for plant transitions -->
+  <div id="ym-scene-fade" class="absolute inset-0 z-[2] bg-[#13131f] pointer-events-none opacity-0 scene-transition"></div>
+
+  <!-- Top-left status bar -->
+  <div class="absolute top-3 left-3 flex items-center gap-2 z-10">
+    <div class="glass-dark px-2.5 py-1 rounded-lg flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full" id="ym-sim-indicator"></span>
+      <span class="text-white/80 font-bold text-[10px]" id="ym-sim-status">READY</span>
+      <span class="w-px h-2.5 bg-white/20 mx-0.5"></span>
+      <span class="font-kpi-numeric text-white/60 text-[10px]" id="ym-iteration">#0</span>
     </div>
-    <div class="mt-2 pt-2 border-t border-outline-variant/10">
-      <div class="flex items-center gap-1 mb-1"><span class="material-symbols-outlined text-[14px] text-primary">timeline</span><span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Event Log</span></div>
-      <div id="ym-event-log" class="text-[9px] text-on-surface-variant max-h-[60px] overflow-y-auto custom-scrollbar space-y-0.5"></div>
+  </div>
+
+  <!-- Floating plant selector panel -->
+  <div id="ym-plant-panel" class="absolute left-3 top-14 bottom-3 w-[272px] z-20 glass-plant rounded-2xl flex flex-col overflow-hidden">
+    <div class="px-3.5 pt-3 pb-2 border-b border-outline-variant/20 shrink-0">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-primary text-lg">factory</span>
+        <span class="font-bold text-on-surface text-xs font-label-caps tracking-wider">FACTORIES</span>
+      </div>
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+        <input class="w-full bg-surface-container-low border border-outline-variant/30 rounded-xl py-2 pl-8 pr-3 text-xs font-medium outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all" id="ym-plant-search" placeholder="Search factories..." autocomplete="off"/>
+      </div>
     </div>
+    <div class="flex-1 overflow-y-auto custom-scrollbar py-1" id="ym-plant-list"></div>
+  </div>
+
+  <!-- Bottom simulation controls -->
+  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
+    <div class="glass-dark p-1 rounded-full flex gap-1 shadow-lg shadow-black/20">
+      <button class="px-3 py-1.5 rounded-full bg-primary text-white font-bold flex items-center gap-1 hover:opacity-90 transition-all text-[11px]" id="ym-sim-run"><span class="material-symbols-outlined text-sm">play_arrow</span>RUN</button>
+      <button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold flex items-center gap-1 hover:bg-white/10 transition-all text-[11px]" id="ym-sim-pause"><span class="material-symbols-outlined text-sm">pause</span>PAUSE</button>
+      <button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-reset"><span class="material-symbols-outlined text-sm">restart_alt</span></button>
+      <button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-compare"><span class="material-symbols-outlined text-sm">compare_arrows</span></button>
+      <button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-export"><span class="material-symbols-outlined text-sm">download</span></button>
+      <button class="px-2.5 py-1.5 rounded-full text-white/60 font-bold hover:bg-white/10 transition-all text-[11px]" id="ym-sim-history"><span class="material-symbols-outlined text-sm">history</span></button>
+    </div>
+  </div>
+
+  <!-- Machine detail bottom drawer -->
+  <div id="ym-machine-detail" class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
+    <div class="mx-4 mb-4 glass-dark rounded-2xl p-4 pointer-events-auto shadow-2xl shadow-black/30 border border-white/10" id="ym-detail-body">
+      <div class="flex items-start gap-4" id="ym-detail-content"></div>
+    </div>
+  </div>
 </div>
+
+<!-- ─── KPI SIDEBAR ─── -->
+<aside class="w-[320px] shrink-0 flex flex-col overflow-y-auto custom-scrollbar bg-white/50 border-l border-outline-variant/30 backdrop-blur-md" id="ym-kpi-sidebar">
+  <!-- Header -->
+  <div class="px-4 py-3 border-b border-outline-variant/10 shrink-0">
+    <div class="flex items-center justify-between mb-0.5">
+      <h2 class="font-bold text-on-surface text-sm truncate" style="font-family:Geist,sans-serif">Scenario Simulator</h2>
+      <div class="flex gap-1 shrink-0 ml-2" id="ym-presets"></div>
+    </div>
+    <p class="text-on-surface-variant text-[10px] truncate">Adjust parameters &middot; factory updates live</p>
+  </div>
+
+  <!-- Sliders -->
+  <div class="px-4 py-2.5 space-y-2.5" id="ym-sliders">
+    <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary">settings</span>Operations</div>
+    <div class="space-y-2">
+      <div class="min-w-0"><div class="flex justify-between items-center mb-0.5"><label class="text-[11px] text-on-surface font-medium truncate">Production Speed</label><span class="font-kpi-numeric text-primary font-bold text-xs shrink-0 ml-2" id="slider-speed">85%</span></div><input type="range" min="0" max="100" value="85" data-slider="speed"/></div>
+      <div class="min-w-0"><div class="flex justify-between items-center mb-0.5"><label class="text-[11px] text-on-surface font-medium truncate">Machine Load</label><span class="font-kpi-numeric text-primary font-bold text-xs shrink-0 ml-2" id="slider-load">65%</span></div><input type="range" min="0" max="100" value="65" data-slider="load"/></div>
+    </div>
+    <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary">build</span>Maintenance</div>
+    <div class="space-y-2">
+      <div class="min-w-0"><div class="flex justify-between items-center mb-0.5"><label class="text-[11px] text-on-surface font-medium truncate">Maintenance Delay</label><span class="font-kpi-numeric text-primary font-bold text-xs shrink-0 ml-2" id="slider-delay">12h</span></div><input type="range" min="0" max="72" value="12" data-slider="delay"/></div>
+      <div class="min-w-0"><div class="flex justify-between items-center mb-0.5"><label class="text-[11px] text-on-surface font-medium truncate">Operator Count</label><span class="font-kpi-numeric text-primary font-bold text-xs shrink-0 ml-2" id="slider-operators">12</span></div><input type="range" min="2" max="30" value="12" data-slider="operators"/></div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="px-4 py-2 border-t border-outline-variant/10 flex-1 overflow-y-auto custom-scrollbar">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Projected KPIs</span>
+      <span class="text-[9px] text-on-surface-variant font-mono" id="ym-kpi-iteration">iter #0</span>
+    </div>
+    <div class="grid grid-cols-2 gap-2" id="ym-charts-grid"></div>
+
+    <!-- AI Prediction -->
+    <div class="mt-3 pt-3 border-t border-outline-variant/10">
+      <div class="flex items-center gap-1 mb-1.5">
+        <span class="material-symbols-outlined text-[14px] text-primary">psychology</span>
+        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">AI Prediction</span>
+      </div>
+      <div id="ym-ai-prediction" class="text-[10px] text-on-surface-variant leading-relaxed min-h-[18px]">Adjust parameters to see predictions</div>
+    </div>
+
+    <!-- Event Log -->
+    <div class="mt-3 pt-3 border-t border-outline-variant/10">
+      <div class="flex items-center gap-1 mb-1.5">
+        <span class="material-symbols-outlined text-[14px] text-primary">timeline</span>
+        <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Event Log</span>
+      </div>
+      <div id="ym-event-log" class="text-[9px] text-on-surface-variant max-h-[52px] overflow-y-auto custom-scrollbar space-y-0.5"></div>
+    </div>
+  </div>
 </aside>
 </div>
+
 <div id="ym-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-panel rounded-full py-2.5 px-5 flex items-center gap-2.5 translate-y-32 opacity-0 transition-all duration-500 z-[100] shadow-lg">
 <span class="material-symbols-outlined text-secondary text-sm">check_circle</span>
 <span class="font-bold text-sm text-on-surface" id="ym-toast-msg"></span>
