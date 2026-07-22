@@ -16,6 +16,7 @@ const eventService = require('./services/events');
 const graphService = require('./services/graph');
 const decisionService = require('./services/decisions');
 const fleetService = require('./services/fleet');
+const learningService = require('./services/learning');
 
 const isVercel = !!process.env.VERCEL;
 const uploadsDir = isVercel ? '/tmp/uploads' : path.join(__dirname, 'uploads');
@@ -2124,6 +2125,61 @@ app.get('/api/fleet/anomalies', authApi, (req, res) => {
 app.get('/api/fleet/recommendations', authApi, (req, res) => {
   try {
     res.json(fleetService.globalRecommendations.generate());
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ──────────────────────────────────────────────
+// Continuous Learning & Autonomous Improvement APIs
+// ──────────────────────────────────────────────
+
+app.get('/api/learning', authApi, (req, res) => {
+  try {
+    res.json(learningService.getLearningSystemStatus());
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/learning/metrics', authApi, (req, res) => {
+  try {
+    const kpis = learningService.continuousImprovement.generateImprovementKPIs();
+    const weights = learningService.adaptiveWeights.getTunedWeights();
+    res.json({ kpis, decisionWeights: weights });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/learning/outcomes', authApi, (req, res) => {
+  try {
+    const filters = {};
+    if (req.query.machineId) filters.machineId = req.query.machineId;
+    if (req.query.plantId) filters.plantId = req.query.plantId;
+    if (req.query.workflowId) filters.workflowId = req.query.workflowId;
+    if (req.query.outcome) filters.outcome = req.query.outcome;
+    if (req.query.technicianName) filters.technicianName = req.query.technicianName;
+    if (req.query.incidentId) filters.incidentId = req.query.incidentId;
+    if (req.query.startDate) filters.startDate = req.query.startDate;
+    if (req.query.endDate) filters.endDate = req.query.endDate;
+    if (req.query.limit) filters.limit = parseInt(req.query.limit);
+
+    const outcomes = learningService.outcomeRepository.queryOutcomes(filters);
+    const insights = learningService.learningEngine.generateLearningInsights();
+    res.json({
+      outcomes,
+      insights,
+      learningConfidence: learningService.continuousImprovement.generateImprovementKPIs().kpis.learningConfidence
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/learning/feedback', authApi, async (req, res) => {
+  try {
+    const feedback = learningService.feedbackEngine.captureFeedback(req.body);
+    const tuned = learningService.adaptiveWeights.tuneWeightsFromOutcomes();
+    res.json({
+      message: 'Workflow feedback captured and learning updated',
+      feedbackId: feedback.id,
+      outcome: feedback.outcome,
+      weightsTuned: tuned.tuned,
+      tunedWeights: tuned.tunedWeights || null
+    });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
