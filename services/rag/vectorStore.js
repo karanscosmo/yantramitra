@@ -46,6 +46,8 @@ class MemoryVectorProvider {
   }
 
   saveStorage() {
+    // Skip persist on Vercel (ephemeral filesystem, no cross-invocation persistence needed)
+    if (process.env.VERCEL) return;
     try {
       if (!fs.existsSync(VECTOR_DB_DIR)) {
         fs.mkdirSync(VECTOR_DB_DIR, { recursive: true });

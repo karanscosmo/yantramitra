@@ -23,6 +23,14 @@ let fallbackModeActive = false;
 async function initializeRAGPipeline() {
   if (isInitialized) return;
 
+  // Skip re-indexing if vector store already populated from persisted file
+  const existingStats = vectorStore.getStats();
+  if (existingStats.totalChunks > 0) {
+    isInitialized = true;
+    console.log(`[RAG Init] Vector store already populated (${existingStats.totalChunks} chunks, ${existingStats.totalDocuments} docs). Skipping re-index.`);
+    return;
+  }
+
   try {
     if (!fs.existsSync(KNOWLEDGE_BASE_DIR)) {
       fs.mkdirSync(KNOWLEDGE_BASE_DIR, { recursive: true });
@@ -134,9 +142,6 @@ function getRAGStatus() {
     status: fallbackModeActive ? 'Warning' : 'Healthy'
   };
 }
-
-// Auto-initialize on module load
-initializeRAGPipeline().catch(() => {});
 
 module.exports = {
   initializeRAGPipeline,
