@@ -191,7 +191,16 @@ function maskedUserSettings(user) {
 
 function servePage(pageName) {
   return (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', pageName, 'index.html'));
+    const filePath = path.join(__dirname, 'views', pageName, 'index.html');
+    try {
+      let html = fs.readFileSync(filePath, 'utf-8');
+      if (!html.includes('demo/demo-engine.js')) {
+        html = html.replace('</body>', '<script src="/js/demo/demo-engine.js" defer></script>\n</body>');
+      }
+      res.send(html);
+    } catch {
+      res.sendFile(filePath);
+    }
   };
 }
 
@@ -364,6 +373,32 @@ app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, keyPr
     sessions.push({ device: req.headers['user-agent']?.slice(0, 80) || 'Unknown', city: '—', lastSeen: 'just now', current: true });
     if (sessions.length > 20) sessions.splice(0, sessions.length - 20);
     await prisma.user.update({ where: { id: user.id }, data: { sessions, lastLoginMethod: 'email', prefs: { ...prefs, lastLogin: new Date().toISOString() } } });
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    setAuthCookie(res, token);
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/auth/demo-login', async (req, res) => {
+  try {
+    const demoEmail = 'admin@yantramitra.com';
+    const demoPassword = 'Demo@2026';
+    let user = await prisma.user.findUnique({ where: { email: demoEmail } });
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(demoPassword, 10);
+      user = await prisma.user.create({
+        data: {
+          email: demoEmail,
+          password: hashedPassword,
+          name: 'Demo Admin',
+          role: 'admin',
+          prefs: { theme: 'light', notifications: true, timezone: 'Asia/Kolkata', lastLogin: new Date().toISOString() }
+        }
+      });
+    }
+    if (user.provider === 'google' && !user.password) {
+      await prisma.user.update({ where: { id: user.id }, data: { password: await bcrypt.hash(demoPassword, 10) } });
+    }
     const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     setAuthCookie(res, token);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });

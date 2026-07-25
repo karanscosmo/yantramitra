@@ -62,6 +62,11 @@
     document.querySelectorAll('[data-close-demo]').forEach(btn => {
       btn.addEventListener('click', closeDemo);
     });
+    document.getElementById('ym-run-complete-demo')?.addEventListener('click', () => {
+      if (window.YMDemo && typeof window.YMDemo.start === 'function') {
+        window.YMDemo.start();
+      }
+    });
     modal?.addEventListener('click', event => {
       if (event.target === modal) closeContact();
     });

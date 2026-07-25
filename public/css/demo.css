@@ -1,0 +1,524 @@
+/* ─── YantraMitra Demo Mode Styles ─── */
+
+:root {
+  --demo-overlay-z: 120;
+  --demo-cursor-z: 130;
+  --demo-loading-z: 140;
+  --demo-highlight-z: 122;
+  --demo-caption-z: 123;
+  --demo-controls-z: 121;
+}
+
+/* ─── Sentence-by-Sentence Caption Animation ─── */
+@keyframes ymCaptionSlideIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.ym-demo-caption .caption-line .caption-sentence {
+  display: block;
+  opacity: 0;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #191a28;
+  font-family: Inter, system-ui, sans-serif;
+}
+.ym-demo-caption .caption-line .caption-sentence:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Demo Cursor ─── */
+.ym-demo-cursor {
+  position: fixed;
+  z-index: var(--demo-cursor-z);
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  opacity: 0;
+  transform: translate(-4px, -4px) scale(0.8);
+}
+.ym-demo-cursor.visible {
+  opacity: 1;
+  transform: translate(-4px, -4px) scale(1);
+}
+.ym-demo-cursor .cursor-pointer {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 2px 8px rgba(65,63,214,0.3));
+}
+.ym-demo-cursor .cursor-pointer svg {
+  display: block;
+}
+.ym-demo-cursor.clicking .cursor-pointer {
+  transform: scale(0.85);
+  transition: transform 0.1s ease;
+}
+
+/* ─── Demo Overlay ─── */
+.ym-demo-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--demo-overlay-z);
+  pointer-events: none;
+}
+.ym-demo-overlay.active {
+  pointer-events: auto;
+}
+.ym-demo-overlay .demo-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 26, 40, 0.18);
+  z-index: 0;
+}
+
+/* ─── Demo Control Bar ─── */
+.ym-demo-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: var(--demo-controls-z);
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(199, 196, 215, 0.6);
+  border-radius: 16px;
+  padding: 14px 18px;
+  min-width: 260px;
+  box-shadow: 0 12px 48px rgba(65, 63, 214, 0.15);
+  font-family: Inter, system-ui, sans-serif;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.ym-demo-controls.hidden {
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+.ym-demo-controls .demo-header {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #413fd6;
+  margin-bottom: 6px;
+  text-align: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(199, 196, 215, 0.3);
+}
+.ym-demo-controls .demo-step-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.ym-demo-controls .demo-step-info .demo-step-num {
+  font-weight: 700;
+  color: #191a28;
+}
+.ym-demo-controls .demo-step-info .demo-time-remaining {
+  color: #767586;
+  font-weight: 600;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ym-demo-controls .demo-step-info .demo-time-remaining .demo-time-val {
+  font-weight: 800;
+  color: #413fd6;
+  font-variant-numeric: tabular-nums;
+}
+/* step-num and time-remaining now defined above */
+.ym-demo-controls .demo-progress-bar {
+  height: 4px;
+  background: #eeecff;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.ym-demo-controls .demo-progress-bar .demo-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #413fd6, #5efae4);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.ym-demo-controls .demo-btn-row {
+  display: flex;
+  gap: 4px;
+}
+.ym-demo-controls .demo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 1;
+  background: #f4f2ff;
+  color: #464555;
+}
+.ym-demo-controls .demo-btn:hover {
+  background: #eeecff;
+}
+.ym-demo-controls .demo-btn.primary {
+  background: #413fd6;
+  color: #fff;
+}
+.ym-demo-controls .demo-btn.primary:hover {
+  background: #3533c0;
+}
+.ym-demo-controls .demo-btn.danger {
+  background: #fee2e2;
+  color: #ba1a1a;
+}
+.ym-demo-controls .demo-btn.danger:hover {
+  background: #fecaca;
+}
+.ym-demo-controls .demo-btn .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* ─── Demo Caption Card ─── */
+.ym-demo-caption {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--demo-caption-z);
+  pointer-events: none;
+  width: min(680px, calc(100vw - 64px));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(199, 196, 215, 0.6);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 12px 48px rgba(65, 63, 214, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+.ym-demo-caption.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.ym-demo-caption .caption-line {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: #191a28;
+  font-family: Inter, system-ui, sans-serif;
+}
+.ym-demo-caption .caption-line .caption-word {
+  display: inline;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.ym-demo-caption .caption-line .caption-word.revealed {
+  opacity: 1;
+}
+.ym-demo-caption .caption-step {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #413fd6;
+  margin-bottom: 6px;
+}
+
+/* ─── Demo Highlight Ring ─── */
+.ym-demo-highlight {
+  position: fixed;
+  z-index: var(--demo-highlight-z);
+  pointer-events: none;
+  border: 2.5px solid #5efae4;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(25, 26, 40, 0.3), 0 0 30px rgba(94, 250, 228, 0.6);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0;
+}
+.ym-demo-highlight.visible {
+  opacity: 1;
+}
+
+/* ─── Demo Loading Screen ─── */
+.ym-demo-loading {
+  position: fixed;
+  inset: 0;
+  z-index: var(--demo-loading-z);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #191a28;
+  color: #fff;
+  font-family: Inter, system-ui, sans-serif;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.ym-demo-loading.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ym-demo-loading .loading-logo {
+  height: 48px;
+  margin-bottom: 16px;
+  filter: brightness(0) invert(1);
+}
+.ym-demo-loading .loading-title {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: #fff;
+  margin-bottom: 4px;
+  font-family: Geist, Inter, sans-serif;
+}
+.ym-demo-loading .loading-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 500;
+  margin-bottom: 28px;
+}
+.ym-demo-loading .loading-items {
+  display: grid;
+  gap: 16px;
+  width: min(400px, calc(100vw - 64px));
+}
+.ym-demo-loading .loading-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: all 0.4s ease;
+}
+.ym-demo-loading .loading-item.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+.ym-demo-loading .loading-item .loading-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #413fd6;
+  flex-shrink: 0;
+  position: relative;
+}
+.ym-demo-loading .loading-item .loading-dot.pulse {
+  animation: demo-loading-pulse 1.2s ease-in-out infinite;
+}
+.ym-demo-loading .loading-item .loading-dot.done {
+  background: #5efae4;
+}
+.ym-demo-loading .loading-item .loading-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+.ym-demo-loading .loading-item .loading-status {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: auto;
+}
+
+@keyframes demo-loading-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(65, 63, 214, 0.6); }
+  50% { box-shadow: 0 0 0 8px rgba(65, 63, 214, 0); }
+}
+
+/* ─── Demo End Summary ─── */
+.ym-demo-summary {
+  position: fixed;
+  inset: 0;
+  z-index: var(--demo-loading-z);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fbf8ff;
+  font-family: Inter, system-ui, sans-serif;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.ym-demo-summary.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ym-demo-summary .summary-container {
+  text-align: center;
+  max-width: 480px;
+  padding: 40px 32px;
+}
+.ym-demo-summary .summary-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background: #413fd6;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  margin-bottom: 20px;
+}
+.ym-demo-summary .summary-title {
+  font-size: 40px;
+  font-weight: 900;
+  color: #191a28;
+  margin-bottom: 4px;
+  font-family: Geist, Inter, sans-serif;
+}
+.ym-demo-summary .summary-subtitle {
+  font-size: 18px;
+  color: #767586;
+  font-weight: 500;
+  margin-bottom: 28px;
+}
+.ym-demo-summary .summary-features {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+.ym-demo-summary .summary-check {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s ease;
+  border-radius: 12px;
+}
+.ym-demo-summary .summary-check.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  background: rgba(94, 250, 228, 0.1);
+}
+.ym-demo-summary .summary-check .check-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #5efae4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #191a28;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.ym-demo-summary .summary-check .check-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #191a28;
+}
+.ym-demo-summary .summary-message {
+  font-size: 14px;
+  color: #767586;
+  font-weight: 600;
+  margin-bottom: 24px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(199, 196, 215, 0.3);
+}
+.ym-demo-summary .summary-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ym-demo-summary .summary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ym-demo-summary .summary-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+.ym-demo-summary .summary-btn.primary {
+  background: #413fd6;
+  color: #fff;
+}
+.ym-demo-summary .summary-btn.primary:hover {
+  background: #3533c0;
+}
+.ym-demo-summary .summary-btn.secondary {
+  background: #fff;
+  color: #191a28;
+  border: 1px solid #c7c4d7;
+}
+.ym-demo-summary .summary-btn.secondary:hover {
+  background: #f4f2ff;
+}
+.ym-demo-summary .summary-btn.outline {
+  background: transparent;
+  color: #413fd6;
+  border: 1px solid rgba(65, 63, 214, 0.3);
+}
+.ym-demo-summary .summary-btn.outline:hover {
+  background: rgba(65, 63, 214, 0.06);
+}
+
+/* ─── Demo click ripple ─── */
+.ym-demo-ripple {
+  position: fixed;
+  z-index: calc(var(--demo-cursor-z) + 1);
+  pointer-events: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(94, 250, 228, 0.8);
+  transform: translate(-50%, -50%) scale(0.3);
+  opacity: 0;
+  animation: demo-ripple 0.6s ease-out forwards;
+}
+@keyframes demo-ripple {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .ym-demo-controls {
+    top: auto;
+    bottom: 80px;
+    right: 8px;
+    left: 8px;
+    min-width: auto;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+  .ym-demo-caption {
+    bottom: 160px;
+    padding: 14px 18px;
+    width: calc(100vw - 32px);
+  }
+  .ym-demo-caption .caption-line {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ym-demo-cursor,
+  .ym-demo-cursor .cursor-pointer,
+  .ym-demo-highlight,
+  .ym-demo-caption,
+  .ym-demo-loading .loading-item,
+  .ym-demo-summary .summary-check {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  .ym-demo-cursor { display: none; }
+}
