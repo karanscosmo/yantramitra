@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  /* ─── YantraMitra Autonomous Product Demo Engine ─── */
+  /* ─── YantraMitra Rebuilt Autonomous Product Demo Engine ─── */
 
   const STATE_KEY = 'ymDemoState';
   const SPEED_KEY = 'ymDemoSpeed';
@@ -34,12 +34,12 @@
 
   function isSessionFresh(state) {
     if (!state || !state.startedAt) return false;
-    return (Date.now() - state.startedAt) < 40 * 60 * 1000;
+    return (Date.now() - state.startedAt) < 45 * 60 * 1000;
   }
 
   const getPath = () => window.location.pathname;
 
-  /* ─── Phonetic Dictionary for Natural English Pronunciation ─── */
+  /* ─── Phonetic Dictionary for Clean Natural Speech ─── */
   function phoneticNormalize(text) {
     if (!text) return '';
     return text
@@ -74,26 +74,26 @@
       .replace(/\b1\.8\b/g, '1 point 8');
   }
 
-  /* ─── 14-Step Complete Page-by-Page Product Workflow Pipeline ─── */
+  /* ─── 14 Industrial Workflow Steps ─── */
   const STEPS = [
-    { id: 'home-intro', route: '/', title: 'System Introduction & Product Architecture' },
+    { id: 'home-intro', route: '/', title: 'System Introduction & Platform Architecture' },
     { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
-    { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Anomaly Alert Arrival' },
-    { id: 'step-2-assets', route: '/assets', title: 'Asset Fleet & Production Line Inspection' },
+    { id: 'step-1-dashboard', route: '/dashboard', title: 'Global Command Center & Anomaly Alert' },
+    { id: 'step-2-assets', route: '/assets', title: 'Asset Fleet & Production Line Drilldown' },
     { id: 'step-3-digital-twin', route: '/digital-twin', title: '3D Digital Twin Spindle Inspection' },
     { id: 'step-4-anomaly', route: '/anomaly', title: 'Anomaly Evidence & Spectral Harmonics' },
     { id: 'step-5-ai-assistant', route: '/ai-console', title: 'YantraNklan AI Multi-Agent Diagnosis' },
     { id: 'step-6-knowledge-graph', route: '/map', title: 'Global Map & Knowledge Graph Lineage' },
     { id: 'step-7-agents', route: '/agents', title: 'AI Agent Mission Control Operations' },
-    { id: 'step-8-maintenance', route: '/work-orders', title: 'Work Order Creation & LOTO Safety Execution' },
+    { id: 'step-8-maintenance', route: '/work-orders', title: 'Work Order Creation & LOTO Execution' },
     { id: 'step-9-reports', route: '/ai-console', title: 'Executive Maintenance Report & PDF Export' },
     { id: 'step-10-reliability', route: '/reliability', title: 'Reliability Analytics & ML Forecast' },
-    { id: 'step-11-twin-return', route: '/digital-twin', title: 'Digital Twin Restored Health (99%)' },
-    { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
+    { id: 'step-11-twin-return', route: '/digital-twin', title: 'Digital Twin Restored Asset Health (99%)' },
+    { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & ROI Metrics' }
   ];
 
-  /* ─── High-Fidelity Speech Synthesizer with Uniform Speed & Safety Net ─── */
-  class StudioNaturalVoiceNarrator {
+  /* ─── Synchronized Speech Engine ─── */
+  class SynchronizedStudioVoiceNarrator {
     constructor() {
       this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
       this.voice = null;
@@ -107,22 +107,17 @@
         const voices = this.synth.getVoices();
         if (!voices || voices.length === 0) return;
 
-        // Select high-quality natural voice
-        const naturalVoice = voices.find(v => 
+        const bestVoice = voices.find(v => 
           v.name.includes('Natural') || 
           v.name.includes('Google US English') || 
           v.name.includes('Google UK English') || 
           v.name.includes('Samantha') || 
           v.name.includes('Alex') || 
           v.name.includes('Daniel') || 
-          v.lang === 'en-US' || 
-          v.lang === 'en-GB' || 
-          v.lang === 'en-IN'
+          v.lang.startsWith('en')
         ) || voices[0];
 
-        if (naturalVoice) {
-          this.voice = naturalVoice;
-        }
+        if (bestVoice) this.voice = bestVoice;
       };
 
       selectVoice();
@@ -131,7 +126,7 @@
       }
     }
 
-    speakChunk(text, rateMultiplier = 1, onWordBoundary = null, onEnd = null) {
+    speakSentence(text, rateMultiplier = 1, onEnd = null) {
       if (!this.synth || this.isMuted) {
         if (onEnd) setTimeout(onEnd, 100);
         return;
@@ -143,44 +138,31 @@
       if (this.voice) {
         utterance.voice = this.voice;
         utterance.lang = this.voice.lang || 'en-US';
-      } else {
-        utterance.lang = 'en-US';
       }
 
-      // UNIFORM SPEECH SPEED (fixed base rate 0.94)
       utterance.pitch = 1.0; 
       utterance.rate = Math.min(1.8, 0.94 * rateMultiplier);
 
-      if (onWordBoundary) {
-        utterance.onboundary = (event) => {
-          if (event.name === 'word') {
-            onWordBoundary(event.charIndex, event.charLength);
-          }
-        };
-      }
-
-      let hasEnded = false;
-      const done = () => {
-        if (hasEnded) return;
-        hasEnded = true;
+      let finished = false;
+      const complete = () => {
+        if (finished) return;
+        finished = true;
         if (onEnd) onEnd();
       };
 
-      utterance.onend = done;
-      utterance.onerror = done;
+      utterance.onend = complete;
+      utterance.onerror = complete;
 
-      // CRITICAL SAFETY TIMEOUT: Guarantees done() fires even if browser engine drops events!
-      const words = phoneticText.split(/\s+/).length;
-      const maxDurationMs = Math.max(2500, (words * 380) / rateMultiplier);
-      setTimeout(done, maxDurationMs);
+      // Absolute Safety Net: Ensure complete() fires even if browser speech engine hangs
+      const wordCount = phoneticText.split(/\s+/).length;
+      const maxTimeMs = Math.max(2200, (wordCount * 360) / rateMultiplier);
+      setTimeout(complete, maxTimeMs);
 
       this.synth.speak(utterance);
     }
 
     stop() {
-      if (this.synth) {
-        this.synth.cancel();
-      }
+      if (this.synth) this.synth.cancel();
     }
 
     toggleMute() {
@@ -201,14 +183,11 @@
       this.captionEl = null;
       this.cursorEl = null;
       this.isRunning = false;
-      this.autoTimer = null;
-      this.narrationTimer = null;
-      this.narrator = new StudioNaturalVoiceNarrator();
+      this.narrator = new SynchronizedStudioVoiceNarrator();
     }
 
-    /* ─── Public API Controls ─── */
+    /* ─── Public Control API ─── */
     start() {
-      // 3-Second Recording Countdown Overlay
       this.showCountdown(() => {
         const newState = {
           active: true,
@@ -239,7 +218,7 @@
           <div class="countdown-badge">🔴 RECORDING MODE</div>
           <div class="countdown-title">Get Ready to Record</div>
           <div class="countdown-number">3</div>
-          <div class="countdown-sub">Autonomous Demonstration Launching...</div>
+          <div class="countdown-sub">Autonomous Product Demonstration Launching...</div>
         </div>
       `;
       document.body.appendChild(el);
@@ -271,8 +250,6 @@
       this.state.paused = true;
       saveState(this.state);
       this.narrator.stop();
-      if (this.autoTimer) clearTimeout(this.autoTimer);
-      if (this.narrationTimer) clearTimeout(this.narrationTimer);
       this.updateControlsUI();
     }
 
@@ -310,7 +287,6 @@
 
     /* ─── Page Load Synchronization ─── */
     init() {
-      // STRICT MANUAL START: Never auto-run unless active state exists and status is 'running'!
       if (!this.state || !this.state.active || this.state.status !== 'running') return;
       if (!isSessionFresh(this.state)) {
         this.stop();
@@ -324,7 +300,6 @@
       }
 
       const curPath = getPath();
-      // Auto-sync step index to current URL path
       if (currentStep.route !== curPath && !(currentStep.route !== '/' && curPath.startsWith(currentStep.route))) {
         const matchingIdx = STEPS.findIndex(s => s.route === curPath || (s.route !== '/' && curPath.startsWith(s.route)));
         if (matchingIdx !== -1) {
@@ -341,10 +316,10 @@
       this.ensureUI();
       setTimeout(() => {
         this.executeCurrentStep();
-      }, 600 / this.speed);
+      }, 500 / this.speed);
     }
 
-    /* ─── UI Setup ─── */
+    /* ─── UI Infrastructure ─── */
     ensureUI() {
       this.injectCSS();
       if (!document.querySelector('.ym-demo-overlay')) {
@@ -376,7 +351,7 @@
           <div class="ym-demo-caption">
             <div class="caption-header">
               <span class="caption-dot"></span>
-              <span class="caption-tag">REAL-TIME NARRATION</span>
+              <span class="caption-tag">REAL-TIME SYNCHRONIZED NARRATION</span>
             </div>
             <div class="caption-text"></div>
           </div>
@@ -387,28 +362,18 @@
           const btn = e.target.closest('[data-action]');
           if (!btn) return;
           const action = btn.dataset.action;
-          if (action === 'speed') {
-            this.cycleSpeed();
-          } else if (action === 'pause') {
-            this.state.paused ? this.resume() : this.pause();
-          } else if (action === 'audio') {
+          if (action === 'speed') this.cycleSpeed();
+          else if (action === 'pause') this.state.paused ? this.resume() : this.pause();
+          else if (action === 'audio') {
             const isMuted = this.narrator.toggleMute();
             const label = overlay.querySelector('.demo-audio-label');
             const icon = overlay.querySelector('[data-action="audio"] .material-symbols-outlined');
-            if (isMuted) {
-              if (label) label.textContent = 'Muted';
-              if (icon) icon.textContent = 'volume_off';
-            } else {
-              if (label) label.textContent = 'Audio On';
-              if (icon) icon.textContent = 'volume_up';
-            }
-          } else if (action === 'skip') {
-            this.skip();
-          } else if (action === 'restart') {
-            this.restart();
-          } else if (action === 'exit') {
-            this.exit();
+            if (label) label.textContent = isMuted ? 'Muted' : 'Audio On';
+            if (icon) icon.textContent = isMuted ? 'volume_off' : 'volume_up';
           }
+          else if (action === 'skip') this.skip();
+          else if (action === 'restart') this.restart();
+          else if (action === 'exit') this.exit();
         });
       }
 
@@ -462,15 +427,13 @@
 
       const pauseBtn = this.controlsEl.querySelector('[data-action="pause"]');
       if (pauseBtn) {
-        if (this.state.paused) {
-          pauseBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> <span class="demo-btn-label">Resume</span>';
-        } else {
-          pauseBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span>';
-        }
+        pauseBtn.innerHTML = this.state.paused
+          ? '<span class="material-symbols-outlined">play_arrow</span> <span class="demo-btn-label">Resume</span>'
+          : '<span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span>';
       }
     }
 
-    /* ─── Cursor & Interactions ─── */
+    /* ─── Cursor & Smooth Motion ─── */
     moveCursorTo(x, y, duration = 600) {
       if (!this.cursorEl) return Promise.resolve();
       const adjDur = Math.max(150, duration / this.speed);
@@ -482,9 +445,7 @@
 
     moveCursorToElement(selectorOrEl, duration = 600, offsetX = 0, offsetY = 0) {
       const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
-      if (!el) {
-        return this.moveCursorTo(window.innerWidth / 2, window.innerHeight / 2, duration);
-      }
+      if (!el) return this.moveCursorTo(window.innerWidth / 2, window.innerHeight / 2, duration);
       const rect = el.getBoundingClientRect();
       const x = rect.left + (rect.width / 2) + offsetX;
       const y = rect.top + (rect.height / 2) + offsetY;
@@ -551,9 +512,7 @@
       const adjDur = Math.max(300, duration / this.speed);
       return this.moveCursorTo(startX, startY, 300).then(() => {
         this.cursorEl.classList.add('clicking');
-        if (targetEl) {
-          targetEl.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, clientY: startY, bubbles: true }));
-        }
+        if (targetEl) targetEl.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, clientY: startY, bubbles: true }));
 
         const steps = 24;
         const stepMs = adjDur / steps;
@@ -567,16 +526,12 @@
             const curY = startY + (endY - startY) * progress;
             this.cursorEl.style.transform = `translate(${curX}px, ${curY}px)`;
 
-            if (targetEl) {
-              targetEl.dispatchEvent(new MouseEvent('mousemove', { clientX: curX, clientY: curY, bubbles: true }));
-            }
+            if (targetEl) targetEl.dispatchEvent(new MouseEvent('mousemove', { clientX: curX, clientY: curY, bubbles: true }));
 
             if (step >= steps) {
               clearInterval(moveTimer);
               this.cursorEl.classList.remove('clicking');
-              if (targetEl) {
-                targetEl.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, clientY: endY, bubbles: true }));
-              }
+              if (targetEl) targetEl.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, clientY: endY, bubbles: true }));
               setTimeout(resolve, 200 / this.speed);
             }
           }, stepMs);
@@ -597,17 +552,14 @@
           const ease = 1 - Math.pow(1 - progress, 3);
           window.scrollTo(0, startY + distance * ease);
 
-          if (progress < 1) {
-            requestAnimationFrame(stepScroll);
-          } else {
-            setTimeout(resolve, 200 / this.speed);
-          }
+          if (progress < 1) requestAnimationFrame(stepScroll);
+          else setTimeout(resolve, 200 / this.speed);
         };
         requestAnimationFrame(stepScroll);
       });
     }
 
-    /* ─── Robust Event-Driven Speech Queue (No Skipped Captions) ─── */
+    /* ─── Perfect Synchronized Speech & Caption Display ─── */
     speakChunks(chunks) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
@@ -618,52 +570,33 @@
       let chunkIdx = 0;
 
       return new Promise(resolve => {
-        const speakNextChunk = () => {
+        const speakNextSentence = () => {
           if (!this.isRunning || (this.state && this.state.paused)) {
             resolve();
             return;
           }
           if (chunkIdx >= chunks.length) {
-            setTimeout(resolve, 500 / this.speed);
+            setTimeout(resolve, 400 / this.speed);
             return;
           }
 
-          const rawText = chunks[chunkIdx];
+          const sentence = chunks[chunkIdx];
           chunkIdx++;
 
-          const words = rawText.split(/\s+/);
-          container.innerHTML = words.map((w, i) => `<span class="caption-word" data-word-idx="${i}">${w} </span>`).join('');
-          const wordEls = container.querySelectorAll('.caption-word');
+          // Display full readable sentence in caption box
+          container.innerHTML = `<span class="caption-sentence active">${sentence}</span>`;
 
-          let chunkEnded = false;
-          const finishChunk = () => {
-            if (chunkEnded) return;
-            chunkEnded = true;
-            setTimeout(speakNextChunk, 350 / this.speed);
-          };
-
-          this.narrator.speakChunk(
-            rawText,
-            this.speed,
-            (charIdx, charLen) => {
-              const textUpToChar = rawText.substring(0, charIdx);
-              const wordIndex = textUpToChar.trim().split(/\s+/).length - 1;
-              wordEls.forEach((wEl, idx) => {
-                if (idx === wordIndex) wEl.classList.add('active');
-                else wEl.classList.remove('active');
-              });
-            },
-            () => finishChunk()
-          );
+          this.narrator.speakSentence(sentence, this.speed, () => {
+            setTimeout(speakNextSentence, 250 / this.speed);
+          });
         };
 
-        speakNextChunk();
+        speakNextSentence();
       });
     }
 
     hideCaption() {
       if (this.captionEl) this.captionEl.classList.remove('visible');
-      if (this.narrationTimer) clearTimeout(this.narrationTimer);
       this.narrator.stop();
     }
 
@@ -698,7 +631,7 @@
       this.advanceToStepIndex(this.state.stepIdx + 1);
     }
 
-    /* ─── Workflow Execution with Full-Page Scroll Demonstration ─── */
+    /* ─── Industrial Workflow Execution (Full Page Scrolling + Visual Context) ─── */
     async executeCurrentStep() {
       if (!this.state || !this.isRunning || this.state.paused) return;
       const step = STEPS[this.state.stepIdx];
@@ -754,23 +687,23 @@
       }
     }
 
-    /* ─── STEP 0: LANDING PAGE ─── */
+    /* ─── STEP 0: LANDING PAGE INTRO ─── */
     async runHomeIntro() {
       const chunks = [
         "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform.",
         "Traditional maintenance relies on reactive repairs, costing industrial plants millions in unplanned downtime.",
-        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance.",
+        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver predictive maintenance across Indian manufacturing facilities.",
         "Let us authenticate as a reliability engineer to enter the live operating platform."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
       await new Promise(r => setTimeout(r, 1000 / this.speed));
-      await this.scrollWindowTo(800, 2200);
+      await this.scrollWindowTo(700, 2200);
       await new Promise(r => setTimeout(r, 800 / this.speed));
-      await this.scrollWindowTo(1600, 2400);
+      await this.scrollWindowTo(1500, 2400);
       await new Promise(r => setTimeout(r, 800 / this.speed));
-      await this.scrollWindowTo(2400, 2400);
+      await this.scrollWindowTo(2300, 2400);
       await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(0, 1600);
 
@@ -782,7 +715,7 @@
       this.advanceToStepIndex(1);
     }
 
-    /* ─── STEP 1: LOGIN AUTHENTICATION ─── */
+    /* ─── STEP 1: ENTERPRISE LOGIN ─── */
     async runLoginAuth() {
       const chunks = [
         "Authenticating reliability engineer into the YantraMitra Industrial Operations Platform.",
@@ -831,7 +764,7 @@
       this.advanceToStepIndex(2);
     }
 
-    /* ─── STEP 2: DASHBOARD & CRITICAL ALERT ─── */
+    /* ─── STEP 2: COMMAND CENTER & ANOMALY ALERT ─── */
     async runStep1Dashboard() {
       const chunks = [
         "The engineer begins work on the Global Command Center dashboard.",
@@ -842,7 +775,7 @@
 
       const narrationPromise = this.speakChunks(chunks);
 
-      // Scroll down to showcase facility map & live telemetry grid
+      // Full Page Scroll Demonstration
       await this.scrollWindowTo(450, 1600);
       await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(900, 1800);
@@ -882,7 +815,7 @@
       this.advanceToStepIndex(3);
     }
 
-    /* ─── STEP 3: ASSETS FLEET PAGE (With Full Page Scroll) ─── */
+    /* ─── STEP 3: ASSET FLEET & TELEMETRY ─── */
     async runStep2Assets() {
       const chunks = [
         "Opening Asset Fleet to inspect health scores and sensor coverage across all manufacturing cells.",
@@ -894,7 +827,7 @@
 
       await new Promise(r => setTimeout(r, 600 / this.speed));
 
-      // Full Page Scroll Demonstration down the assets table
+      // Scroll down asset fleet table
       await this.scrollWindowTo(500, 1600);
       await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(1000, 1800);
@@ -911,7 +844,7 @@
       this.advanceToStepIndex(4);
     }
 
-    /* ─── STEP 4: 3D DIGITAL TWIN (With Full Page Scroll) ─── */
+    /* ─── STEP 4: 3D DIGITAL TWIN ─── */
     async runStep3DigitalTwin() {
       const navLink = document.querySelector('a[href="/digital-twin"]');
       if (navLink && getPath() !== '/digital-twin') {
@@ -955,7 +888,7 @@
       this.advanceToStepIndex(5);
     }
 
-    /* ─── STEP 5: ANOMALY INVESTIGATION (With Full Page Scroll) ─── */
+    /* ─── STEP 5: ANOMALY INVESTIGATION ─── */
     async runStep4Anomaly() {
       const navLink = document.querySelector('a[href="/anomaly"]');
       if (navLink && getPath() !== '/anomaly') {
@@ -987,7 +920,7 @@
       this.advanceToStepIndex(6);
     }
 
-    /* ─── STEP 6: YANTRANKLAN MULTI-AGENT AI ANALYSIS ─── */
+    /* ─── STEP 6: YANTRANKLAN AI MULTI-AGENT DIAGNOSIS ─── */
     async runStep5AIAssistant() {
       const aiNavLink = document.querySelector('a[href="/ai-console"]');
       if (aiNavLink && getPath() !== '/ai-console') {
@@ -1069,7 +1002,7 @@
       }, 800 / this.speed);
     }
 
-    /* ─── STEP 7: GLOBAL MAP & KNOWLEDGE GRAPH (With Full Page Scroll) ─── */
+    /* ─── STEP 7: GLOBAL MAP & KNOWLEDGE GRAPH ─── */
     async runStep6KnowledgeGraph() {
       const mapNavLink = document.querySelector('a[href="/map"]');
       if (mapNavLink && getPath() !== '/map') {
@@ -1132,7 +1065,7 @@
       }, 500 / this.speed);
     }
 
-    /* ─── STEP 8: AI AGENTS MISSION CONTROL (With Full Page Scroll) ─── */
+    /* ─── STEP 8: AI AGENT MISSION CONTROL ─── */
     async runStep7Agents() {
       const agentsNavLink = document.querySelector('a[href="/agents"]');
       if (agentsNavLink && getPath() !== '/agents') {
@@ -1163,7 +1096,7 @@
       this.advanceToStepIndex(9);
     }
 
-    /* ─── STEP 9: MAINTENANCE WORK ORDERS (With Full Page Scroll) ─── */
+    /* ─── STEP 9: MAINTENANCE WORK ORDERS ─── */
     async runStep8Maintenance() {
       const woNavLink = document.querySelector('a[href="/work-orders"]');
       if (woNavLink && getPath() !== '/work-orders') {
@@ -1370,7 +1303,7 @@
       }, 800 / this.speed);
     }
 
-    /* ─── STEP 11: RELIABILITY ANALYTICS & ML FORECAST (With Full Page Scroll) ─── */
+    /* ─── STEP 11: RELIABILITY ANALYTICS & ML FORECAST ─── */
     async runStep10Reliability() {
       const relNavLink = document.querySelector('a[href="/reliability"]');
       if (relNavLink && getPath() !== '/reliability') {
@@ -1535,8 +1468,6 @@
       this.controlsEl = null;
       this.captionEl = null;
       this.cursorEl = null;
-      if (this.autoTimer) clearTimeout(this.autoTimer);
-      if (this.narrationTimer) clearTimeout(this.narrationTimer);
       this.narrator.stop();
     }
   }

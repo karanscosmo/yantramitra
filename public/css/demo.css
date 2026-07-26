@@ -215,19 +215,19 @@
   color: #5efae4;
 }
 .ym-demo-caption .caption-text {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.85);
+  color: #ffffff;
 }
-.ym-demo-caption .caption-word {
-  display: inline;
-  transition: color 0.15s ease, text-shadow 0.15s ease;
+.ym-demo-caption .caption-sentence {
+  display: block;
+  transition: all 0.2s ease;
 }
-.ym-demo-caption .caption-word.active {
+.ym-demo-caption .caption-sentence.active {
   color: #5efae4;
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(94, 250, 228, 0.6);
+  text-shadow: 0 0 12px rgba(94, 250, 228, 0.4);
 }
 
 /* ─── Step 1: Critical Alert Toast ─── */
