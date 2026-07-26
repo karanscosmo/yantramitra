@@ -34,7 +34,7 @@
 
   function isSessionFresh(state) {
     if (!state || !state.startedAt) return false;
-    return (Date.now() - state.startedAt) < 35 * 60 * 1000;
+    return (Date.now() - state.startedAt) < 40 * 60 * 1000;
   }
 
   const getPath = () => window.location.pathname;
@@ -79,20 +79,20 @@
     { id: 'home-intro', route: '/', title: 'System Introduction & Product Architecture' },
     { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
     { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Anomaly Alert Arrival' },
-    { id: 'step-2-assets', route: '/assets', title: 'Asset Fleet & Telemetry Drilldown' },
+    { id: 'step-2-assets', route: '/assets', title: 'Asset Fleet & Production Line Inspection' },
     { id: 'step-3-digital-twin', route: '/digital-twin', title: '3D Digital Twin Spindle Inspection' },
-    { id: 'step-4-anomaly', route: '/anomaly', title: 'Anomaly Evidence & Diagnostic Spectrum' },
-    { id: 'step-5-ai-assistant', route: '/ai-console', title: 'YantraNklan AI Diagnostic Chat' },
+    { id: 'step-4-anomaly', route: '/anomaly', title: 'Anomaly Evidence & Spectral Harmonics' },
+    { id: 'step-5-ai-assistant', route: '/ai-console', title: 'YantraNklan AI Multi-Agent Diagnosis' },
     { id: 'step-6-knowledge-graph', route: '/map', title: 'Global Map & Knowledge Graph Lineage' },
-    { id: 'step-7-agents', route: '/agents', title: 'AI Agent Mission Control Deployment' },
-    { id: 'step-8-maintenance', route: '/work-orders', title: 'Work Order Creation & LOTO Execution' },
+    { id: 'step-7-agents', route: '/agents', title: 'AI Agent Mission Control Operations' },
+    { id: 'step-8-maintenance', route: '/work-orders', title: 'Work Order Creation & LOTO Safety Execution' },
     { id: 'step-9-reports', route: '/ai-console', title: 'Executive Maintenance Report & PDF Export' },
     { id: 'step-10-reliability', route: '/reliability', title: 'Reliability Analytics & ML Forecast' },
     { id: 'step-11-twin-return', route: '/digital-twin', title: 'Digital Twin Restored Health (99%)' },
     { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
   ];
 
-  /* ─── High-Fidelity Studio Speech Engine with Safety Net ─── */
+  /* ─── High-Fidelity Speech Synthesizer with Uniform Speed & Safety Net ─── */
   class StudioNaturalVoiceNarrator {
     constructor() {
       this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
@@ -115,7 +115,6 @@
           v.name.includes('Samantha') || 
           v.name.includes('Alex') || 
           v.name.includes('Daniel') || 
-          v.name.includes('Google') || 
           v.lang === 'en-US' || 
           v.lang === 'en-GB' || 
           v.lang === 'en-IN'
@@ -148,8 +147,9 @@
         utterance.lang = 'en-US';
       }
 
+      // UNIFORM SPEECH SPEED (fixed base rate 0.94)
       utterance.pitch = 1.0; 
-      utterance.rate = Math.min(1.8, 0.92 * rateMultiplier);
+      utterance.rate = Math.min(1.8, 0.94 * rateMultiplier);
 
       if (onWordBoundary) {
         utterance.onboundary = (event) => {
@@ -169,7 +169,7 @@
       utterance.onend = done;
       utterance.onerror = done;
 
-      // CRITICAL SAFETY TIMEOUT: Guarantees done() fires even if browser Speech Engine drops events!
+      // CRITICAL SAFETY TIMEOUT: Guarantees done() fires even if browser engine drops events!
       const words = phoneticText.split(/\s+/).length;
       const maxDurationMs = Math.max(2500, (words * 380) / rateMultiplier);
       setTimeout(done, maxDurationMs);
@@ -607,7 +607,7 @@
       });
     }
 
-    /* ─── Robust Event-Driven Speech Queue ─── */
+    /* ─── Robust Event-Driven Speech Queue (No Skipped Captions) ─── */
     speakChunks(chunks) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
@@ -639,7 +639,7 @@
           const finishChunk = () => {
             if (chunkEnded) return;
             chunkEnded = true;
-            setTimeout(speakNextChunk, 300 / this.speed);
+            setTimeout(speakNextChunk, 350 / this.speed);
           };
 
           this.narrator.speakChunk(
@@ -698,7 +698,7 @@
       this.advanceToStepIndex(this.state.stepIdx + 1);
     }
 
-    /* ─── Workflow Execution across All Product Pages ─── */
+    /* ─── Workflow Execution with Full-Page Scroll Demonstration ─── */
     async executeCurrentStep() {
       if (!this.state || !this.isRunning || this.state.paused) return;
       const step = STEPS[this.state.stepIdx];
@@ -759,17 +759,17 @@
       const chunks = [
         "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform.",
         "Traditional maintenance relies on reactive repairs, costing industrial plants millions in unplanned downtime.",
-        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver predictive maintenance across Indian manufacturing facilities.",
+        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance.",
         "Let us authenticate as a reliability engineer to enter the live operating platform."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
       await new Promise(r => setTimeout(r, 1000 / this.speed));
-      await this.scrollWindowTo(700, 2200);
-      await new Promise(r => setTimeout(r, 1000 / this.speed));
-      await this.scrollWindowTo(1500, 2400);
-      await new Promise(r => setTimeout(r, 1000 / this.speed));
+      await this.scrollWindowTo(800, 2200);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1600, 2400);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(2400, 2400);
       await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(0, 1600);
@@ -842,14 +842,19 @@
 
       const narrationPromise = this.speakChunks(chunks);
 
+      // Scroll down to showcase facility map & live telemetry grid
+      await this.scrollWindowTo(450, 1600);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(900, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
+
       document.querySelectorAll('[data-kpi-route], .kpi-card').forEach((card, idx) => {
         setTimeout(() => {
           card.classList.add('glow-indigo');
           setTimeout(() => card.classList.remove('glow-indigo'), 1000);
         }, idx * 250);
       });
-
-      await new Promise(r => setTimeout(r, 1800 / this.speed));
 
       let alertCard = document.querySelector('[data-alert-id="cnc-101"], .critical-alert-card');
       if (!alertCard) {
@@ -877,16 +882,24 @@
       this.advanceToStepIndex(3);
     }
 
-    /* ─── STEP 3: ASSETS FLEET PAGE ─── */
+    /* ─── STEP 3: ASSETS FLEET PAGE (With Full Page Scroll) ─── */
     async runStep2Assets() {
       const chunks = [
         "Opening Asset Fleet to inspect health scores and sensor coverage across all manufacturing cells.",
-        "Selecting CNC-101 to open its telemetry inspector and 3D Digital Twin."
+        "Scrolling through active production lines in Pune, Ahmedabad, and Chennai.",
+        "Selecting CNC-101 to open its dedicated 3D Digital Twin."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 1000 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Full Page Scroll Demonstration down the assets table
+      await this.scrollWindowTo(500, 1600);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1000, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
 
       const cncCard = document.querySelector('[data-asset-id="cnc-101"], .asset-card, main tr, main');
       if (cncCard) {
@@ -898,7 +911,7 @@
       this.advanceToStepIndex(4);
     }
 
-    /* ─── STEP 4: 3D DIGITAL TWIN ─── */
+    /* ─── STEP 4: 3D DIGITAL TWIN (With Full Page Scroll) ─── */
     async runStep3DigitalTwin() {
       const navLink = document.querySelector('a[href="/digital-twin"]');
       if (navLink && getPath() !== '/digital-twin') {
@@ -911,12 +924,12 @@
       const chunks = [
         "Inside the 3D Digital Twin environment. CNC-101 displays an elevated temperature of 78 degrees Celsius and severe vibration spikes.",
         "Rotating the 3D model allows the engineer to inspect the spindle assembly.",
-        "Clicking on the spindle assembly reveals high frequency vibration harmonics in the primary bearing."
+        "Scrolling down to inspect real-time bearing telemetry and vibration harmonics."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 1000 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
 
       const canvasEl = document.querySelector('canvas, #ym-twin-canvas, .digital-twin-container, main');
 
@@ -926,6 +939,11 @@
         await new Promise(r => setTimeout(r, 300 / this.speed));
         await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1000, canvasEl);
       }
+
+      // Scroll down to showcase telemetry charts & component list
+      await this.scrollWindowTo(600, 1600);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1200);
 
       const componentEl = document.querySelector('[data-component="spindle"], .spindle-component, .glass-card:nth-child(2), main');
       if (componentEl) {
@@ -937,7 +955,7 @@
       this.advanceToStepIndex(5);
     }
 
-    /* ─── STEP 5: ANOMALY INVESTIGATION ─── */
+    /* ─── STEP 5: ANOMALY INVESTIGATION (With Full Page Scroll) ─── */
     async runStep4Anomaly() {
       const navLink = document.querySelector('a[href="/anomaly"]');
       if (navLink && getPath() !== '/anomaly') {
@@ -950,17 +968,26 @@
       const chunks = [
         "Opening Anomaly Investigation.",
         "Spectral analysis reveals high frequency sideband harmonics characteristic of outer raceway bearing spalling.",
+        "Scrolling through spectral FFT charts and sensor evidence logs.",
         "The engineer opens YantraNklan AI Console for multi-agent root cause analysis."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 1200 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Scroll down anomaly evidence page
+      await this.scrollWindowTo(500, 1600);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1000, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
+
       await narrationPromise;
       this.advanceToStepIndex(6);
     }
 
-    /* ─── STEP 6: YANTRANPLAN MULTI-AGENT AI ANALYSIS ─── */
+    /* ─── STEP 6: YANTRANKLAN MULTI-AGENT AI ANALYSIS ─── */
     async runStep5AIAssistant() {
       const aiNavLink = document.querySelector('a[href="/ai-console"]');
       if (aiNavLink && getPath() !== '/ai-console') {
@@ -979,7 +1006,7 @@
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
 
       const chatInput = document.querySelector('#ym-chat-input, .ai-console-input input, textarea, input[type="text"]');
       if (chatInput) {
@@ -1042,7 +1069,7 @@
       }, 800 / this.speed);
     }
 
-    /* ─── STEP 7: GLOBAL MAP & KNOWLEDGE GRAPH ─── */
+    /* ─── STEP 7: GLOBAL MAP & KNOWLEDGE GRAPH (With Full Page Scroll) ─── */
     async runStep6KnowledgeGraph() {
       const mapNavLink = document.querySelector('a[href="/map"]');
       if (mapNavLink && getPath() !== '/map') {
@@ -1054,13 +1081,21 @@
 
       const chunks = [
         "Opening Global Map and Knowledge Graph to trace failure lineage.",
+        "Scrolling through plant locations across India and inspecting the causal node graph.",
         "The graph connects CNC-101 to the spindle assembly, SKF-6208 bearing, and technician logs.",
         "It confirms a missed lubrication cycle 3 weeks ago caused friction buildup and premature bearing fatigue."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Scroll down map & knowledge graph page
+      await this.scrollWindowTo(500, 1600);
       await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1000, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
 
       let graphContainer = document.querySelector('.ym-demo-kg-visualizer');
       if (!graphContainer) {
@@ -1097,7 +1132,7 @@
       }, 500 / this.speed);
     }
 
-    /* ─── STEP 8: AI AGENTS MISSION CONTROL ─── */
+    /* ─── STEP 8: AI AGENTS MISSION CONTROL (With Full Page Scroll) ─── */
     async runStep7Agents() {
       const agentsNavLink = document.querySelector('a[href="/agents"]');
       if (agentsNavLink && getPath() !== '/agents') {
@@ -1109,17 +1144,26 @@
 
       const chunks = [
         "Opening Agent Mission Control.",
+        "Scrolling through active AI agent missions.",
         "Diagnostic Agent, Maintenance Agent, and Parts Planner collaborate autonomously to orchestrate the repair mission."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 1200 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Scroll down agents page
+      await this.scrollWindowTo(500, 1600);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1000, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
+
       await narrationPromise;
       this.advanceToStepIndex(9);
     }
 
-    /* ─── STEP 9: MAINTENANCE WORK ORDER CREATION & EXECUTION ─── */
+    /* ─── STEP 9: MAINTENANCE WORK ORDERS (With Full Page Scroll) ─── */
     async runStep8Maintenance() {
       const woNavLink = document.querySelector('a[href="/work-orders"]');
       if (woNavLink && getPath() !== '/work-orders') {
@@ -1136,7 +1180,12 @@
 
       const narrationPromise = this.speakChunks(chunks);
 
-      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Scroll down work orders table
+      await this.scrollWindowTo(500, 1400);
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+      await this.scrollWindowTo(0, 1000);
 
       let modalEl = document.querySelector('.ym-demo-wo-modal');
       if (!modalEl) {
@@ -1321,7 +1370,7 @@
       }, 800 / this.speed);
     }
 
-    /* ─── STEP 11: RELIABILITY ANALYTICS & ML FORECAST ─── */
+    /* ─── STEP 11: RELIABILITY ANALYTICS & ML FORECAST (With Full Page Scroll) ─── */
     async runStep10Reliability() {
       const relNavLink = document.querySelector('a[href="/reliability"]');
       if (relNavLink && getPath() !== '/reliability') {
@@ -1333,13 +1382,21 @@
 
       const chunks = [
         "Reviewing plant-wide reliability analytics and machine learning forecasts.",
+        "Scrolling through predictive RUL curves and MTBF performance metrics.",
         "Mean Time Between Failures increases to 1,480 hours while Mean Time To Repair drops to 1 point 8 hours.",
         "Failure probability drops to nominal 1 point 2 percent, extending Remaining Useful Life to 180 days."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
 
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
+      // Scroll down reliability page
+      await this.scrollWindowTo(500, 1600);
       await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(1000, 1800);
+      await new Promise(r => setTimeout(r, 800 / this.speed));
+      await this.scrollWindowTo(0, 1400);
 
       let cardsEl = document.querySelector('.ym-demo-analytics-overlay');
       if (!cardsEl) {
