@@ -779,6 +779,63 @@
   border: 1px solid #413fd6;
 }
 
+/* ─── Recording Countdown Overlay ─── */
+.ym-demo-countdown {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(25, 26, 40, 0.88);
+  backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Geist, Inter, system-ui, sans-serif;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ym-demo-countdown.visible {
+  opacity: 1;
+}
+.ym-demo-countdown .countdown-card {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  padding: 40px 56px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+.ym-demo-countdown .countdown-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  margin-bottom: 16px;
+}
+.ym-demo-countdown .countdown-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+}
+.ym-demo-countdown .countdown-number {
+  font-size: 80px;
+  font-weight: 900;
+  color: #5efae4;
+  text-shadow: 0 0 30px rgba(94, 250, 228, 0.6);
+  margin: 12px 0;
+  line-height: 1;
+}
+.ym-demo-countdown .countdown-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .ym-demo-controls {
