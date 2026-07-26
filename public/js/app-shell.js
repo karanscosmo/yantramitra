@@ -945,62 +945,19 @@
   }
 
   function startDemo() {
-    localStorage.setItem('ymDemoActive', '1');
-    localStorage.setItem('ymDemoIndex', '0');
-    localStorage.setItem('ymDemoStartedAt', String(Date.now()));
-    localStorage.removeItem('ymDemoPaused');
-    window.location.href = demoSteps[0].route;
+    if (window.YMDemo && typeof window.YMDemo.start === 'function') {
+      window.YMDemo.start();
+    }
   }
 
   function stopDemo() {
-    demoStorageKeys.forEach(key => localStorage.removeItem(key));
-    document.querySelector('.ym-demo-overlay')?.remove();
-  }
-
-  function isPublicEntryPath(pathname) {
-    return shellExcludedPaths.includes(pathname) || pathname === '/onboarding';
-  }
-
-  function isDemoSessionFresh() {
-    const startedAt = Number(localStorage.getItem('ymDemoStartedAt') || '0');
-    return Number.isFinite(startedAt) && startedAt > 0 && Date.now() - startedAt < demoTtlMs;
-  }
-
-  function advanceDemo(index) {
-    if (localStorage.getItem('ymDemoActive') !== '1') return;
-    if (!isDemoSessionFresh()) return stopDemo();
-    if (localStorage.getItem('ymDemoPaused') === '1') return;
-    localStorage.setItem('ymDemoIndex', String(index + 1));
-    if (demoSteps[index + 1]) window.location.href = demoSteps[index + 1].route;
-    else stopDemo();
+    if (window.YMDemo && typeof window.YMDemo.stop === 'function') {
+      window.YMDemo.stop();
+    }
   }
 
   function runDemoIfActive() {
-    if (isPublicEntryPath(currentPath)) { if (localStorage.getItem('ymDemoActive') === '1') stopDemo(); return; }
-    if (localStorage.getItem('ymDemoActive') !== '1') return;
-    if (!isDemoSessionFresh()) return stopDemo();
-    const index = Number(localStorage.getItem('ymDemoIndex') || '0');
-    if (!Number.isInteger(index) || index < 0) return stopDemo();
-    const step = demoSteps[index];
-    if (!step) return stopDemo();
-    if (currentPath !== step.route) { window.location.href = step.route; return; }
-    setTimeout(() => {
-      const target = document.querySelector(step.target) || document.querySelector('main') || document.body;
-      const rect = target.getBoundingClientRect();
-      const overlay = document.createElement('div');
-      overlay.className = 'ym-demo-overlay';
-      const cardTop = Math.min(window.innerHeight - 190, Math.max(18, rect.bottom + 16));
-      overlay.innerHTML = '<div class="ym-demo-highlight" style="left:' + Math.max(8, rect.left - 8) + 'px;top:' + Math.max(8, rect.top - 8) + 'px;width:' + Math.min(window.innerWidth - 16, rect.width + 16) + 'px;height:' + Math.min(window.innerHeight - 16, rect.height + 16) + 'px"></div><div class="ym-demo-card" style="left:' + Math.min(window.innerWidth - 376, Math.max(16, rect.left)) + 'px;top:' + cardTop + 'px"><p style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#413fd6;font-weight:900">Run Demo · ' + (index + 1) + '/' + demoSteps.length + '</p><p style="margin-top:8px;color:#191a28;font-weight:800;line-height:1.35">' + step.caption + '</p><div style="height:6px;background:#eeecff;border-radius:999px;margin-top:12px;overflow:hidden"><div style="width:' + ((index + 1) / demoSteps.length) * 100 + '%;height:100%;background:#5efae4"></div></div><div style="display:flex;justify-content:space-between;gap:8px;margin-top:12px"><button class="ym-demo-skip" style="background:#eeecff;color:#464555">Skip</button><button class="ym-demo-pause" style="background:#eeecff;color:#413fd6">' + (localStorage.getItem('ymDemoPaused') === '1' ? 'Resume' : 'Pause') + '</button><button class="ym-demo-next" style="background:#413fd6;color:white">Next</button></div></div>';
-      document.body.appendChild(overlay);
-      overlay.querySelector('.ym-demo-skip').addEventListener('click', stopDemo);
-      overlay.querySelector('.ym-demo-pause').addEventListener('click', event => {
-        const paused = localStorage.getItem('ymDemoPaused') === '1';
-        if (paused) { localStorage.removeItem('ymDemoPaused'); event.currentTarget.textContent = 'Pause'; setTimeout(() => advanceDemo(index), 11000); }
-        else { localStorage.setItem('ymDemoPaused', '1'); event.currentTarget.textContent = 'Resume'; }
-      });
-      overlay.querySelector('.ym-demo-next').addEventListener('click', () => { localStorage.removeItem('ymDemoPaused'); advanceDemo(index); });
-      setTimeout(() => advanceDemo(index), 11000);
-    }, 700);
+    // Autonomous product demo is managed by YMDemo engine in /js/demo/demo-engine.js
   }
 
   document.addEventListener('DOMContentLoaded', () => {

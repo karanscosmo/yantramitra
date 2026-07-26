@@ -1,12 +1,9 @@
 (function() {
   'use strict';
 
-  /* ─── Demo Engine ─────────────────────────────────────────── */
+  /* ─── YantraMitra Autonomous Product Demo Engine ─── */
 
-  const STATE_KEY = 'ymDemo';
-  const DEFAULT_CREDENTIALS = { email: 'admin@yantramitra.com', password: 'Demo@2026' };
-  const DEMO_EMAIL = 'admin@yantramitra.com';
-  const DEMO_PASSWORD = 'Demo@2026';
+  const STATE_KEY = 'ymDemoState';
 
   function getState() {
     try {
@@ -16,116 +13,67 @@
   }
 
   function saveState(s) {
-    localStorage.setItem(STATE_KEY, JSON.stringify(s));
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(s)); } catch {}
   }
 
   function clearState() {
-    localStorage.removeItem(STATE_KEY);
+    try { localStorage.removeItem(STATE_KEY); } catch {}
   }
 
-  function isDemoSessionFresh(state) {
+  function isSessionFresh(state) {
     if (!state || !state.startedAt) return false;
-    return (Date.now() - state.startedAt) < 15 * 60 * 1000;
+    return (Date.now() - state.startedAt) < 20 * 60 * 1000;
   }
 
   const currentPath = window.location.pathname;
 
-  /* ─── 28-Step Sequence ─── */
-  const STEP_TIMINGS = {
-    'landing-hero': 8000,
-    'landing-scroll1': 6000,
-    'landing-features': 7000,
-    'landing-scroll2': 5000,
-    'landing-facilities': 6000,
-    'landing-agents': 7000,
-    'landing-workflows': 5000,
-    'landing-cta': 5000,
-    'login-fill': 6000,
-    'dashboard-kpis': 10000,
-    'sidebar-intro': 8000,
-    'search-demo': 7000,
-    'notifications': 6000,
-    'ai-assistant': 12000,
-    'knowledge-graph': 8000,
-    'digital-twin': 10000,
-    'predictive-maintenance': 10000,
-    'maintenance-planner': 8000,
-    'reports': 8000,
-    'assets': 8000,
-    'documents': 8000,
-    'ai-agents': 10000,
-    'workflow-viz': 8000,
-    'analytics': 8000,
-    'admin': 6000,
-    'settings': 6000,
-    'mobile-preview': 5000,
-    'end-summary': 12000,
-  };
-
-  const STEP_ROUTES = [
-    { id: 'landing-hero', route: '/' },
-    { id: 'landing-scroll1', route: '/' },
-    { id: 'landing-features', route: '/' },
-    { id: 'landing-scroll2', route: '/' },
-    { id: 'landing-facilities', route: '/' },
-    { id: 'landing-agents', route: '/' },
-    { id: 'landing-workflows', route: '/' },
-    { id: 'landing-cta', route: '/' },
-    { id: 'login-fill', route: '/login' },
-    { id: 'dashboard-kpis', route: '/dashboard' },
-    { id: 'sidebar-intro', route: '/dashboard' },
-    { id: 'search-demo', route: '/dashboard' },
-    { id: 'notifications', route: '/dashboard' },
-    { id: 'ai-assistant', route: '/ai-console' },
-    { id: 'knowledge-graph', route: '/map' },
-    { id: 'digital-twin', route: '/digital-twin' },
-    { id: 'predictive-maintenance', route: '/reliability' },
-    { id: 'maintenance-planner', route: '/maintenance' },
-    { id: 'reports', route: '/dashboard' },
-    { id: 'assets', route: '/assets' },
-    { id: 'documents', route: '/ai-console' },
-    { id: 'ai-agents', route: '/agents' },
-    { id: 'workflow-viz', route: '/dashboard' },
-    { id: 'analytics', route: '/reliability' },
-    { id: 'admin', route: '/settings' },
-    { id: 'settings', route: '/settings' },
-    { id: 'mobile-preview', route: '/dashboard' },
-    { id: 'end-summary', route: '/dashboard' },
+  /* ─── 10-Step Continuous Story Pipeline ─── */
+  const STEPS = [
+    { id: 'home-intro', route: '/', title: 'System Introduction' },
+    { id: 'login-auth', route: '/login', title: 'Engineer Authentication' },
+    { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Critical Alert' },
+    { id: 'step-2-machine-detail', route: '/assets', title: 'Digital Twin & Telemetry Inspection' },
+    { id: 'step-3-ai-assistant', route: '/ai-console', title: 'Multi-Agent Root Cause Analysis' },
+    { id: 'step-4-knowledge-graph', route: '/map', title: 'Knowledge Graph Lineage' },
+    { id: 'step-5-maintenance-planner', route: '/work-orders', title: 'Maintenance Work Order Creation' },
+    { id: 'step-6-work-order-details', route: '/work-orders', title: 'Work Order Execution & LOTO' },
+    { id: 'step-7-reports', route: '/ai-console', title: 'Executive Maintenance Report & PDF' },
+    { id: 'step-8-analytics', route: '/reliability', title: 'Post-Maintenance Performance Analytics' },
+    { id: 'step-9-predictive', route: '/reliability', title: 'ML Predictive Reliability Forecast' },
+    { id: 'step-10-digital-twin-return', route: '/digital-twin', title: 'Digital Twin Resolution & Health' },
+    { id: 'end-summary', route: '/dashboard', title: 'Shift Summary & Closing' }
   ];
 
-  /* ─── Engine Instance ─── */
   let engine = null;
 
-  class DemoEngine {
+  class AutonomousDemoEngine {
     constructor() {
       this.state = getState();
       this.overlayEl = null;
       this.controlsEl = null;
       this.captionEl = null;
       this.cursorEl = null;
-      this.highlightEl = null;
-      this.scrimEl = null;
       this.isRunning = false;
-      this.actionQueue = [];
-      this.currentActionIndex = 0;
-      this.autoAdvanceTimer = null;
-      this.estimatedTimePerStep = 5000;
-      this.totalSteps = STEP_ROUTES.length;
-      this.captionInterval = null;
+      this.autoTimer = null;
+      this.narrationTimer = null;
     }
 
-    /* ─── Public API ─── */
+    /* ─── Public Control API ─── */
     start() {
       const newState = {
         active: true,
-        currentStepIdx: 0,
-        status: 'loading',
+        stepIdx: 0,
+        status: 'running',
         startedAt: Date.now(),
-        paused: false,
+        paused: false
       };
       saveState(newState);
       this.state = newState;
-      this.showLoadingScreen();
+      if (currentPath !== '/') {
+        window.location.href = '/';
+      } else {
+        this.init();
+      }
     }
 
     stop() {
@@ -138,26 +86,18 @@
     pause() {
       if (!this.state) return;
       this.state.paused = true;
-      this.state.status = 'paused';
       saveState(this.state);
-      if (this.autoAdvanceTimer) {
-        clearTimeout(this.autoAdvanceTimer);
-        this.autoAdvanceTimer = null;
-      }
-      if (this.captionInterval) {
-        clearInterval(this.captionInterval);
-        this.captionInterval = null;
-      }
+      if (this.autoTimer) clearTimeout(this.autoTimer);
+      if (this.narrationTimer) clearTimeout(this.narrationTimer);
       this.updateControlsUI();
     }
 
     resume() {
       if (!this.state) return;
       this.state.paused = false;
-      this.state.status = 'running';
       saveState(this.state);
       this.updateControlsUI();
-      this.scheduleAutoAdvance();
+      this.executeCurrentStep();
     }
 
     skip() {
@@ -172,126 +112,115 @@
 
     exit() {
       this.stop();
-      document.querySelectorAll('.ym-demo-summary').forEach(el => el.remove());
-      clearState();
+      document.querySelectorAll('.ym-demo-summary, .ym-demo-overlay, .ym-demo-cursor').forEach(el => el.remove());
     }
 
-    /* ─── Init on page load ─── */
+    /* ─── Page Load Initialization ─── */
     init() {
       if (!this.state || !this.state.active) return;
-      if (!isDemoSessionFresh(this.state)) {
+      if (!isSessionFresh(this.state)) {
         this.stop();
         return;
       }
 
-      const currentStepInfo = STEP_ROUTES[this.state.currentStepIdx];
-      if (!currentStepInfo) {
+      const step = STEPS[this.state.stepIdx];
+      if (!step) {
         this.stop();
         return;
       }
 
-      if (currentStepInfo.route !== currentPath) {
-        window.location.href = currentStepInfo.route;
+      // Check route alignment
+      if (step.route !== currentPath && !currentPath.startsWith(step.route)) {
+        window.location.href = step.route;
         return;
       }
 
       this.isRunning = true;
       this.ensureUI();
-      this.executeCurrentStep();
-    }
-
-    /* ─── Loading Screen ─── */
-    showLoadingScreen() {
-      this.injectDemoCSS();
-      const existing = document.querySelector('.ym-demo-loading');
-      if (existing) existing.remove();
-
-      const items = [
-        'Preparing Industrial Digital Twin...',
-        'Loading AI Agents...',
-        'Initializing Knowledge Graph...',
-        'Connecting Digital Twin...',
-        'Launching Demo...',
-      ];
-
-      const el = document.createElement('div');
-      el.className = 'ym-demo-loading';
-      el.innerHTML = `<img src="/assets/logos/logo.svg" class="loading-logo" alt="YantraMitra"/>
-        <div class="loading-title">YANTRAMITRA</div>
-        <div class="loading-subtitle">Preparing Autonomous Demo Environment</div>
-        <div class="loading-items">${items.map((label, i) =>
-          `<div class="loading-item" data-idx="${i}">
-            <span class="loading-dot"></span>
-            <span class="loading-label">${label}</span>
-            <span class="loading-status"></span>
-          </div>`
-        ).join('')}</div>`;
-      document.body.appendChild(el);
-
-      requestAnimationFrame(() => {
-        el.classList.add('visible');
-      });
-
-      let delay = 0;
-      const itemEls = el.querySelectorAll('.loading-item');
-      itemEls.forEach((item, i) => {
-        setTimeout(() => {
-          item.classList.add('revealed');
-          const dot = item.querySelector('.loading-dot');
-          const status = item.querySelector('.loading-status');
-          dot.classList.add('pulse');
-
-          if (i < items.length - 1) {
-            setTimeout(() => {
-              dot.classList.remove('pulse');
-              dot.classList.add('done');
-              status.textContent = '✓';
-            }, 800);
-          } else {
-            setTimeout(() => {
-              dot.classList.remove('pulse');
-              dot.classList.add('done');
-              status.textContent = '✓';
-              setTimeout(() => {
-                this.finishLoading(el);
-              }, 800);
-            }, 1000);
-          }
-        }, delay);
-        delay += 600;
-      });
-    }
-
-    finishLoading(loadingEl) {
-      loadingEl.classList.remove('visible');
       setTimeout(() => {
-        loadingEl.remove();
-        this.state.status = 'running';
-        saveState(this.state);
-        const firstStep = STEP_ROUTES[0];
-        if (firstStep && firstStep.route !== currentPath) {
-          window.location.href = firstStep.route;
-        } else {
-          this.init();
-        }
-      }, 500);
+        this.executeCurrentStep();
+      }, 600);
     }
 
-    /* ─── UI Setup ─── */
+    /* ─── Overlay & UI Controls Setup ─── */
     ensureUI() {
+      this.injectCSS();
       if (!document.querySelector('.ym-demo-overlay')) {
-        this.createOverlay();
+        const overlay = document.createElement('div');
+        overlay.className = 'ym-demo-overlay active';
+        overlay.innerHTML = `
+          <div class="ym-demo-controls">
+            <div class="demo-header">
+              <span class="pulse-dot"></span>
+              <span>YANTRAMITRA AUTONOMOUS DEMO</span>
+            </div>
+            <div class="demo-step-info">
+              <span class="demo-step-num">Step <span class="demo-step-current">${this.state.stepIdx + 1}</span> of ${STEPS.length - 1}</span>
+              <span class="demo-title">${STEPS[this.state.stepIdx]?.title || ''}</span>
+            </div>
+            <div class="demo-progress-bar">
+              <div class="demo-progress-fill" style="width: ${((this.state.stepIdx + 1) / STEPS.length) * 100}%"></div>
+            </div>
+            <div class="demo-btn-row">
+              <button class="demo-btn" data-action="pause"><span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span></button>
+              <button class="demo-btn" data-action="skip"><span class="material-symbols-outlined">skip_next</span> Skip</button>
+              <button class="demo-btn" data-action="restart"><span class="material-symbols-outlined">replay</span> Restart</button>
+              <button class="demo-btn danger" data-action="exit"><span class="material-symbols-outlined">close</span> Exit</button>
+            </div>
+          </div>
+
+          <div class="ym-demo-caption">
+            <div class="caption-header">
+              <span class="caption-dot"></span>
+              <span class="caption-tag">REAL-TIME NARRATION</span>
+            </div>
+            <div class="caption-text"></div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-action]');
+          if (!btn) return;
+          const action = btn.dataset.action;
+          if (action === 'pause') {
+            this.state.paused ? this.resume() : this.pause();
+          } else if (action === 'skip') {
+            this.skip();
+          } else if (action === 'restart') {
+            this.restart();
+          } else if (action === 'exit') {
+            this.exit();
+          }
+        });
       }
+
       this.overlayEl = document.querySelector('.ym-demo-overlay');
       this.controlsEl = this.overlayEl.querySelector('.ym-demo-controls');
       this.captionEl = this.overlayEl.querySelector('.ym-demo-caption');
-      this.highlightEl = this.overlayEl.querySelector('.ym-demo-highlight');
-      this.scrimEl = this.overlayEl.querySelector('.demo-scrim');
       this.ensureCursor();
       this.updateControlsUI();
     }
 
-    injectDemoCSS() {
+    ensureCursor() {
+      if (document.querySelector('.ym-demo-cursor')) {
+        this.cursorEl = document.querySelector('.ym-demo-cursor');
+        return;
+      }
+      const cursor = document.createElement('div');
+      cursor.className = 'ym-demo-cursor';
+      cursor.innerHTML = `
+        <div class="cursor-pointer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M4.5 3.5L18.5 15.5L14.5 16.5L16.8 21.2L14.8 22.2L12.5 17.5L10.2 20.2L4.5 3.5Z" fill="#413fd6" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      `;
+      document.body.appendChild(cursor);
+      this.cursorEl = cursor;
+    }
+
+    injectCSS() {
       if (document.getElementById('ym-demo-styles')) return;
       const link = document.createElement('link');
       link.id = 'ym-demo-styles';
@@ -300,215 +229,16 @@
       document.head.appendChild(link);
     }
 
-    createOverlay() {
-      this.injectDemoCSS();
-      const overlay = document.createElement('div');
-      overlay.className = 'ym-demo-overlay active';
-      overlay.innerHTML = `
-        <div class="demo-scrim"></div>
-        <div class="ym-demo-highlight"></div>
-        <div class="ym-demo-controls">
-          <div class="demo-header">YANTRAMITRA DEMO MODE</div>
-          <div class="demo-step-info">
-            <span class="demo-step-num">Step <span class="demo-step-current">1</span> / ${this.totalSteps}</span>
-            <span class="demo-time-remaining">Estimated Time Remaining <span class="demo-time-val">4:53</span></span>
-          </div>
-          <div class="demo-progress-bar">
-            <div class="demo-progress-fill" style="width:${this.getProgressPercent()}%"></div>
-          </div>
-          <div class="demo-btn-row">
-            <button class="demo-btn demo-btn-pause" data-action="pause"><span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span></button>
-            <button class="demo-btn" data-action="skip"><span class="material-symbols-outlined">skip_next</span> <span class="demo-btn-label">Skip</span></button>
-            <button class="demo-btn" data-action="restart"><span class="material-symbols-outlined">replay</span> <span class="demo-btn-label">Restart</span></button>
-            <button class="demo-btn danger" data-action="exit"><span class="material-symbols-outlined">close</span> <span class="demo-btn-label">Exit</span></button>
-          </div>
-        </div>
-        <div class="ym-demo-caption">
-          <div class="caption-step">Step 1</div>
-          <div class="caption-line"></div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-      this.wireControlButtons(overlay);
-    }
-
-    wireControlButtons(overlay) {
-      overlay.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-action]');
-        if (!btn) return;
-        const action = btn.dataset.action;
-        switch (action) {
-          case 'pause':
-            if (this.state && this.state.paused) this.resume();
-            else this.pause();
-            break;
-          case 'skip':
-            this.skip();
-            break;
-          case 'restart':
-            this.restart();
-            break;
-          case 'exit':
-            this.exit();
-            break;
-        }
-      });
-    }
-
-    ensureCursor() {
-      if (document.querySelector('.ym-demo-cursor')) return;
-      const cursor = document.createElement('div');
-      cursor.className = 'ym-demo-cursor';
-      cursor.innerHTML = `<div class="cursor-pointer">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M3 2L14.5 13.5L11 14L13 18L11.5 19L9.5 15L8 17L7 3.5L3 2Z" fill="#413fd6" stroke="#5efae4" stroke-width="0.8"/>
-        </svg>
-      </div>`;
-      document.body.appendChild(cursor);
-      this.cursorEl = cursor;
-    }
-
-    moveCursorTo(x, y) {
-      if (!this.cursorEl) return;
-      this.cursorEl.style.transform = `translate(${x - 4}px, ${y - 4}px) scale(1)`;
-      this.cursorEl.classList.add('visible');
-    }
-
-    moveCursorToSelector(selector, offsetX, offsetY) {
-      const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const x = rect.left + (offsetX !== undefined ? offsetX : rect.width / 2);
-      const y = rect.top + (offsetY !== undefined ? offsetY : rect.height / 2);
-      this.moveCursorTo(x, y);
-      return { el, x, y };
-    }
-
-    clickCursor() {
-      if (!this.cursorEl) return;
-      this.cursorEl.classList.add('clicking');
-      this.createRipple();
-      setTimeout(() => {
-        this.cursorEl.classList.remove('clicking');
-      }, 200);
-    }
-
-    createRipple() {
-      if (!this.cursorEl) return;
-      const rect = this.cursorEl.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const ripple = document.createElement('div');
-      ripple.className = 'ym-demo-ripple';
-      ripple.style.left = cx + 'px';
-      ripple.style.top = cy + 'px';
-      document.body.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 700);
-    }
-
-    hideCursor() {
-      if (this.cursorEl) {
-        this.cursorEl.classList.remove('visible');
-      }
-    }
-
-    /* ─── Sentence-by-Sentence Caption System ─── */
-    showCaptions(lines, stepNum) {
-      if (!this.captionEl) return;
-      const stepEl = this.captionEl.querySelector('.caption-step');
-      const lineEl = this.captionEl.querySelector('.caption-line');
-      if (stepEl) stepEl.textContent = `Step ${stepNum} / ${this.totalSteps}`;
-
-      lineEl.innerHTML = '';
-      this.captionEl.classList.add('visible');
-
-      if (!lines || lines.length === 0) return;
-
-      let sentenceIdx = 0;
-      const sentences = [];
-
-      lines.forEach(line => {
-        const parts = line.match(/[^.!?]+[.!?]+/g) || [line];
-        parts.forEach(p => {
-          const trimmed = p.trim();
-          if (trimmed) sentences.push(trimmed);
-        });
-      });
-
-      if (sentences.length === 0) {
-        sentences.push(lines.join(' '));
-      }
-
-      const revealNextSentence = () => {
-        if (sentenceIdx >= sentences.length) {
-          this.captionInterval = null;
-          return;
-        }
-        const span = document.createElement('div');
-        span.className = 'caption-sentence';
-        span.textContent = sentences[sentenceIdx];
-        span.style.animation = 'none';
-        lineEl.appendChild(span);
-        requestAnimationFrame(() => {
-          span.style.animation = 'ymCaptionSlideIn 0.4s ease forwards';
-        });
-        sentenceIdx++;
-        this.captionInterval = setTimeout(revealNextSentence, 1800);
-      };
-
-      if (this.captionInterval) {
-        clearTimeout(this.captionInterval);
-        this.captionInterval = null;
-      }
-      revealNextSentence();
-    }
-
-    hideCaption() {
-      if (this.captionEl) {
-        this.captionEl.classList.remove('visible');
-      }
-      if (this.captionInterval) {
-        clearTimeout(this.captionInterval);
-        this.captionInterval = null;
-      }
-    }
-
-    /* ─── Highlight System ─── */
-    showHighlight(selector, padding) {
-      if (!this.highlightEl) return;
-      const el = selector instanceof Element ? selector : document.querySelector(selector);
-      if (!el) { this.hideHighlight(); return; }
-      const pad = padding || 12;
-      const rect = el.getBoundingClientRect();
-      this.highlightEl.style.left = Math.max(0, rect.left - pad) + 'px';
-      this.highlightEl.style.top = Math.max(0, rect.top - pad) + 'px';
-      this.highlightEl.style.width = Math.min(window.innerWidth - rect.left + pad, rect.width + pad * 2) + 'px';
-      this.highlightEl.style.height = Math.min(window.innerHeight - rect.top + pad, rect.height + pad * 2) + 'px';
-      this.highlightEl.classList.add('visible');
-    }
-
-    hideHighlight() {
-      if (this.highlightEl) {
-        this.highlightEl.classList.remove('visible');
-      }
-    }
-
-    /* ─── UI Update ─── */
     updateControlsUI() {
       if (!this.controlsEl || !this.state) return;
       const stepNum = this.controlsEl.querySelector('.demo-step-current');
-      if (stepNum) stepNum.textContent = this.state.currentStepIdx + 1;
+      if (stepNum) stepNum.textContent = Math.min(this.state.stepIdx + 1, STEPS.length - 1);
+
+      const titleEl = this.controlsEl.querySelector('.demo-title');
+      if (titleEl) titleEl.textContent = STEPS[this.state.stepIdx]?.title || '';
 
       const progress = this.controlsEl.querySelector('.demo-progress-fill');
-      if (progress) progress.style.width = this.getProgressPercent() + '%';
-
-      const timeVal = this.controlsEl.querySelector('.demo-time-val');
-      if (timeVal) {
-        const remaining = (this.totalSteps - this.state.currentStepIdx - 1) * this.estimatedTimePerStep;
-        const mins = Math.floor(remaining / 60000);
-        const secs = Math.floor((remaining % 60000) / 1000);
-        timeVal.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
-      }
+      if (progress) progress.style.width = (((this.state.stepIdx + 1) / STEPS.length) * 100) + '%';
 
       const pauseBtn = this.controlsEl.querySelector('[data-action="pause"]');
       if (pauseBtn) {
@@ -520,72 +250,198 @@
       }
     }
 
-    getProgressPercent() {
-      if (!this.state) return 0;
-      return ((this.state.currentStepIdx + 1) / this.totalSteps) * 100;
+    /* ─── Mouse Cursor & Interactions ─── */
+    moveCursorTo(x, y, duration = 600) {
+      if (!this.cursorEl) return Promise.resolve();
+      this.cursorEl.classList.add('visible');
+      this.cursorEl.style.transition = `transform ${duration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+      this.cursorEl.style.transform = `translate(${x}px, ${y}px)`;
+      return new Promise(r => setTimeout(r, duration));
     }
 
-    /* ─── Step Execution ─── */
-    executeCurrentStep() {
-      if (!this.state || !this.isRunning) return;
-      if (this.state.status === 'loading') return;
-      if (this.state.paused) {
-        this.updateControlsUI();
-        return;
+    moveCursorToElement(selectorOrEl, duration = 600, offsetX = 0, offsetY = 0) {
+      const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
+      if (!el) {
+        return this.moveCursorTo(window.innerWidth / 2, window.innerHeight / 2, duration);
       }
+      const rect = el.getBoundingClientRect();
+      const x = rect.left + (rect.width / 2) + offsetX;
+      const y = rect.top + (rect.height / 2) + offsetY;
+      return this.moveCursorTo(x, y, duration).then(() => el);
+    }
 
-      const stepInfo = STEP_ROUTES[this.state.currentStepIdx];
-      if (!stepInfo) {
-        this.showSummary();
-        return;
-      }
+    clickCursor(targetEl) {
+      if (!this.cursorEl) return Promise.resolve();
+      this.cursorEl.classList.add('clicking');
+      this.createRipple();
 
-      this.currentActionIndex = 0;
-      this.updateControlsUI();
-
-      const stepTiming = STEP_TIMINGS[stepInfo.id] || 5000;
-      const stepNum = this.state.currentStepIdx + 1;
-
-      this.executePageActions(stepInfo, stepNum, () => {
-        this.scheduleAutoAdvance(stepTiming);
+      return new Promise(resolve => {
+        setTimeout(() => {
+          this.cursorEl.classList.remove('clicking');
+          if (targetEl) {
+            if (typeof targetEl.click === 'function') targetEl.click();
+            targetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          }
+          setTimeout(resolve, 250);
+        }, 150);
       });
     }
 
-    scheduleAutoAdvance(delay) {
-      if (this.autoAdvanceTimer) {
-        clearTimeout(this.autoAdvanceTimer);
-        this.autoAdvanceTimer = null;
-      }
-      if (this.state && this.state.paused) return;
-      const ms = delay || 4000;
-      this.autoAdvanceTimer = setTimeout(() => {
-        if (this.state && !this.state.paused) {
-          this.advanceStep();
+    createRipple() {
+      if (!this.cursorEl) return;
+      const rect = this.cursorEl.getBoundingClientRect();
+      const ripple = document.createElement('div');
+      ripple.className = 'ym-demo-ripple';
+      ripple.style.left = rect.left + 'px';
+      ripple.style.top = rect.top + 'px';
+      document.body.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    }
+
+    typeInput(selectorOrEl, text, charSpeed = 45) {
+      const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
+      if (!el) return Promise.resolve();
+      el.focus();
+      el.value = '';
+
+      return new Promise(resolve => {
+        let idx = 0;
+        const timer = setInterval(() => {
+          if (!this.isRunning || (this.state && this.state.paused)) {
+            clearInterval(timer);
+            return;
+          }
+          if (idx < text.length) {
+            el.value += text[idx];
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            idx++;
+          } else {
+            clearInterval(timer);
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            setTimeout(resolve, 300);
+          }
+        }, charSpeed);
+      });
+    }
+
+    dragCursor(startX, startY, endX, endY, duration = 1000, targetEl = null) {
+      return this.moveCursorTo(startX, startY, 400).then(() => {
+        this.cursorEl.classList.add('clicking');
+        if (targetEl) {
+          targetEl.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, clientY: startY, bubbles: true }));
         }
-      }, ms);
+
+        const steps = 20;
+        const stepMs = duration / steps;
+        let step = 0;
+
+        return new Promise(resolve => {
+          const moveTimer = setInterval(() => {
+            step++;
+            const progress = step / steps;
+            const curX = startX + (endX - startX) * progress;
+            const curY = startY + (endY - startY) * progress;
+            this.cursorEl.style.transform = `translate(${curX}px, ${curY}px)`;
+
+            if (targetEl) {
+              targetEl.dispatchEvent(new MouseEvent('mousemove', { clientX: curX, clientY: curY, bubbles: true }));
+            }
+
+            if (step >= steps) {
+              clearInterval(moveTimer);
+              this.cursorEl.classList.remove('clicking');
+              if (targetEl) {
+                targetEl.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, clientY: endY, bubbles: true }));
+              }
+              setTimeout(resolve, 200);
+            }
+          }, stepMs);
+        });
+      });
+    }
+
+    scrollWindowTo(targetY, duration = 1200) {
+      const startY = window.scrollY;
+      const distance = targetY - startY;
+      const startTime = performance.now();
+
+      return new Promise(resolve => {
+        const stepScroll = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          window.scrollTo(0, startY + distance * ease);
+
+          if (progress < 1) {
+            requestAnimationFrame(stepScroll);
+          } else {
+            setTimeout(resolve, 200);
+          }
+        };
+        requestAnimationFrame(stepScroll);
+      });
+    }
+
+    /* ─── Streaming Narration Caption System ─── */
+    speak(text) {
+      if (!this.captionEl) return Promise.resolve();
+      const container = this.captionEl.querySelector('.caption-text');
+      if (!container) return Promise.resolve();
+
+      this.captionEl.classList.add('visible');
+      container.innerHTML = '';
+
+      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+      let sIdx = 0;
+
+      return new Promise(resolve => {
+        const showNextSentence = () => {
+          if (!this.isRunning || (this.state && this.state.paused)) return;
+          if (sIdx >= sentences.length) {
+            setTimeout(resolve, 1200);
+            return;
+          }
+          const sText = sentences[sIdx].trim();
+          sIdx++;
+
+          const span = document.createElement('div');
+          span.className = 'caption-sentence';
+          span.textContent = sText;
+          container.appendChild(span);
+
+          const delay = Math.max(1800, sText.length * 45);
+          this.narrationTimer = setTimeout(showNextSentence, delay);
+        };
+
+        if (this.narrationTimer) clearTimeout(this.narrationTimer);
+        showNextSentence();
+      });
+    }
+
+    hideCaption() {
+      if (this.captionEl) this.captionEl.classList.remove('visible');
+      if (this.narrationTimer) clearTimeout(this.narrationTimer);
     }
 
     advanceStep() {
       if (!this.state) return;
       this.hideCaption();
-      this.hideHighlight();
-      this.hideCursor();
 
-      const nextIdx = this.state.currentStepIdx + 1;
-      if (nextIdx >= this.totalSteps) {
+      const nextIdx = this.state.stepIdx + 1;
+      if (nextIdx >= STEPS.length) {
         this.state.status = 'completed';
         saveState(this.state);
         this.cleanupUI();
-        this.showSummary();
+        this.showEndSummary();
         return;
       }
-      this.state.currentStepIdx = nextIdx;
-      this.state.paused = false;
+
+      this.state.stepIdx = nextIdx;
       saveState(this.state);
 
-      const nextStep = STEP_ROUTES[nextIdx];
+      const nextStep = STEPS[nextIdx];
       if (nextStep) {
-        if (nextStep.route !== currentPath) {
+        if (nextStep.route !== currentPath && !currentPath.startsWith(nextStep.route)) {
           window.location.href = nextStep.route;
         } else {
           this.executeCurrentStep();
@@ -593,691 +449,728 @@
       }
     }
 
-    /* ─── Page-Specific Actions ─── */
-    executePageActions(stepInfo, stepNum, onDone) {
-      const id = stepInfo.id;
-      const actions = this.getActionsForStep(id, stepNum);
-      if (!actions || actions.length === 0) {
-        if (onDone) onDone();
-        return;
-      }
+    /* ─── Autonomous Workflow Execution ─── */
+    async executeCurrentStep() {
+      if (!this.state || !this.isRunning || this.state.paused) return;
+      const step = STEPS[this.state.stepIdx];
+      if (!step) return;
 
-      this.currentActionIndex = 0;
-      const runNextAction = () => {
-        if (!this.isRunning || !this.state || this.state.paused) return;
-        if (this.currentActionIndex >= actions.length) {
-          if (onDone) onDone();
+      this.updateControlsUI();
+
+      switch (step.id) {
+        case 'home-intro':
+          await this.runHomeIntro();
+          break;
+        case 'login-auth':
+          await this.runLoginAuth();
+          break;
+        case 'step-1-dashboard':
+          await this.runStep1Dashboard();
+          break;
+        case 'step-2-machine-detail':
+          await this.runStep2MachineDetail();
+          break;
+        case 'step-3-ai-assistant':
+          await this.runStep3AIAssistant();
+          break;
+        case 'step-4-knowledge-graph':
+          await this.runStep4KnowledgeGraph();
+          break;
+        case 'step-5-maintenance-planner':
+          await this.runStep5MaintenancePlanner();
+          break;
+        case 'step-6-work-order-details':
+          await this.runStep6WorkOrderDetails();
+          break;
+        case 'step-7-reports':
+          await this.runStep7Reports();
+          break;
+        case 'step-8-analytics':
+          await this.runStep8Analytics();
+          break;
+        case 'step-9-predictive':
+          await this.runStep9Predictive();
+          break;
+        case 'step-10-digital-twin-return':
+          await this.runStep10DigitalTwinReturn();
+          break;
+        case 'end-summary':
+          this.showEndSummary();
+          break;
+        default:
+          this.advanceStep();
+      }
+    }
+
+    /* ─── HOME INTRO (Max 25 Seconds) ─── */
+    async runHomeIntro() {
+      const narrationPromise = this.speak(
+        "Welcome to YantraMitra. Traditional industrial maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime. YantraMitra unifies Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver predictive maintenance across Indian manufacturing plants."
+      );
+
+      // Smooth scrolling through home page
+      await new Promise(r => setTimeout(r, 1200));
+      await this.scrollWindowTo(700, 2000);
+      await new Promise(r => setTimeout(r, 1000));
+      await this.scrollWindowTo(1500, 2200);
+      await new Promise(r => setTimeout(r, 1000));
+      await this.scrollWindowTo(2400, 2200);
+      await new Promise(r => setTimeout(r, 1000));
+      await this.scrollWindowTo(0, 1500);
+
+      await narrationPromise;
+
+      // Move mouse to Login button and click
+      const loginBtn = await this.moveCursorToElement('a[href="/login"], .ym-home-auth a[href="/login"]', 700);
+      await this.clickCursor(loginBtn || document.querySelector('a[href="/login"]'));
+
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 400);
+    }
+
+    /* ─── LOGIN ─── */
+    async runLoginAuth() {
+      const narrationPromise = this.speak(
+        "Authenticating reliability engineer into the YantraMitra Industrial Ops Platform..."
+      );
+
+      await new Promise(r => setTimeout(r, 800));
+
+      // Attempt automatic demo authentication via API
+      try {
+        const resp = await fetch('/api/auth/demo-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (resp.ok) {
+          await narrationPromise;
+          this.advanceStep();
           return;
         }
-        const action = actions[this.currentActionIndex];
-        this.currentActionIndex++;
-        this.runAction(action, runNextAction);
-      };
-      runNextAction();
-    }
+      } catch {}
 
-    runAction(action, onComplete) {
-      switch (action.type) {
-        case 'wait':
-          setTimeout(onComplete, action.ms || 1000);
-          break;
-
-        case 'scrollTo':
-          const scrollEl = typeof action.selector === 'string' ? document.querySelector(action.selector) : action.selector;
-          if (scrollEl) {
-            scrollEl.scrollIntoView({ behavior: 'smooth', block: action.block || 'center' });
-          }
-          if (action.caption) {
-            this.showCaptions([action.caption], action.stepNum || 1);
-          }
-          setTimeout(onComplete, action.delay || 1200);
-          break;
-
-        case 'highlight':
-          this.showHighlight(action.selector, action.padding);
-          this.moveCursorToSelector(action.selector);
-          if (action.caption) {
-            this.showCaptions([action.caption], action.stepNum || 1);
-          }
-          setTimeout(onComplete, action.duration || 2500);
-          break;
-
-        case 'click':
-          const clickTarget = typeof action.selector === 'string' ? document.querySelector(action.selector) : action.selector;
-          if (clickTarget) {
-            const rect = clickTarget.getBoundingClientRect();
-            this.moveCursorTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            setTimeout(() => {
-              this.clickCursor();
-              setTimeout(() => {
-                if (typeof action.clickFn === 'function') {
-                  action.clickFn(clickTarget);
-                } else if (clickTarget) {
-                  clickTarget.click();
-                }
-                setTimeout(onComplete, action.afterDelay || 800);
-              }, 300);
-            }, 400);
-          } else {
-            onComplete();
-          }
-          break;
-
-        case 'type':
-          const inputEl = document.querySelector(action.selector);
-          if (inputEl) {
-            inputEl.focus();
-            inputEl.value = '';
-            this.moveCursorToSelector(action.selector);
-            const text = action.text || '';
-            let i = 0;
-            const typeTimer = setInterval(() => {
-              if (!this.isRunning || !this.state || this.state.paused) {
-                clearInterval(typeTimer);
-                return;
-              }
-              if (i < text.length) {
-                inputEl.value += text[i];
-                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-                i++;
-              } else {
-                clearInterval(typeTimer);
-                inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-                setTimeout(onComplete, action.afterDelay || 500);
-              }
-            }, action.typeSpeed || 50);
-          } else {
-            onComplete();
-          }
-          break;
-
-        case 'navigate':
-          this.hideCaption();
-          this.hideHighlight();
-          setTimeout(() => {
-            window.location.href = action.url;
-          }, action.delay || 300);
-          break;
-
-        case 'caption':
-          this.showCaptions(action.lines || [action.text], action.stepNum || 1);
-          if (action.selector) {
-            this.showHighlight(action.selector);
-          }
-          setTimeout(onComplete, action.duration || 3000);
-          break;
-
-        case 'scrollPage':
-          const startY = window.scrollY;
-          const endY = action.to;
-          const duration = action.duration || 1500;
-          const startTime = performance.now();
-          const animateScroll = (now) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 3);
-            window.scrollTo(0, startY + (endY - startY) * ease);
-            if (progress < 1) {
-              requestAnimationFrame(animateScroll);
-            } else {
-              if (action.caption) {
-                this.showCaptions([action.caption], action.stepNum || 1);
-              }
-              setTimeout(onComplete, action.afterDelay || 200);
-            }
-          };
-          requestAnimationFrame(animateScroll);
-          break;
-
-        case 'custom':
-          if (typeof action.fn === 'function') {
-            action.fn(this, onComplete);
-          } else {
-            onComplete();
-          }
-          break;
-
-        default:
-          onComplete();
+      // Fallback: Natural Typing into Login Form
+      const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+      if (emailInput) {
+        await this.moveCursorToElement(emailInput, 600);
+        await this.clickCursor(emailInput);
+        await this.typeInput(emailInput, 'admin@yantramitra.com', 40);
       }
+
+      const passInput = document.getElementById('password') || document.querySelector('input[type="password"]');
+      if (passInput) {
+        await this.moveCursorToElement(passInput, 500);
+        await this.clickCursor(passInput);
+        await this.typeInput(passInput, 'Demo@2026', 40);
+      }
+
+      const submitBtn = document.querySelector('button[type="submit"]') || document.querySelector('button');
+      if (submitBtn) {
+        await this.moveCursorToElement(submitBtn, 500);
+        await this.clickCursor(submitBtn);
+      }
+
+      await narrationPromise;
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 600);
     }
 
-    /* ─── Step Action Definitions ─── */
-    getActionsForStep(id, stepNum) {
-      const steps = {
-        'landing-hero': [
-          { type: 'wait', ms: 800 },
-          { type: 'caption', lines: ['Welcome to YantraMitra.', 'This platform combines Industrial Digital Twins, Large Language Models, Knowledge Graphs, Hybrid Retrieval-Augmented Generation, and Multi-Agent AI to modernize industrial operations.'], stepNum, duration: 5000 },
-          { type: 'highlight', selector: '#ym-live-stats', padding: 16, stepNum, duration: 2000 },
-          { type: 'caption', lines: ['Live statistics across 5 Indian facilities — 29 machines, 174 sensors.', 'Every metric is fed from real-time telemetry across Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur.'], stepNum, duration: 3500 },
-          { type: 'highlight', selector: 'h1', padding: 16, caption: 'Ask your machines anything, then act on the answer.', stepNum, duration: 2000 },
-        ],
-        'landing-scroll1': [
-          { type: 'scrollPage', to: 700, duration: 2000, caption: 'Every product feature explained before sign-in.', stepNum, afterDelay: 500 },
-          { type: 'wait', ms: 600 },
-          { type: 'caption', lines: ['The command center, plant map, digital twin, and work execution — all visible from here.', 'No hidden paywalls. Everything demonstrated upfront.'], stepNum, duration: 3000 },
-        ],
-        'landing-features': [
-          { type: 'caption', selector: '#overview h2', lines: ['Four core pillars power the platform.', 'Command center for global KPIs. Plant map for facility drilldown. Digital twin for immersive monitoring. Work execution for maintenance orchestration.'], stepNum, duration: 3000 },
-          { type: 'highlight', selector: '#overview .glass-card:nth-child(1)', duration: 2000 },
-          { type: 'wait', ms: 400 },
-          { type: 'highlight', selector: '#overview .glass-card:nth-child(2)', duration: 2000 },
-          { type: 'wait', ms: 400 },
-          { type: 'highlight', selector: '#overview .glass-card:nth-child(3)', duration: 2000 },
-          { type: 'wait', ms: 400 },
-          { type: 'highlight', selector: '#overview .glass-card:nth-child(4)', duration: 2000 },
-        ],
-        'landing-scroll2': [
-          { type: 'scrollPage', to: 1500, duration: 2000, stepNum, afterDelay: 300 },
-          { type: 'caption', lines: ['Five facilities across India, each with unique operating realities.', 'Pune automotive, Ahmedabad process lines, Chennai electronics, Bengaluru precision, and Nagpur logistics.'], stepNum, duration: 3500 },
-        ],
-        'landing-facilities': [
-          { type: 'highlight', selector: '#facilities .glass-card:nth-child(1)', duration: 2000 },
-          { type: 'wait', ms: 400 },
-          { type: 'highlight', selector: '#facilities a:nth-child(2)', duration: 1800 },
-          { type: 'wait', ms: 300 },
-          { type: 'highlight', selector: '#facilities a:nth-child(4)', duration: 1800 },
-          { type: 'wait', ms: 300 },
-          { type: 'caption', lines: ['Each plant has distinct machines, sensors, incidents, and workflows.', 'Demos never feel like a generic factory shell.'], stepNum, duration: 2500 },
-        ],
-        'landing-agents': [
-          { type: 'scrollPage', to: 2800, duration: 2000, stepNum, afterDelay: 300 },
-          { type: 'caption', selector: '#agents h2', lines: ['YantraNklan agents sit above the operating model.', 'They answer plant-aware questions, draft maintenance plans, open mission workflows, and explain every recommendation.'], stepNum, duration: 4000 },
-          { type: 'highlight', selector: '#agents article:nth-child(1)', duration: 2000 },
-          { type: 'wait', ms: 300 },
-          { type: 'highlight', selector: '#agents article:nth-child(2)', duration: 2000 },
-          { type: 'wait', ms: 300 },
-          { type: 'highlight', selector: '#agents article:nth-child(3)', duration: 2000 },
-        ],
-        'landing-workflows': [
-          { type: 'scrollPage', to: 3700, duration: 2000, stepNum, afterDelay: 300 },
-          { type: 'caption', selector: '#workflows h2', lines: ['From signal to action without losing context.', 'Sense, Understand, Recommend, Approve, Execute — the complete workflow.'], stepNum, duration: 3500 },
-          { type: 'highlight', selector: '#workflows .glass-card:nth-child(1)', duration: 1500 },
-          { type: 'wait', ms: 200 },
-          { type: 'highlight', selector: '#workflows .glass-card:nth-child(3)', duration: 1500 },
-          { type: 'wait', ms: 200 },
-          { type: 'highlight', selector: '#workflows .glass-card:nth-child(5)', duration: 1500 },
-        ],
-        'landing-cta': [
-          { type: 'scrollPage', to: 4600, duration: 2000, stepNum, afterDelay: 300 },
-          { type: 'caption', lines: ['Ready to see it in action?', 'A demo account will walk us through every feature of the platform.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.moveCursorToSelector('.ym-home-auth .ym-login, a[href="/login"]');
-            setTimeout(() => {
-              engine.clickCursor();
-              setTimeout(() => {
-                window.location.href = '/login';
-              }, 500);
-            }, 500);
-          }},
-        ],
-        'login-fill': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['We are using demo credentials to enter the platform.', 'In production, users authenticate with their work email or Google SSO.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: async (engine, done) => {
-            const resp = await fetch('/api/auth/demo-login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({})
-            });
-            const data = await resp.json();
-            if (resp.ok) {
-              engine.state.status = 'running';
-              saveState(engine.state);
-              window.location.href = '/dashboard';
-            } else {
-              const emailInput = document.getElementById('email');
-              const passInput = document.getElementById('password');
-              const form = document.querySelector('form');
-              if (emailInput && passInput && form) {
-                engine.showHighlight('#email');
-                engine.moveCursorToSelector('#email', 50, 20);
-                const email = DEMO_EMAIL;
-                for (let i = 0; i < email.length; i++) {
-                  emailInput.value += email[i];
-                  emailInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  await new Promise(r => setTimeout(r, 40));
-                }
-                await new Promise(r => setTimeout(r, 400));
-                engine.moveCursorToSelector('#password', 50, 20);
-                await new Promise(r => setTimeout(r, 300));
-                const pass = DEMO_PASSWORD;
-                for (let i = 0; i < pass.length; i++) {
-                  passInput.value += pass[i];
-                  passInput.dispatchEvent(new Event('input', { bubbles: true }));
-                  await new Promise(r => setTimeout(r, 30));
-                }
-                await new Promise(r => setTimeout(r, 300));
-                engine.hideHighlight();
-                engine.showCaptions(['Authenticating with demo account...', 'Loading your personalized dashboard.'], stepNum);
-                engine.moveCursorToSelector('button[type="submit"]');
-                await new Promise(r => setTimeout(r, 500));
-                engine.clickCursor();
-                await new Promise(r => setTimeout(r, 300));
-                form.dispatchEvent(new Event('submit'));
-                setTimeout(() => { done(); }, 1500);
-              } else { done(); }
-            }
-          }},
-        ],
-        'dashboard-kpis': [
-          { type: 'wait', ms: 1500 },
-          { type: 'caption', lines: ['The Global Command Center — your unified view across all five facilities.', 'Real-time KPIs, agent activity, mission queue, and AI insights in one place.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            const kpiEls = document.querySelectorAll('[data-kpi-route]');
-            if (kpiEls.length > 0) {
-              let i = 0;
-              const kpiList = Array.from(kpiEls).slice(0, 6);
-              const highlightNext = () => {
-                if (i >= kpiList.length) { engine.hideHighlight(); done(); return; }
-                const kpi = kpiList[i];
-                const label = kpi.querySelector('.kpi-label, .text-muted')?.textContent || '';
-                const value = kpi.querySelector('.kpi-value, .text-3xl, .text-2xl')?.textContent || '';
-                engine.showHighlight(kpi, 8);
-                if (label) {
-                  engine.showCaptions([`${label}: ${value}`, 'Real-time KPI from live plant data.'], stepNum);
-                }
-                setTimeout(() => { i++; highlightNext(); }, 1500);
-              };
-              highlightNext();
-            } else {
-              engine.showCaptions(['Plant health, machine count, running machines, alerts, failures, and more.', 'Every widget is populated with live seeded data.'], stepNum);
-              setTimeout(done, 3000);
-            }
-          }},
-          { type: 'highlight', selector: '#ym-plant-preview, [data-plant-preview], .plant-health-grid', padding: 12, stepNum, duration: 2500 },
-          { type: 'wait', ms: 300 },
-          { type: 'highlight', selector: '#ym-agent-activity, [data-agent-activity], .agent-activity-panel', padding: 12, caption: '5 AI agents active — Diagnostic, Planner, Sentinel, and more working in real time.', stepNum, duration: 2500 },
-        ],
-        'sidebar-intro': [
-          { type: 'caption', lines: ['The navigation rail provides quick access to every module.', 'Operations, Intelligence, and System sections organize the full platform.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            const links = document.querySelectorAll('.ym-nav-link');
-            if (links.length > 0) {
-              let i = 0;
-              const highlightNext = () => {
-                if (i >= links.length || i >= 10) { engine.hideHighlight(); done(); return; }
-                const link = links[i];
-                const tooltip = link.querySelector('.ym-nav-tooltip');
-                const label = tooltip ? tooltip.textContent.trim() : link.getAttribute('href') || '';
-                engine.showHighlight(link, 8);
-                engine.moveCursorToSelector(link);
-                if (label) {
-                  engine.showCaptions([label.replace(/\s*⌘.*/, '') + ' — click to navigate.'], stepNum);
-                }
-                setTimeout(() => { i++; highlightNext(); }, 900);
-              };
-              highlightNext();
-            } else { done(); }
-          }},
-        ],
-        'search-demo': [
-          { type: 'wait', ms: 1000 },
-          { type: 'caption', lines: ['Semantic search allows you to find anything across the platform.', 'Try searching for a specific machine or issue.'], stepNum, duration: 2000 },
-          { type: 'custom', fn: (engine, done) => {
-            const searchInput = document.querySelector('#ym-dashboard-search, input[type="search"], .ym-standard-search input');
-            if (searchInput) {
-              engine.showHighlight(searchInput, 8);
-              engine.moveCursorToSelector(searchInput, 50, 15);
-              setTimeout(() => {
-                engine.clickCursor();
-                setTimeout(() => {
-                  searchInput.focus();
-                  const text = 'Bearing failure on CNC-101';
-                  let i = 0;
-                  const t = setInterval(() => {
-                    if (i < text.length) {
-                      searchInput.value += text[i];
-                      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                      i++;
-                    } else {
-                      clearInterval(t);
-                      engine.hideHighlight();
-                      engine.showCaptions(['Searching across plants, machines, work orders, and documents using semantic understanding.', 'Results include relevant machines, past work orders, and AI analysis.'], stepNum);
-                      setTimeout(() => {
-                        searchInput.value = '';
-                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-                        done();
-                      }, 3000);
-                    }
-                  }, 50);
-                }, 300);
-              }, 400);
-            } else { done(); }
-          }},
-        ],
-        'notifications': [
-          { type: 'wait', ms: 800 },
-          { type: 'caption', lines: ['The notification center keeps you informed of critical alerts, recommendations, and reminders.', 'AI-prioritized notifications ensure you never miss a critical event.'], stepNum, duration: 2500 },
-          { type: 'custom', fn: (engine, done) => {
-            const notifBtn = document.querySelector('[data-ym-notifications], .ym-standard-icon:has(.material-symbols-outlined:contains("notifications")), #ym-notifications');
-            if (notifBtn) {
-              engine.showHighlight(notifBtn);
-              engine.moveCursorToSelector(notifBtn);
-              setTimeout(() => {
-                engine.clickCursor();
-                setTimeout(() => {
-                  engine.showCaptions(['Critical alerts, AI recommendations, and maintenance reminders.', 'Notifications are prioritized by urgency and impact.'], stepNum);
-                  setTimeout(() => { done(); }, 3000);
-                }, 500);
-              }, 500);
-            } else {
-              const anyNotifIcon = Array.from(document.querySelectorAll('.material-symbols-outlined')).find(el => el.textContent.trim() === 'notifications');
-              if (anyNotifIcon) {
-                const btn = anyNotifIcon.closest('button') || anyNotifIcon.parentElement;
-                engine.showHighlight(btn);
-                engine.moveCursorToSelector(btn);
-                setTimeout(() => {
-                  engine.clickCursor();
-                  setTimeout(() => { done(); }, 3000);
-                }, 500);
-              } else { done(); }
-            }
-          }},
-        ],
-        'ai-assistant': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['YantraNklan is the AI operations assistant.', 'It combines Hybrid RAG, Knowledge Graphs, and LLM reasoning to answer complex machine questions.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            const chatInput = document.querySelector('#ym-chat-input, .ai-console-input input, input[placeholder*="Ask"], textarea[placeholder*="Ask"]');
-            if (chatInput) {
-              engine.showHighlight(chatInput, 8);
-              engine.moveCursorToSelector(chatInput, 50, 15);
-              setTimeout(() => {
-                engine.clickCursor();
-                setTimeout(() => {
-                  chatInput.focus();
-                  const text = 'Why is CNC-101 overheating?';
-                  let i = 0;
-                  const t = setInterval(() => {
-                    if (i < text.length) {
-                      chatInput.value += text[i];
-                      chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-                      i++;
-                    } else {
-                      clearInterval(t);
-                      chatInput.dispatchEvent(new Event('change', { bubbles: true }));
-                      engine.hideHighlight();
-                      engine.showCaptions(['AI analyzes sensor data, maintenance history, and knowledge graphs to identify root cause.', 'The response includes retrieved manuals, similar incidents, and recommended actions.'], stepNum);
-                      setTimeout(() => {
-                        engine.showCaptions(['Hybrid RAG retrieves relevant documentation.', 'Knowledge Graph maps relationships between machine, sensor, and technician.', 'LLM generates a natural language explanation with citations.'], stepNum);
-                        setTimeout(() => { done(); }, 5000);
-                      }, 3000);
-                    }
-                  }, 50);
-                }, 300);
-              }, 400);
-            } else {
-              const navLink = document.querySelector('[href="/ai-console"]');
-              if (navLink) {
-                engine.showHighlight(navLink);
-                engine.moveCursorToSelector(navLink);
-                setTimeout(() => {
-                  engine.clickCursor();
-                  setTimeout(() => { window.location.href = '/ai-console'; }, 500);
-                }, 500);
-              } else { done(); }
-            }
-          }},
-        ],
-        'knowledge-graph': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['The plant network map shows all five facilities with real-time health status.', 'Each pin represents a connected industrial plant with live telemetry.'], stepNum, duration: 3000 },
-          { type: 'highlight', selector: '.leaflet-marker-icon, .ym-map-marker, .map-container', stepNum, duration: 2500 },
-          { type: 'caption', lines: ['Knowledge Graph nodes connect Machines, Sensors, Technicians, Maintenance events, Faults, and Documents.', 'Every relationship is mapped and queryable by AI agents.'], stepNum, duration: 3500 },
-        ],
-        'digital-twin': [
-          { type: 'wait', ms: 1500 },
-          { type: 'caption', lines: ['The 3D Digital Twin provides an immersive view of the factory floor.', 'Rotate, zoom, and inspect individual machines with live sensor data.'], stepNum, duration: 3500 },
-          { type: 'highlight', selector: '#ym-twin-canvas, canvas, main', caption: 'Temperature, pressure, RPM, vibration, and health metrics are visualized in real time.', stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Hovering over a machine reveals live metrics.', 'Temperature: 78°C, Pressure: 4.2 bar, RPM: 1420, Vibration: 2.1 mm/s, Health: 92%.'], stepNum);
-            setTimeout(done, 3000);
-          }},
-        ],
-        'predictive-maintenance': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['Predictive Maintenance uses ML models to forecast remaining useful life and failure probability.', 'Risk scores and maintenance windows help prioritize interventions.'], stepNum, duration: 3500 },
-          { type: 'highlight', selector: '.glass-panel, .ym-reliability-card, main, [data-reliability]', caption: 'Trend graphs animate to show predicted degradation and recommended action windows.', stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Remaining Useful Life: 47 days.', 'Failure Probability: 23%.', 'Risk Score: 7.4 / 10.', 'AI recommends proactive bearing replacement within 14 days.'], stepNum);
-            setTimeout(done, 3500);
-          }},
-        ],
-        'maintenance-planner': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['The Maintenance Planner organizes work by priority, location, and status.', 'AI recommends optimal scheduling based on risk scores and resource availability.'], stepNum, duration: 3500 },
-          { type: 'highlight', selector: 'table, .ym-task-list, main, [data-maintenance]', caption: 'Each task includes AI recommendations for parts, labor, and estimated downtime.', stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Filters allow sorting by priority, location, task type, and status.', 'Opening a task reveals AI-generated recommendations for parts and labor.'], stepNum);
-            setTimeout(done, 3000);
-          }},
-        ],
-        'reports': [
-          { type: 'wait', ms: 1000 },
-          { type: 'caption', lines: ['Executive Reports provide AI-generated summaries of plant performance.', 'Export PDF reports with executive analysis, predictions, and recommendations.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            const generateBtn = Array.from(document.querySelectorAll('button')).find(b => /generate|report|export/i.test(b.textContent));
-            if (generateBtn) {
-              engine.showHighlight(generateBtn);
-              engine.moveCursorToSelector(generateBtn);
-              setTimeout(() => {
-                engine.clickCursor();
-                engine.showCaptions(['Generating executive report with AI analysis...', 'Report includes executive summary, AI analysis, predictions, and recommendations.'], stepNum);
-                setTimeout(done, 3000);
-              }, 500);
-            } else {
-              engine.showCaptions(['Executive Summary: All 5 plants operating within normal parameters.', 'AI Analysis: 3 machines require attention in the next 14 days.', 'Predictions: CNC-101 bearing failure probability increasing.'], stepNum);
-              setTimeout(done, 3000);
-            }
-          }},
-        ],
-        'assets': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['The Asset Fleet page displays every machine across all facilities.', 'Health status, sensor coverage, maintenance history, and digital twin links.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            const assetCards = document.querySelectorAll('.ym-asset-card, [data-asset]');
-            if (assetCards.length > 1) {
-              engine.showHighlight(assetCards[0], 8);
-              engine.showCaptions(['CNC-101: Bearing wear detected. Health: 72%. Last maintenance: 14 days ago.'], stepNum);
-              setTimeout(() => {
-                if (assetCards[1]) {
-                  engine.showHighlight(assetCards[1], 8);
-                  engine.showCaptions(['Robotic Welder-03: Normal operation. Health: 94%. No pending maintenance.'], stepNum);
-                }
-                setTimeout(done, 2500);
-              }, 2500);
-            } else {
-              engine.showHighlight('main', 12);
-              engine.showCaptions(['Every machine has specifications, history, maintenance records, manuals, and a digital twin link.'], stepNum);
-              setTimeout(done, 2500);
-            }
-          }},
-        ],
-        'documents': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['The AI Console supports document upload for knowledge extraction.', 'PDFs, manuals, and spec sheets are automatically vectorized and indexed.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Upload a PDF document — the system processes it automatically.', 'Vector embedding extracts key information into the knowledge base.', 'AI agents can then retrieve and reason over the document contents.'], stepNum);
-            setTimeout(done, 4000);
-          }},
-        ],
-        'ai-agents': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['Agent Mission Control displays all AI agents and their current tasks.', 'Planner, Maintenance, Root Cause, Document, and Analytics agents collaborate autonomously.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            const agentCards = document.querySelectorAll('.ym-agent-card, [data-agent]');
-            if (agentCards.length > 0) {
-              let i = 0;
-              const agentNames = ['Planner Agent — Creates maintenance plans from AI recommendations.', 'Maintenance Agent — Tracks work orders and technician assignments.', 'Root Cause Agent — Analyzes sensor data to identify failure causes.', 'Document Agent — Indexes and retrieves technical documentation.', 'Analytics Agent — Generates performance reports and trend analysis.'];
-              const highlightNext = () => {
-                if (i >= agentCards.length || i >= agentNames.length) { engine.hideHighlight(); done(); return; }
-                engine.showHighlight(agentCards[i], 8);
-                engine.showCaptions([agentNames[i]], stepNum);
-                setTimeout(() => { i++; highlightNext(); }, 2000);
-              };
-              highlightNext();
-            } else {
-              engine.showCaptions(['Planner, Maintenance, Root Cause, Document, and Analytics agents.', 'Each agent has specialized capabilities and communicates findings to operations.'], stepNum);
-              setTimeout(done, 3000);
-            }
-          }},
-        ],
-        'workflow-viz': [
-          { type: 'wait', ms: 800 },
-          { type: 'custom', fn: (engine, done) => {
-            const flowEl = document.querySelector('[data-workflow], .workflow-container, [data-flow]');
-            if (flowEl) {
-              const steps = flowEl.querySelectorAll('.workflow-step, [data-step]');
-              if (steps.length > 0) {
-                let i = 0;
-                const flowLabels = ['Sensor — Raw telemetry from machines.', 'Preprocessing — Noise filtering and normalization.', 'Vector DB — Semantic embedding storage.', 'Knowledge Graph — Entity relationship mapping.', 'Hybrid RAG — Retrieval augmented generation.', 'LLM — Large language model reasoning.', 'Multi-Agent — Specialized agent collaboration.', 'Recommendations — Actionable insights.'];
-                const highlightNext = () => {
-                  if (i >= steps.length || i >= flowLabels.length) { engine.hideHighlight(); done(); return; }
-                  engine.showHighlight(steps[i], 8);
-                  engine.showCaptions([flowLabels[i]], stepNum);
-                  setTimeout(() => { i++; highlightNext(); }, 1500);
-                };
-                highlightNext();
-              } else { done(); }
-            } else {
-              engine.showCaptions(['Sensor → Preprocessing → Vector DB → Knowledge Graph → Hybrid RAG → LLM → Multi-Agent → Recommendations.', 'Every component lights up as data flows through the system.'], stepNum);
-              setTimeout(done, 4000);
-            }
-          }},
-        ],
-        'analytics': [
-          { type: 'wait', ms: 1000 },
-          { type: 'caption', lines: ['Advanced analytics track downtime, energy consumption, MTBF, MTTR, and maintenance costs.', 'Trend charts help identify patterns and optimize operations.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Downtime: 3.2% this month (↓ 0.8% vs last month).', 'Energy: 847 MWh consumed. MTBF: 1,247 hours. MTTR: 4.3 hours.', 'Maintenance Cost: ₹2.4L this quarter.', 'AI predicts 12% reduction in unplanned downtime next quarter.'], stepNum);
-            setTimeout(done, 4000);
-          }},
-        ],
-        'admin': [
-          { type: 'wait', ms: 1200 },
-          { type: 'caption', lines: ['The Admin panel manages users, roles, plants, permissions, and integrations.', 'Audit logs track every action across the platform for compliance.'], stepNum, duration: 3500 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['User management with role-based access control.', 'Integration management for Modbus, OPC-UA, SAP, and MQTT connectors.', 'Audit logs record all user actions for compliance and security.'], stepNum);
-            setTimeout(done, 3000);
-          }},
-        ],
-        'settings': [
-          { type: 'wait', ms: 1000 },
-          { type: 'caption', lines: ['Settings allow customization of theme, notifications, AI provider, language, and API keys.', 'Organization settings control team membership and billing.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.showCaptions(['Theme: Dark/Light mode. Notifications: Priority filtering.', 'AI Provider: Groq, OpenAI, or local model selection.', 'API Keys: Manage integration tokens securely.'], stepNum);
-            setTimeout(done, 2500);
-          }},
-        ],
-        'mobile-preview': [
-          { type: 'wait', ms: 800 },
-          { type: 'caption', lines: ['YantraMitra is fully responsive across all device sizes.', 'Mobile, tablet, and desktop — the same powerful platform everywhere.'], stepNum, duration: 3000 },
-          { type: 'custom', fn: (engine, done) => {
-            const originalWidth = document.documentElement.style.width;
-            document.body.style.transition = 'transform 0.8s ease';
-            document.body.style.transformOrigin = 'top center';
-            document.body.style.transform = 'scale(0.4)';
-            document.body.style.maxWidth = '420px';
-            document.body.style.margin = '0 auto';
-            engine.showCaptions(['Responsive design ensures teams can access plant data from any device.', 'Field technicians, plant managers, and executives — all connected.'], stepNum);
-            setTimeout(() => {
-              document.body.style.transform = '';
-              document.body.style.maxWidth = '';
-              document.body.style.margin = '';
-              setTimeout(done, 500);
-            }, 3000);
-          }},
-        ],
-        'end-summary': [
-          { type: 'wait', ms: 500 },
-          { type: 'custom', fn: (engine, done) => {
-            engine.cleanupUI();
-            engine.showEndSummary();
-            done();
-          }},
-        ],
-      };
-      return steps[id] || [
-        { type: 'caption', lines: ['Exploring ' + id.replace(/-/g, ' ') + '...'], stepNum, duration: 2000 },
-      ];
+    /* ─── STEP 1: DASHBOARD & CRITICAL ALERT ─── */
+    async runStep1Dashboard() {
+      const narrationPromise = this.speak(
+        "The engineer starts their shift at the Pune Automotive Facility. The Command Center streams real-time telemetry and KPIs across 29 connected industrial assets."
+      );
+
+      // Animate KPI counters
+      document.querySelectorAll('[data-kpi-route], .kpi-card').forEach((card, idx) => {
+        setTimeout(() => {
+          card.classList.add('glow-indigo');
+          setTimeout(() => card.classList.remove('glow-indigo'), 1000);
+        }, idx * 300);
+      });
+
+      await new Promise(r => setTimeout(r, 2000));
+
+      // Inject & Display Critical Alert Banner/Toast
+      let alertCard = document.querySelector('[data-alert-id="cnc-101"], .critical-alert-card');
+      if (!alertCard) {
+        alertCard = document.createElement('div');
+        alertCard.className = 'ym-demo-alert-toast pulsing-red';
+        alertCard.innerHTML = `
+          <div class="alert-icon"><span class="material-symbols-outlined">warning</span></div>
+          <div class="alert-content">
+            <div class="alert-badge">CRITICAL TELEMETRY ANOMALY</div>
+            <div class="alert-title">CNC-101 Spindle Vibration Exceeds Threshold</div>
+            <div class="alert-desc">Measured: 8.4 mm/s | Limit: 2.5 mm/s | Temp: 78°C (Elevated)</div>
+          </div>
+          <button class="alert-btn">Inspect Machine →</button>
+        `;
+        document.body.appendChild(alertCard);
+        requestAnimationFrame(() => alertCard.classList.add('visible'));
+      }
+
+      await this.speak(
+        "A critical anomaly is triggered! CNC-101 spindle vibration has crossed safety limits at 8.4 mm/s. The engineer immediately clicks to inspect the machine."
+      );
+
+      // Move cursor directly to the Critical Alert card and click it
+      const targetBtn = alertCard.querySelector('.alert-btn') || alertCard;
+      await this.moveCursorToElement(targetBtn, 800);
+      await this.clickCursor(targetBtn);
+
+      await narrationPromise;
+      setTimeout(() => {
+        window.location.href = '/assets';
+      }, 500);
     }
 
-    /* ─── End Summary ─── */
+    /* ─── STEP 2: MACHINE DETAILS & DIGITAL TWIN ─── */
+    async runStep2MachineDetail() {
+      const narrationPromise = this.speak(
+        "Opening CNC-101 telemetry dashboard. The machine is experiencing elevated temperature (78°C) and severe 8.4 mm/s vibration."
+      );
+
+      await new Promise(r => setTimeout(r, 1200));
+
+      // Look for 3D digital twin canvas or container
+      const canvasEl = document.querySelector('canvas, #ym-twin-canvas, .digital-twin-container, main');
+
+      if (canvasEl) {
+        const rect = canvasEl.getBoundingClientRect();
+        // Drag to rotate machine in 3D
+        await this.dragCursor(rect.left + rect.width * 0.4, rect.top + rect.height * 0.5, rect.left + rect.width * 0.7, rect.top + rect.height * 0.5, 1200, canvasEl);
+        await new Promise(r => setTimeout(r, 400));
+        // Drag up/down to inspect angle
+        await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1000, canvasEl);
+      }
+
+      // Click on Spindle/Bearing abnormal component
+      const componentEl = document.querySelector('[data-component="spindle"], .spindle-component, .glass-card:nth-child(2), main');
+      if (componentEl) {
+        await this.moveCursorToElement(componentEl, 600);
+        await this.clickCursor(componentEl);
+      }
+
+      await this.speak(
+        "Inspecting the 3D Digital Twin highlights abnormal high-frequency harmonics originating from the primary spindle bearing assembly."
+      );
+
+      await narrationPromise;
+      this.advanceStep();
+    }
+
+    /* ─── STEP 3: AI ASSISTANT & STREAMING THINKING ─── */
+    async runStep3AIAssistant() {
+      const narrationPromise = this.speak(
+        "The engineer queries YantraNklan AI to diagnose the root cause of the vibration."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Find chat input
+      const chatInput = document.querySelector('#ym-chat-input, .ai-console-input input, textarea, input[type="text"]');
+      if (chatInput) {
+        await this.moveCursorToElement(chatInput, 600);
+        await this.clickCursor(chatInput);
+        await this.typeInput(chatInput, 'Why is CNC-101 vibrating excessively?', 45);
+      }
+
+      // Find send button
+      const sendBtn = document.querySelector('#ym-chat-send, button[type="submit"], .ai-console-send, button');
+      if (sendBtn) {
+        await this.moveCursorToElement(sendBtn, 400);
+        await this.clickCursor(sendBtn);
+      }
+
+      // Inject & Display AI Reasoning & Streaming Response
+      let thinkingBox = document.querySelector('.ym-demo-ai-thinking');
+      if (!thinkingBox) {
+        thinkingBox = document.createElement('div');
+        thinkingBox.className = 'ym-demo-ai-thinking visible';
+        thinkingBox.innerHTML = `
+          <div class="thinking-header"><span class="spinner"></span> YantraNklan Multi-Agent Reasoning Engine</div>
+          <div class="thinking-steps">
+            <div class="step-item step-1">🔍 Searching Knowledge Graph for CNC-101 topology...</div>
+            <div class="step-item step-2">📜 Querying Maintenance Logs & Past Incidents...</div>
+            <div class="step-item step-3">📖 Parsing SKF Bearing Technical Manuals...</div>
+            <div class="step-item step-4">🤖 Executing Diagnostic Multi-Agent Workflow...</div>
+          </div>
+          <div class="response-stream"></div>
+        `;
+        document.body.appendChild(thinkingBox);
+      }
+
+      const steps = thinkingBox.querySelectorAll('.step-item');
+      for (let i = 0; i < steps.length; i++) {
+        await new Promise(r => setTimeout(r, 600));
+        steps[i].classList.add('done');
+      }
+
+      const responseText = `
+### 🚨 Diagnostic Analysis: CNC-101 Spindle Anomaly
+- **Root Cause**: Severe outer-raceway micro-spalling on **SKF-6208 Spindle Ball Bearing**.
+- **Affected Component**: Primary Spindle Bearing Assembly (Tag: CNC101-BRG-01).
+- **Confidence / Probability**: **94.2% Risk Confidence**.
+- **Recommended Action**: Replace SKF-6208 bearing and perform spindle lubrication realignment within **24 hours** to prevent catastrophic seizure.
+      `;
+
+      const streamEl = thinkingBox.querySelector('.response-stream');
+      if (streamEl) {
+        streamEl.innerHTML = '';
+        for (let i = 0; i < responseText.length; i += 3) {
+          streamEl.innerHTML = responseText.slice(0, i) + '<span class="caret">█</span>';
+          await new Promise(r => setTimeout(r, 20));
+        }
+        streamEl.innerHTML = responseText;
+      }
+
+      await this.speak(
+        "YantraNklan diagnostic agents correlate live telemetry with historical failure modes and technical manuals to identify outer-raceway micro-pitting in the spindle bearing."
+      );
+
+      await narrationPromise;
+      setTimeout(() => {
+        thinkingBox.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 4: KNOWLEDGE GRAPH LINEAGE ─── */
+    async runStep4KnowledgeGraph() {
+      const narrationPromise = this.speak(
+        "Opening the Knowledge Graph to trace the causality and history behind this bearing failure."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display Interactive Lineage Graph
+      let graphContainer = document.querySelector('.ym-demo-kg-visualizer');
+      if (!graphContainer) {
+        graphContainer = document.createElement('div');
+        graphContainer.className = 'ym-demo-kg-visualizer visible';
+        graphContainer.innerHTML = `
+          <div class="kg-title">YANTRAMITRA KNOWLEDGE GRAPH LINEAGE</div>
+          <div class="kg-nodes">
+            <div class="kg-node node-machine active">CNC-101 (Machine)</div>
+            <div class="kg-arrow">➔</div>
+            <div class="kg-node node-sub">Spindle Assembly</div>
+            <div class="kg-arrow">➔</div>
+            <div class="kg-node node-comp alert">SKF-6208 Bearing</div>
+            <div class="kg-arrow">➔</div>
+            <div class="kg-node node-event">Missed Lubrication (Dec 14)</div>
+            <div class="kg-arrow">➔</div>
+            <div class="kg-node node-tech">Tech: R. Kumar</div>
+          </div>
+        `;
+        document.body.appendChild(graphContainer);
+      }
+
+      const nodes = graphContainer.querySelectorAll('.kg-node');
+      for (let i = 0; i < nodes.length; i++) {
+        await this.moveCursorToElement(nodes[i], 500);
+        nodes[i].classList.add('highlighted');
+        await new Promise(r => setTimeout(r, 400));
+      }
+
+      await this.speak(
+        "The graph confirms a missed lubrication cycle 3 weeks ago caused friction buildup and premature bearing fatigue."
+      );
+
+      await narrationPromise;
+      setTimeout(() => {
+        graphContainer.remove();
+        this.advanceStep();
+      }, 500);
+    }
+
+    /* ─── STEP 5: MAINTENANCE PLANNER & WORK ORDER ─── */
+    async runStep5MaintenancePlanner() {
+      const narrationPromise = this.speak(
+        "Navigating to the Maintenance Planner to create an emergency work order."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display Work Order Modal
+      let modalEl = document.querySelector('.ym-demo-wo-modal');
+      if (!modalEl) {
+        modalEl = document.createElement('div');
+        modalEl.className = 'ym-demo-wo-modal visible';
+        modalEl.innerHTML = `
+          <div class="modal-box">
+            <div class="modal-header">
+              <span class="material-symbols-outlined">build</span>
+              <span>Create Emergency Work Order</span>
+            </div>
+            <div class="modal-form">
+              <div class="form-group">
+                <label>Machine Asset</label>
+                <input type="text" id="wo-machine" value="" placeholder="Selecting asset...">
+              </div>
+              <div class="form-group">
+                <label>Priority Level</label>
+                <select id="wo-priority">
+                  <option value="NORMAL">Normal</option>
+                  <option value="CRITICAL">🔴 CRITICAL</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Assigned Lead Technician</label>
+                <input type="text" id="wo-tech" value="" placeholder="Assigning technician...">
+              </div>
+              <div class="form-group">
+                <label>Task Scope / Description</label>
+                <textarea id="wo-desc" rows="3" placeholder="Writing scope..."></textarea>
+              </div>
+              <div class="modal-actions">
+                <button id="wo-submit-btn" class="btn-primary">✓ Create Work Order #WO-2026-894</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modalEl);
+      }
+
+      await this.speak(
+        "Filling work order parameters: Selecting asset CNC-101, setting priority to Critical, and assigning lead technician Rajesh Kumar."
+      );
+
+      const mInput = modalEl.querySelector('#wo-machine');
+      await this.moveCursorToElement(mInput, 500);
+      await this.clickCursor(mInput);
+      await this.typeInput(mInput, 'CNC-101 (Pune Automotive)', 35);
+
+      const pSelect = modalEl.querySelector('#wo-priority');
+      await this.moveCursorToElement(pSelect, 400);
+      await this.clickCursor(pSelect);
+      pSelect.value = 'CRITICAL';
+
+      const tInput = modalEl.querySelector('#wo-tech');
+      await this.moveCursorToElement(tInput, 400);
+      await this.clickCursor(tInput);
+      await this.typeInput(tInput, 'Rajesh Kumar (Senior Reliability Engineer)', 35);
+
+      const dInput = modalEl.querySelector('#wo-desc');
+      await this.moveCursorToElement(dInput, 400);
+      await this.clickCursor(dInput);
+      await this.typeInput(dInput, 'Emergency SKF-6208 spindle bearing replacement to resolve 8.4mm/s vibration anomaly.', 30);
+
+      const subBtn = modalEl.querySelector('#wo-submit-btn');
+      await this.moveCursorToElement(subBtn, 500);
+      await this.clickCursor(subBtn);
+
+      // Toast Success
+      const toast = document.createElement('div');
+      toast.className = 'ym-demo-toast';
+      toast.innerHTML = '✓ Work Order #WO-2026-894 Created Successfully!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 100);
+
+      await narrationPromise;
+      setTimeout(() => {
+        modalEl.remove();
+        toast.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 6: WORK ORDER EXECUTION & CHECKLIST ─── */
+    async runStep6WorkOrderDetails() {
+      const narrationPromise = this.speak(
+        "Executing work order #WO-2026-894: updating status to In-Progress, completing LOTO safety checks, replacing bearing, and logging clearance."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display Work Order Detail Drawer
+      let drawer = document.querySelector('.ym-demo-wo-drawer');
+      if (!drawer) {
+        drawer = document.createElement('div');
+        drawer.className = 'ym-demo-wo-drawer visible';
+        drawer.innerHTML = `
+          <div class="drawer-header">
+            <span class="badge badge-progress">IN PROGRESS</span>
+            <h3>Work Order #WO-2026-894 — CNC-101</h3>
+          </div>
+          <div class="drawer-checklist">
+            <h4>Safety & Maintenance Checklist</h4>
+            <label class="check-item"><input type="checkbox" id="chk-1"> <span>LOTO Safety Lockout & Tagout Applied</span></label>
+            <label class="check-item"><input type="checkbox" id="chk-2"> <span>Spindle Housing Disassembled</span></label>
+            <label class="check-item"><input type="checkbox" id="chk-3"> <span>SKF-6208 Bearing Installed & Torqued to 45Nm</span></label>
+            <label class="check-item"><input type="checkbox" id="chk-4"> <span>Vibration Recalibration Passed (0.8 mm/s)</span></label>
+          </div>
+          <div class="drawer-notes">
+            <label>Technician Execution Notes</label>
+            <textarea id="wo-exec-notes" rows="2"></textarea>
+          </div>
+          <button id="wo-complete-btn" class="btn-success">✓ Mark Work Order Resolved</button>
+        `;
+        document.body.appendChild(drawer);
+      }
+
+      // Check items one by one
+      for (let i = 1; i <= 4; i++) {
+        const chk = drawer.querySelector(`#chk-${i}`);
+        if (chk) {
+          await this.moveCursorToElement(chk, 400);
+          await this.clickCursor(chk);
+          chk.checked = true;
+          chk.closest('.check-item').classList.add('done');
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+
+      const notesText = drawer.querySelector('#wo-exec-notes');
+      if (notesText) {
+        await this.moveCursorToElement(notesText, 400);
+        await this.clickCursor(notesText);
+        await this.typeInput(notesText, 'SKF-6208 installed. Spindle re-torqued. Vibration returned to nominal 0.8 mm/s.', 30);
+      }
+
+      const compBtn = drawer.querySelector('#wo-complete-btn');
+      if (compBtn) {
+        await this.moveCursorToElement(compBtn, 500);
+        await this.clickCursor(compBtn);
+        drawer.querySelector('.badge').textContent = 'RESOLVED / COMPLETED';
+        drawer.querySelector('.badge').className = 'badge badge-success';
+      }
+
+      await narrationPromise;
+      setTimeout(() => {
+        drawer.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 7: EXECUTIVE REPORTS & PDF ─── */
+    async runStep7Reports() {
+      const narrationPromise = this.speak(
+        "Generating executive maintenance report detailing root cause, downtime prevented, and repair economics."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display PDF Preview Modal
+      let pdfModal = document.querySelector('.ym-demo-pdf-modal');
+      if (!pdfModal) {
+        pdfModal = document.createElement('div');
+        pdfModal.className = 'ym-demo-pdf-modal visible';
+        pdfModal.innerHTML = `
+          <div class="pdf-container">
+            <div class="pdf-toolbar">
+              <span class="pdf-title">📄 Executive_Maintenance_Report_WO2026894.pdf</span>
+              <button id="pdf-export-btn" class="pdf-export"><span class="material-symbols-outlined">download</span> Export PDF</button>
+            </div>
+            <div class="pdf-body">
+              <div class="pdf-header-block">
+                <h2>YANTRAMITRA EXECUTIVE MAINTENANCE REPORT</h2>
+                <p>Asset: CNC-101 Spindle | Plant: Pune Automotive | Date: July 2026</p>
+              </div>
+              <div class="pdf-section">
+                <h3>Executive Summary</h3>
+                <p>Proactive AI diagnosis prevented catastrophic spindle seizure. Total repair time: 1.8 hours.</p>
+              </div>
+              <div class="pdf-grid">
+                <div class="pdf-stat"><span class="lbl">Total Repair Cost</span><span class="val">₹18,500</span></div>
+                <div class="pdf-stat"><span class="lbl">Avoided Downtime</span><span class="val">14 Hours</span></div>
+                <div class="pdf-stat highlight"><span class="lbl">Downtime Loss Saved</span><span class="val">₹4,80,000</span></div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(pdfModal);
+      }
+
+      const expBtn = pdfModal.querySelector('#pdf-export-btn');
+      await this.moveCursorToElement(expBtn, 700);
+      await this.clickCursor(expBtn);
+
+      const toast = document.createElement('div');
+      toast.className = 'ym-demo-toast';
+      toast.innerHTML = '📥 Executive Maintenance Report Exported as PDF!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('visible'), 100);
+
+      await narrationPromise;
+      setTimeout(() => {
+        pdfModal.remove();
+        toast.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 8: POST-MAINTENANCE ANALYTICS ─── */
+    async runStep8Analytics() {
+      const narrationPromise = this.speak(
+        "Verifying post-maintenance analytics: MTBF increased to 1,480 hours and plant machine availability reached 98.6%."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display Animated Analytics Cards
+      let cardsEl = document.querySelector('.ym-demo-analytics-overlay');
+      if (!cardsEl) {
+        cardsEl = document.createElement('div');
+        cardsEl.className = 'ym-demo-analytics-overlay visible';
+        cardsEl.innerHTML = `
+          <div class="analytics-card"><span class="title">Mean Time Between Failures (MTBF)</span><span class="val pulse">1,480 hrs ↑</span></div>
+          <div class="analytics-card"><span class="title">Mean Time To Repair (MTTR)</span><span class="val">1.8 hrs ↓</span></div>
+          <div class="analytics-card"><span class="title">Overall Equipment Effectiveness (OEE)</span><span class="val">98.6% ↑</span></div>
+          <div class="analytics-card highlight"><span class="title">Monthly Unplanned Downtime Cost Saved</span><span class="val">₹4,80,000</span></div>
+        `;
+        document.body.appendChild(cardsEl);
+      }
+
+      await narrationPromise;
+      setTimeout(() => {
+        cardsEl.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 9: ML PREDICTIVE RELIABILITY ─── */
+    async runStep9Predictive() {
+      const narrationPromise = this.speak(
+        "ML predictive engine confirms remaining useful life (RUL) extended to 180 days with 98.4% confidence."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display ML Reliability Cards
+      let predEl = document.querySelector('.ym-demo-pred-overlay');
+      if (!predEl) {
+        predEl = document.createElement('div');
+        predEl.className = 'ym-demo-pred-overlay visible';
+        predEl.innerHTML = `
+          <div class="pred-title">AI PREDICTIVE RELIABILITY MODEL — CNC-101</div>
+          <div class="pred-grid">
+            <div class="pred-box"><span class="label">Failure Probability</span><span class="value safe">1.2% (Nominal)</span></div>
+            <div class="pred-box"><span class="label">Remaining Useful Life (RUL)</span><span class="value">180 Days</span></div>
+            <div class="pred-box"><span class="label">Model Confidence Score</span><span class="value">98.4%</span></div>
+            <div class="pred-box"><span class="label">Next Recommended PM</span><span class="value">In 90 Days</span></div>
+          </div>
+        `;
+        document.body.appendChild(predEl);
+      }
+
+      await narrationPromise;
+      setTimeout(() => {
+        predEl.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── STEP 10: DIGITAL TWIN RETURN (HEALTHY STATE) ─── */
+    async runStep10DigitalTwinReturn() {
+      const narrationPromise = this.speak(
+        "Returning to the Digital Twin. CNC-101 vibration has dropped to nominal 0.8 mm/s. Machine status is now 100% HEALTHY."
+      );
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Inject & Display Healthy Twin Badge
+      let twinBadge = document.querySelector('.ym-demo-twin-healthy');
+      if (!twinBadge) {
+        twinBadge = document.createElement('div');
+        twinBadge.className = 'ym-demo-twin-healthy visible';
+        twinBadge.innerHTML = `
+          <div class="healthy-header">
+            <span class="green-dot"></span>
+            <span>ASSET HEALTH RESTORED — CNC-101</span>
+          </div>
+          <div class="healthy-metrics">
+            <div class="metric"><span class="m-lbl">Health Score</span><span class="m-val text-green">99%</span></div>
+            <div class="metric"><span class="m-lbl">Vibration</span><span class="m-val">0.8 mm/s</span></div>
+            <div class="metric"><span class="m-lbl">Temperature</span><span class="m-val">42°C</span></div>
+            <div class="metric"><span class="m-lbl">Status</span><span class="m-val text-green">NOMINAL</span></div>
+          </div>
+        `;
+        document.body.appendChild(twinBadge);
+      }
+
+      await narrationPromise;
+      setTimeout(() => {
+        twinBadge.remove();
+        this.advanceStep();
+      }, 1000);
+    }
+
+    /* ─── END SUMMARY ─── */
     showEndSummary() {
       const existing = document.querySelector('.ym-demo-summary');
       if (existing) existing.remove();
 
-      const features = [
-        'Digital Twin', 'AI Assistant', 'Hybrid RAG',
-        'Knowledge Graph', 'Multi-Agent AI', 'Predictive Maintenance',
-        'Maintenance Planner', 'Executive Reports', 'Industrial Analytics'
-      ];
-
       const el = document.createElement('div');
-      el.className = 'ym-demo-summary';
+      el.className = 'ym-demo-summary visible';
       el.innerHTML = `
         <div class="summary-container">
           <div class="summary-badge">DEMO COMPLETE</div>
           <div class="summary-title">YantraMitra</div>
           <div class="summary-subtitle">Ask Your Machines Anything.</div>
-          <div class="summary-features">${features.map(f => `<div class="summary-check"><span class="check-icon">✓</span><span class="check-label">${f}</span></div>`).join('')}</div>
-          <div class="summary-message">Thank you for watching.</div>
+          <div class="summary-tagline">AI-Powered Industrial Digital Twin Platform</div>
+
+          <div class="summary-stats-grid">
+            <div class="stat-card">
+              <span class="stat-num">1</span>
+              <span class="stat-lbl">Shift Tasks Completed</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">1</span>
+              <span class="stat-lbl">Alerts Resolved (CNC-101)</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">1 PDF</span>
+              <span class="stat-lbl">Executive Reports Exported</span>
+            </div>
+            <div class="stat-card highlight">
+              <span class="stat-num">14 Hours</span>
+              <span class="stat-lbl">₹4,80,000 Downtime Saved</span>
+            </div>
+          </div>
+
           <div class="summary-buttons">
-            <button class="summary-btn primary" data-replay><span class="material-symbols-outlined">replay</span> Replay Demo</button>
-            <button class="summary-btn secondary" data-explore><span class="material-symbols-outlined">explore</span> Explore Yourself</button>
-            <button class="summary-btn outline" data-contact><span class="material-symbols-outlined">mail</span> Contact Team</button>
+            <button class="summary-btn primary" data-action="replay"><span class="material-symbols-outlined">replay</span> Replay Complete Demo</button>
+            <button class="summary-btn secondary" data-action="explore"><span class="material-symbols-outlined">explore</span> Explore Yourself</button>
+            <button class="summary-btn outline" data-action="contact"><span class="material-symbols-outlined">mail</span> Contact Team</button>
           </div>
         </div>
       `;
       document.body.appendChild(el);
 
-      requestAnimationFrame(() => {
-        el.classList.add('visible');
-        const checks = el.querySelectorAll('.summary-check');
-        checks.forEach((c, i) => {
-          setTimeout(() => c.classList.add('revealed'), i * 180 + 400);
-        });
+      el.querySelector('[data-action="replay"]')?.addEventListener('click', () => {
+        el.remove();
+        this.restart();
       });
-
-      el.querySelector('[data-replay]')?.addEventListener('click', () => {
-        el.classList.remove('visible');
-        setTimeout(() => { el.remove(); this.restart(); }, 400);
+      el.querySelector('[data-action="explore"]')?.addEventListener('click', () => {
+        el.remove();
+        this.stop();
       });
-      el.querySelector('[data-explore]')?.addEventListener('click', () => {
-        el.classList.remove('visible');
-        setTimeout(() => { el.remove(); }, 400);
-      });
-      el.querySelector('[data-contact]')?.addEventListener('click', () => {
-        el.classList.remove('visible');
-        setTimeout(() => { el.remove(); window.location.href = '/contact'; }, 300);
+      el.querySelector('[data-action="contact"]')?.addEventListener('click', () => {
+        el.remove();
+        this.stop();
+        window.location.href = '/contact';
       });
     }
 
     /* ─── Cleanup ─── */
     cleanupUI() {
-      document.querySelectorAll('.ym-demo-overlay, .ym-demo-cursor, .ym-demo-loading, .ym-demo-summary').forEach(el => el.remove());
+      document.querySelectorAll('.ym-demo-overlay, .ym-demo-cursor, .ym-demo-summary, .ym-demo-alert-toast, .ym-demo-ai-thinking, .ym-demo-kg-visualizer, .ym-demo-wo-modal, .ym-demo-wo-drawer, .ym-demo-pdf-modal, .ym-demo-analytics-overlay, .ym-demo-pred-overlay, .ym-demo-twin-healthy').forEach(el => el.remove());
       this.overlayEl = null;
       this.controlsEl = null;
       this.captionEl = null;
       this.cursorEl = null;
-      this.highlightEl = null;
-      this.scrimEl = null;
-      if (this.autoAdvanceTimer) {
-        clearTimeout(this.autoAdvanceTimer);
-        this.autoAdvanceTimer = null;
-      }
-      if (this.captionInterval) {
-        clearTimeout(this.captionInterval);
-        this.captionInterval = null;
-      }
+      if (this.autoTimer) clearTimeout(this.autoTimer);
+      if (this.narrationTimer) clearTimeout(this.narrationTimer);
     }
   }
 
-  /* ─── Global API ─── */
+  /* ─── Global YMDemo Namespace ─── */
   window.YMDemo = {
     start() {
-      if (!engine) engine = new DemoEngine();
+      if (!engine) engine = new AutonomousDemoEngine();
       engine.start();
     },
     stop() {
@@ -1299,43 +1192,22 @@
       if (engine) engine.exit();
     },
     init() {
-      engine = new DemoEngine();
+      engine = new AutonomousDemoEngine();
       engine.init();
     },
     isActive() {
       const state = getState();
-      return !!(state && state.active && isDemoSessionFresh(state));
-    },
-    getState() {
-      return getState();
-    },
-    getStatus() {
-      const state = getState();
-      if (!state) return 'idle';
-      return state.paused ? 'paused' : state.status;
+      return !!(state && state.active && isSessionFresh(state));
     }
   };
 
-  /* ─── Auto-init on page load ─── */
+  /* ─── Auto Initialization on Page Load ─── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      if (YMDemo.isActive()) {
-        YMDemo.init();
-      }
+      if (YMDemo.isActive()) YMDemo.init();
     });
   } else {
-    if (YMDemo.isActive()) {
-      YMDemo.init();
-    }
+    if (YMDemo.isActive()) YMDemo.init();
   }
-
-  /* ─── Keyboard shortcuts ─── */
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey || e.metaKey || e.target?.closest('input, textarea, [contenteditable]')) return;
-    if (!YMDemo.isActive()) return;
-    if (e.key === 'Escape') { e.preventDefault(); YMDemo.exit(); }
-    if (e.key === ' ') { e.preventDefault(); YMDemo.getStatus() === 'paused' ? YMDemo.resume() : YMDemo.pause(); }
-    if (e.key === 's' || e.key === 'S') { e.preventDefault(); YMDemo.skip(); }
-  });
 
 })();
