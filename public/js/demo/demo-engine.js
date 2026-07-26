@@ -39,16 +39,16 @@
 
   const getPath = () => window.location.pathname;
 
-  /* ─── Phonetic Dictionary for Clear Natural Indian English Pronunciation ─── */
+  /* ─── Phonetic Dictionary for Natural English Pronunciation ─── */
   function phoneticNormalize(text) {
     if (!text) return '';
     return text
-      .replace(/\bYantraMitra\b/gi, 'Yuntruh Mitruh')
-      .replace(/\bYantraNklan\b/gi, 'Yuntruh Niklun')
-      .replace(/\bCNC-101\b/gi, 'C N C 1 0 1')
-      .replace(/\bCNC101\b/gi, 'C N C 1 0 1')
-      .replace(/\bSKF-6208\b/gi, 'S K F 6 2 0 8')
-      .replace(/\bSKF6208\b/gi, 'S K F 6 2 0 8')
+      .replace(/\bYantraMitra\b/gi, 'Yantra Mitra')
+      .replace(/\bYantraNklan\b/gi, 'Yantra Niklan')
+      .replace(/\bCNC-101\b/gi, 'C N C 101')
+      .replace(/\bCNC101\b/gi, 'C N C 101')
+      .replace(/\bSKF-6208\b/gi, 'S K F 6208')
+      .replace(/\bSKF6208\b/gi, 'S K F 6208')
       .replace(/\bWO-2026-894\b/gi, 'Work Order 2026 894')
       .replace(/\b8\.4\s*mm\/s\b/gi, '8 point 4 millimeters per second')
       .replace(/\b0\.8\s*mm\/s\b/gi, '0 point 8 millimeters per second')
@@ -73,7 +73,7 @@
       .replace(/\b1\.8\b/g, '1 point 8');
   }
 
-  /* ─── Exact Page-by-Page Product Workflow Pipeline ─── */
+  /* ─── 14-Step Complete Page-by-Page Product Workflow Pipeline ─── */
   const STEPS = [
     { id: 'home-intro', route: '/', title: 'System Introduction & Product Architecture' },
     { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
@@ -91,13 +91,12 @@
     { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
   ];
 
-  /* ─── High-Fidelity Studio Indian Male Speech Engine ─── */
-  class StudioIndianMaleVoiceNarrator {
+  /* ─── High-Fidelity Studio Speech Engine with Safety Net ─── */
+  class StudioNaturalVoiceNarrator {
     constructor() {
       this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
       this.voice = null;
       this.isMuted = false;
-      this.activeUtterance = null;
       this.initVoices();
     }
 
@@ -107,14 +106,22 @@
         const voices = this.synth.getVoices();
         if (!voices || voices.length === 0) return;
 
-        // Best Indian English Male Voice Priority Match
-        const indianMale = voices.find(v => 
-          (v.lang === 'en-IN' || v.lang === 'hi-IN' || v.name.includes('India') || v.name.includes('IN')) &&
-          (v.name.includes('Male') || v.name.includes('Ravi') || v.name.includes('Rishi') || v.name.includes('Prabhat') || v.name.includes('Google') || v.name.includes('en-IN'))
-        ) || voices.find(v => v.lang === 'en-IN' || v.lang === 'hi-IN') || voices.find(v => v.lang.startsWith('en'));
+        // Select high-quality natural voice
+        const naturalVoice = voices.find(v => 
+          v.name.includes('Natural') || 
+          v.name.includes('Google US English') || 
+          v.name.includes('Google UK English') || 
+          v.name.includes('Samantha') || 
+          v.name.includes('Alex') || 
+          v.name.includes('Daniel') || 
+          v.name.includes('Google') || 
+          v.lang === 'en-US' || 
+          v.lang === 'en-GB' || 
+          v.lang === 'en-IN'
+        ) || voices[0];
 
-        if (indianMale) {
-          this.voice = indianMale;
+        if (naturalVoice) {
+          this.voice = naturalVoice;
         }
       };
 
@@ -130,20 +137,18 @@
         return;
       }
 
-      // DO NOT call cancel() here to avoid cutting off audio mid-word!
       const phoneticText = phoneticNormalize(text);
       const utterance = new SpeechSynthesisUtterance(phoneticText);
-      this.activeUtterance = utterance;
 
       if (this.voice) {
         utterance.voice = this.voice;
-        utterance.lang = this.voice.lang || 'en-IN';
+        utterance.lang = this.voice.lang || 'en-US';
       } else {
-        utterance.lang = 'en-IN';
+        utterance.lang = 'en-US';
       }
 
-      utterance.pitch = 0.96; // Authoritative, human Indian male tone
-      utterance.rate = Math.min(1.8, 0.88 * rateMultiplier); // Smooth natural speed
+      utterance.pitch = 1.0; 
+      utterance.rate = Math.min(1.8, 0.92 * rateMultiplier);
 
       if (onWordBoundary) {
         utterance.onboundary = (event) => {
@@ -157,22 +162,22 @@
       const done = () => {
         if (hasEnded) return;
         hasEnded = true;
-        this.activeUtterance = null;
         if (onEnd) onEnd();
       };
 
       utterance.onend = done;
-      utterance.onerror = (err) => {
-        console.warn('Speech utterance ended or errored:', err);
-        done();
-      };
+      utterance.onerror = done;
+
+      // CRITICAL SAFETY TIMEOUT: Guarantees done() fires even if browser Speech Engine drops events!
+      const words = phoneticText.split(/\s+/).length;
+      const maxDurationMs = Math.max(2500, (words * 380) / rateMultiplier);
+      setTimeout(done, maxDurationMs);
 
       this.synth.speak(utterance);
     }
 
     stop() {
       if (this.synth) {
-        this.activeUtterance = null;
         this.synth.cancel();
       }
     }
@@ -197,10 +202,10 @@
       this.isRunning = false;
       this.autoTimer = null;
       this.narrationTimer = null;
-      this.narrator = new StudioIndianMaleVoiceNarrator();
+      this.narrator = new StudioNaturalVoiceNarrator();
     }
 
-    /* ─── Public Control API ─── */
+    /* ─── Public API Controls ─── */
     start() {
       // 3-Second Recording Countdown Overlay
       this.showCountdown(() => {
@@ -335,7 +340,7 @@
       this.ensureUI();
       setTimeout(() => {
         this.executeCurrentStep();
-      }, 700 / this.speed);
+      }, 600 / this.speed);
     }
 
     /* ─── UI Setup ─── */
@@ -370,7 +375,7 @@
           <div class="ym-demo-caption">
             <div class="caption-header">
               <span class="caption-dot"></span>
-              <span class="caption-tag">REAL-TIME INDIAN ENGLISH NARRATION</span>
+              <span class="caption-tag">REAL-TIME NARRATION</span>
             </div>
             <div class="caption-text"></div>
           </div>
@@ -601,7 +606,7 @@
       });
     }
 
-    /* ─── Event-Driven Chunked Speech Queue ─── */
+    /* ─── Robust Event-Driven Speech Queue ─── */
     speakChunks(chunks) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
@@ -618,7 +623,7 @@
             return;
           }
           if (chunkIdx >= chunks.length) {
-            setTimeout(resolve, 600 / this.speed);
+            setTimeout(resolve, 500 / this.speed);
             return;
           }
 
@@ -633,10 +638,9 @@
           const finishChunk = () => {
             if (chunkEnded) return;
             chunkEnded = true;
-            setTimeout(speakNextChunk, 350 / this.speed);
+            setTimeout(speakNextChunk, 300 / this.speed);
           };
 
-          // Audio speech synthesis chunk execution (event-driven, no premature cancel!)
           this.narrator.speakChunk(
             rawText,
             this.speed,
@@ -874,14 +878,6 @@
 
     /* ─── STEP 3: ASSETS FLEET PAGE ─── */
     async runStep2Assets() {
-      const navLink = document.querySelector('a[href="/assets"]');
-      if (navLink && getPath() !== '/assets') {
-        await this.moveCursorToElement(navLink, 600);
-        await this.clickCursor(navLink);
-        this.advanceToStepIndex(3);
-        return;
-      }
-
       const chunks = [
         "Opening Asset Fleet to inspect health scores and sensor coverage across all manufacturing cells.",
         "Selecting CNC-101 to open its telemetry inspector and 3D Digital Twin."
