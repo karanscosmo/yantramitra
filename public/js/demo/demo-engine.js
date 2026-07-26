@@ -44,7 +44,8 @@
     if (!text) return '';
     return text
       .replace(/\bYantraMitra\b/gi, 'Yantra Mitra')
-      .replace(/\bYantraNklan\b/gi, 'Yantra Niklan')
+      .replace(/\bYantraNklan\b/gi, 'Yantra Anklan')
+      .replace(/\bYantraAnklan\b/gi, 'Yantra Anklan')
       .replace(/\bCNC-101\b/gi, 'C N C 101')
       .replace(/\bCNC101\b/gi, 'C N C 101')
       .replace(/\bSKF-6208\b/gi, 'S K F 6208')
