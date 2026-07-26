@@ -39,16 +39,16 @@
 
   const getPath = () => window.location.pathname;
 
-  /* ─── Phonetic Dictionary for Natural Indian English Pronunciation ─── */
+  /* ─── Phonetic Dictionary for Clear Natural Indian English Pronunciation ─── */
   function phoneticNormalize(text) {
     if (!text) return '';
     return text
       .replace(/\bYantraMitra\b/gi, 'Yuntruh Mitruh')
       .replace(/\bYantraNklan\b/gi, 'Yuntruh Niklun')
-      .replace(/\bCNC-101\b/gi, 'C N C 101')
-      .replace(/\bCNC101\b/gi, 'C N C 101')
-      .replace(/\bSKF-6208\b/gi, 'S K F 6208')
-      .replace(/\bSKF6208\b/gi, 'S K F 6208')
+      .replace(/\bCNC-101\b/gi, 'C N C 1 0 1')
+      .replace(/\bCNC101\b/gi, 'C N C 1 0 1')
+      .replace(/\bSKF-6208\b/gi, 'S K F 6 2 0 8')
+      .replace(/\bSKF6208\b/gi, 'S K F 6 2 0 8')
       .replace(/\bWO-2026-894\b/gi, 'Work Order 2026 894')
       .replace(/\b8\.4\s*mm\/s\b/gi, '8 point 4 millimeters per second')
       .replace(/\b0\.8\s*mm\/s\b/gi, '0 point 8 millimeters per second')
@@ -73,7 +73,7 @@
       .replace(/\b1\.8\b/g, '1 point 8');
   }
 
-  /* ─── 13-Step Complete Page-by-Page Product Workflow ─── */
+  /* ─── Exact Page-by-Page Product Workflow Pipeline ─── */
   const STEPS = [
     { id: 'home-intro', route: '/', title: 'System Introduction & Product Architecture' },
     { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
@@ -91,12 +91,13 @@
     { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
   ];
 
-  /* ─── Native Indian English Male Voice Narrator ─── */
+  /* ─── High-Fidelity Studio Indian Male Speech Engine ─── */
   class StudioIndianMaleVoiceNarrator {
     constructor() {
       this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
       this.voice = null;
       this.isMuted = false;
+      this.activeUtterance = null;
       this.initVoices();
     }
 
@@ -106,7 +107,7 @@
         const voices = this.synth.getVoices();
         if (!voices || voices.length === 0) return;
 
-        // Exact Indian English Voice Matching Priority
+        // Best Indian English Male Voice Priority Match
         const indianMale = voices.find(v => 
           (v.lang === 'en-IN' || v.lang === 'hi-IN' || v.name.includes('India') || v.name.includes('IN')) &&
           (v.name.includes('Male') || v.name.includes('Ravi') || v.name.includes('Rishi') || v.name.includes('Prabhat') || v.name.includes('Google') || v.name.includes('en-IN'))
@@ -129,10 +130,10 @@
         return;
       }
 
-      this.synth.cancel();
-
+      // DO NOT call cancel() here to avoid cutting off audio mid-word!
       const phoneticText = phoneticNormalize(text);
       const utterance = new SpeechSynthesisUtterance(phoneticText);
+      this.activeUtterance = utterance;
 
       if (this.voice) {
         utterance.voice = this.voice;
@@ -141,8 +142,8 @@
         utterance.lang = 'en-IN';
       }
 
-      utterance.pitch = 0.96; // Professional Indian male cadence
-      utterance.rate = Math.min(2.0, 0.90 * rateMultiplier); // Clear, steady pace
+      utterance.pitch = 0.96; // Authoritative, human Indian male tone
+      utterance.rate = Math.min(1.8, 0.88 * rateMultiplier); // Smooth natural speed
 
       if (onWordBoundary) {
         utterance.onboundary = (event) => {
@@ -152,25 +153,33 @@
         };
       }
 
-      utterance.onend = () => {
+      let hasEnded = false;
+      const done = () => {
+        if (hasEnded) return;
+        hasEnded = true;
+        this.activeUtterance = null;
         if (onEnd) onEnd();
       };
 
+      utterance.onend = done;
       utterance.onerror = (err) => {
-        console.warn('Speech synthesis error:', err);
-        if (onEnd) onEnd();
+        console.warn('Speech utterance ended or errored:', err);
+        done();
       };
 
       this.synth.speak(utterance);
     }
 
     stop() {
-      if (this.synth) this.synth.cancel();
+      if (this.synth) {
+        this.activeUtterance = null;
+        this.synth.cancel();
+      }
     }
 
     toggleMute() {
       this.isMuted = !this.isMuted;
-      if (this.isMuted && this.synth) this.synth.cancel();
+      if (this.isMuted && this.synth) this.stop();
       return this.isMuted;
     }
   }
@@ -193,7 +202,7 @@
 
     /* ─── Public Control API ─── */
     start() {
-      // Show 3-second Recording Countdown Overlay before starting
+      // 3-Second Recording Countdown Overlay
       this.showCountdown(() => {
         const newState = {
           active: true,
@@ -295,7 +304,7 @@
 
     /* ─── Page Load Synchronization ─── */
     init() {
-      // ONLY run if state exists, is active, AND status is 'running'!
+      // STRICT MANUAL START: Never auto-run unless active state exists and status is 'running'!
       if (!this.state || !this.state.active || this.state.status !== 'running') return;
       if (!isSessionFresh(this.state)) {
         this.stop();
@@ -592,7 +601,7 @@
       });
     }
 
-    /* ─── Robust Chunked Speech Queue & Caption Sync ─── */
+    /* ─── Event-Driven Chunked Speech Queue ─── */
     speakChunks(chunks) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
@@ -609,7 +618,7 @@
             return;
           }
           if (chunkIdx >= chunks.length) {
-            setTimeout(resolve, 800 / this.speed);
+            setTimeout(resolve, 600 / this.speed);
             return;
           }
 
@@ -624,9 +633,10 @@
           const finishChunk = () => {
             if (chunkEnded) return;
             chunkEnded = true;
-            setTimeout(speakNextChunk, 400 / this.speed);
+            setTimeout(speakNextChunk, 350 / this.speed);
           };
 
+          // Audio speech synthesis chunk execution (event-driven, no premature cancel!)
           this.narrator.speakChunk(
             rawText,
             this.speed,
@@ -640,9 +650,6 @@
             },
             () => finishChunk()
           );
-
-          const fallbackMs = Math.max(2500, (words.length * 280) / this.speed);
-          this.narrationTimer = setTimeout(finishChunk, fallbackMs);
         };
 
         speakNextChunk();
@@ -742,12 +749,12 @@
       }
     }
 
-    /* ─── STEP 0: LANDING PAGE (Intro) ─── */
+    /* ─── STEP 0: LANDING PAGE ─── */
     async runHomeIntro() {
       const chunks = [
         "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform.",
-        "Traditional maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime across manufacturing plants.",
-        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance.",
+        "Traditional maintenance relies on reactive repairs, costing industrial plants millions in unplanned downtime.",
+        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver predictive maintenance across Indian manufacturing facilities.",
         "Let us authenticate as a reliability engineer to enter the live operating platform."
       ];
 
@@ -819,12 +826,12 @@
       this.advanceToStepIndex(2);
     }
 
-    /* ─── STEP 2: DASHBOARD & CRITICAL ALERT ARRIVAL ─── */
+    /* ─── STEP 2: DASHBOARD & CRITICAL ALERT ─── */
     async runStep1Dashboard() {
       const chunks = [
         "The engineer begins work on the Global Command Center dashboard.",
-        "Live telemetry streams across 29 connected industrial assets in Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur.",
-        "A critical alert arrives! CNC-101 spindle vibration has crossed safety limits at 8.4 millimeters per second.",
+        "Real-time telemetry streams across 29 connected industrial assets in Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur.",
+        "A critical alert arrives! CNC-101 spindle vibration has exceeded safety limits at 8.4 millimeters per second.",
         "The engineer immediately clicks to inspect the anomalous asset."
       ];
 
@@ -876,8 +883,8 @@
       }
 
       const chunks = [
-        "Opening Asset Fleet. Here the engineer reviews health scores and sensor coverage across all manufacturing cells.",
-        "Selecting CNC-101 to open its dedicated 3D Digital Twin and live telemetry inspector."
+        "Opening Asset Fleet to inspect health scores and sensor coverage across all manufacturing cells.",
+        "Selecting CNC-101 to open its telemetry inspector and 3D Digital Twin."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
@@ -894,7 +901,7 @@
       this.advanceToStepIndex(4);
     }
 
-    /* ─── STEP 4: 3D DIGITAL TWIN INSPECTION ─── */
+    /* ─── STEP 4: 3D DIGITAL TWIN ─── */
     async runStep3DigitalTwin() {
       const navLink = document.querySelector('a[href="/digital-twin"]');
       if (navLink && getPath() !== '/digital-twin') {
@@ -905,7 +912,7 @@
       }
 
       const chunks = [
-        "Inside the 3D Digital Twin environment. The machine displays an elevated temperature of 78 degrees Celsius and severe vibration spikes.",
+        "Inside the 3D Digital Twin environment. CNC-101 displays an elevated temperature of 78 degrees Celsius and severe vibration spikes.",
         "Rotating the 3D model allows the engineer to inspect the spindle assembly.",
         "Clicking on the spindle assembly reveals high frequency vibration harmonics in the primary bearing."
       ];
@@ -945,8 +952,8 @@
 
       const chunks = [
         "Opening Anomaly Investigation.",
-        "The spectral analysis shows sideband harmonics characteristic of outer-raceway spalling.",
-        "The engineer triggers AI Operations Console for multi-agent root cause analysis."
+        "Spectral analysis reveals high frequency sideband harmonics characteristic of outer raceway bearing spalling.",
+        "The engineer opens YantraNklan AI Console for multi-agent root cause analysis."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
@@ -967,9 +974,9 @@
       }
 
       const chunks = [
-        "The engineer queries the YantraNklan AI Assistant to diagnose the root cause of the vibration anomaly.",
+        "The engineer opens the YantraNklan AI Assistant to diagnose the failure.",
         "Asking: Why is CNC-101 vibrating excessively?",
-        "Diagnostic agents search Knowledge Graphs, query maintenance history, and parse SKF technical manuals.",
+        "Multi-agent reasoning analyzes Knowledge Graphs, maintenance logs, and SKF technical manuals.",
         "AI confirms severe outer raceway micro-spalling on SKF-6208 Spindle Ball Bearing with 94.2 percent confidence."
       ];
 
@@ -1049,7 +1056,7 @@
       }
 
       const chunks = [
-        "Opening Global Map and Knowledge Graph to trace the exact lineage of this component failure.",
+        "Opening Global Map and Knowledge Graph to trace failure lineage.",
         "The graph connects CNC-101 to the spindle assembly, SKF-6208 bearing, and technician logs.",
         "It confirms a missed lubrication cycle 3 weeks ago caused friction buildup and premature bearing fatigue."
       ];
@@ -1105,7 +1112,7 @@
 
       const chunks = [
         "Opening Agent Mission Control.",
-        "Diagnostic Agent, Maintenance Agent, and Parts Planner collaborate to orchestrate the emergency work order."
+        "Diagnostic Agent, Maintenance Agent, and Parts Planner collaborate autonomously to orchestrate the repair mission."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
@@ -1126,9 +1133,8 @@
       }
 
       const chunks = [
-        "Navigating to Work Orders to create and execute the emergency repair.",
-        "Setting asset to CNC-101, priority to Critical, assigning lead technician Rajesh Kumar, and submitting Work Order 2026 894.",
-        "Executing Work Order 2026 894: updating status to In-Progress, completing Lockout Tagout safety protocols, replacing SKF-6208 bearing, torquing housing to 45 Newton meters, and logging clearance."
+        "Navigating to Maintenance Work Orders. Creating emergency Work Order 2026 894 for CNC-101 with Critical priority, assigned to lead technician Rajesh Kumar.",
+        "Executing Lockout Tagout safety checks, replacing SKF-6208 bearing, torquing spindle housing to 45 Newton meters, and marking work order resolved."
       ];
 
       const narrationPromise = this.speakChunks(chunks);
@@ -1198,7 +1204,6 @@
       await this.moveCursorToElement(subBtn, 500);
       await this.clickCursor(subBtn);
 
-      // Open Execution Drawer
       modalEl.remove();
 
       let drawer = document.querySelector('.ym-demo-wo-drawer');
@@ -1262,8 +1267,8 @@
     /* ─── STEP 10: EXECUTIVE REPORTS & PDF EXPORT ─── */
     async runStep9Reports() {
       const chunks = [
-        "Generating an executive maintenance report detailing root cause, downtime prevented, and financial impact.",
-        "Total repair cost is 18 thousand 5 hundred rupees, avoiding 14 hours of plant breakdown.",
+        "Generating an executive maintenance report.",
+        "Total repair cost is 18 thousand 5 hundred rupees, preventing 14 hours of breakdown.",
         "Net downtime loss saved is 4 lakh 80 thousand rupees. Exporting report as PDF."
       ];
 
@@ -1330,8 +1335,8 @@
       }
 
       const chunks = [
-        "Reviewing plant-wide reliability analytics and machine learning forecasts following maintenance completion.",
-        "Mean Time Between Failures increased to 1,480 hours while Mean Time To Repair dropped to 1 point 8 hours.",
+        "Reviewing plant-wide reliability analytics and machine learning forecasts.",
+        "Mean Time Between Failures increases to 1,480 hours while Mean Time To Repair drops to 1 point 8 hours.",
         "Failure probability drops to nominal 1 point 2 percent, extending Remaining Useful Life to 180 days."
       ];
 
@@ -1516,7 +1521,7 @@
     }
   };
 
-  /* ─── Auto Initialization on Page Load ONLY if active session running ─── */
+  /* ─── Auto Initialization ONLY when actively running ─── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       if (YMDemo.isActive()) YMDemo.init();
