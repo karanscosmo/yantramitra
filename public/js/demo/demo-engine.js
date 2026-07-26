@@ -4,6 +4,7 @@
   /* ─── YantraMitra Autonomous Product Demo Engine ─── */
 
   const STATE_KEY = 'ymDemoState';
+  const SPEED_KEY = 'ymDemoSpeed';
 
   function getState() {
     try {
@@ -20,16 +21,60 @@
     try { localStorage.removeItem(STATE_KEY); } catch {}
   }
 
+  function getSpeed() {
+    try {
+      const spd = parseFloat(localStorage.getItem(SPEED_KEY));
+      return (spd && [1, 1.25, 1.5, 2].includes(spd)) ? spd : 1;
+    } catch { return 1; }
+  }
+
+  function saveSpeed(spd) {
+    try { localStorage.setItem(SPEED_KEY, String(spd)); } catch {}
+  }
+
   function isSessionFresh(state) {
     if (!state || !state.startedAt) return false;
-    return (Date.now() - state.startedAt) < 25 * 60 * 1000;
+    return (Date.now() - state.startedAt) < 30 * 60 * 1000;
   }
 
   const getPath = () => window.location.pathname;
 
-  /* ─── 12-Step Complete 4.5-5 Minute Industrial Pipeline ─── */
+  /* ─── Phonetic Normalization for Native Indian English Pronunciation ─── */
+  function phoneticNormalize(text) {
+    if (!text) return '';
+    return text
+      .replace(/\bYantraMitra\b/gi, 'Yuntruh Mitruh')
+      .replace(/\bYantraNklan\b/gi, 'Yuntruh Niklun')
+      .replace(/\bCNC-101\b/gi, 'C-N-C 101')
+      .replace(/\bCNC101\b/gi, 'C-N-C 101')
+      .replace(/\bSKF-6208\b/gi, 'S-K-F 6208')
+      .replace(/\bSKF6208\b/gi, 'S-K-F 6208')
+      .replace(/\bWO-2026-894\b/gi, 'Work Order 2026 894')
+      .replace(/\b8\.4\s*mm\/s\b/gi, '8 point 4 millimeters per second')
+      .replace(/\b0\.8\s*mm\/s\b/gi, '0 point 8 millimeters per second')
+      .replace(/\b2\.5\s*mm\/s\b/gi, '2 point 5 millimeters per second')
+      .replace(/\b78°C\b/gi, '78 degrees Celsius')
+      .replace(/\b42°C\b/gi, '42 degrees Celsius')
+      .replace(/\b₹4,80,000\b/g, '4 lakh 80 thousand rupees')
+      .replace(/\b₹4\.8L\b/gi, '4 point 8 lakh rupees')
+      .replace(/\b₹18,500\b/g, '18 thousand 5 hundred rupees')
+      .replace(/\b₹6,000\b/g, '6 thousand rupees')
+      .replace(/\b₹12,500\b/g, '12 thousand 5 hundred rupees')
+      .replace(/\bMTBF\b/g, 'M-T-B-F')
+      .replace(/\bMTTR\b/g, 'M-T-T-R')
+      .replace(/\bOEE\b/g, 'O-E-E')
+      .replace(/\bLOTO\b/g, 'Lockout Tagout')
+      .replace(/\bRUL\b/g, 'Remaining Useful Life')
+      .replace(/\b94\.2%\b/g, '94 point 2 percent')
+      .replace(/\b98\.4%\b/g, '98 point 4 percent')
+      .replace(/\b98\.6%\b/g, '98 point 6 percent')
+      .replace(/\b1\.2%\b/g, '1 point 2 percent')
+      .replace(/\b1\.8\b/g, '1 point 8');
+  }
+
+  /* ─── 12-Step Complete 4.5-5 Minute Industrial Demonstration ─── */
   const STEPS = [
-    { id: 'home-intro', route: '/', title: 'System Introduction & Platform Architecture' },
+    { id: 'home-intro', route: '/', title: 'System Introduction & Industrial Problem' },
     { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
     { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Critical Anomaly Arrival' },
     { id: 'step-2-machine-detail', route: '/assets', title: 'Asset Telemetry & 3D Digital Twin Inspection' },
@@ -44,8 +89,8 @@
     { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
   ];
 
-  /* ─── Indian English Male Voice Narrator ─── */
-  class IndianVoiceNarrator {
+  /* ─── Indian English Male Speech Synthesizer ─── */
+  class NativeIndianVoiceNarrator {
     constructor() {
       this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
       this.voice = null;
@@ -59,14 +104,14 @@
         const voices = this.synth.getVoices();
         if (!voices || voices.length === 0) return;
 
-        // Find Indian English Male voice or Indian voice
-        const inVoice = voices.find(v => 
+        // Find Native Indian English Male Voice
+        const indianMale = voices.find(v => 
           (v.lang === 'en-IN' || v.lang === 'hi-IN' || v.name.includes('India') || v.name.includes('IN')) &&
-          (v.name.includes('Male') || v.name.includes('Ravi') || v.name.includes('Rishi') || v.name.includes('Google') || v.name.includes('en-IN'))
+          (v.name.includes('Male') || v.name.includes('Ravi') || v.name.includes('Rishi') || v.name.includes('Prabhat') || v.name.includes('Google') || v.name.includes('en-IN'))
         ) || voices.find(v => v.lang === 'en-IN' || v.lang === 'hi-IN') || voices.find(v => v.lang.startsWith('en'));
 
-        if (inVoice) {
-          this.voice = inVoice;
+        if (indianMale) {
+          this.voice = indianMale;
         }
       };
 
@@ -76,15 +121,17 @@
       }
     }
 
-    speak(text, onWordBoundary, onEnd) {
+    speakChunk(text, rateMultiplier = 1, onWordBoundary = null, onEnd = null) {
       if (!this.synth || this.isMuted) {
         if (onEnd) setTimeout(onEnd, 100);
         return;
       }
 
-      this.synth.cancel(); // Stop any active speech
+      this.synth.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
+      const phoneticText = phoneticNormalize(text);
+      const utterance = new SpeechSynthesisUtterance(phoneticText);
+
       if (this.voice) {
         utterance.voice = this.voice;
         utterance.lang = this.voice.lang || 'en-IN';
@@ -92,9 +139,8 @@
         utterance.lang = 'en-IN';
       }
 
-      // Natural, authoritative Indian English male tone settings
-      utterance.pitch = 0.95; 
-      utterance.rate = 0.92;  
+      utterance.pitch = 0.95; // Authoritative Indian male pitch
+      utterance.rate = Math.min(2.0, 0.92 * rateMultiplier); // Responsive playback speed
 
       if (onWordBoundary) {
         utterance.onboundary = (event) => {
@@ -109,7 +155,7 @@
       };
 
       utterance.onerror = (err) => {
-        console.warn('Speech synthesis error:', err);
+        console.warn('Speech synthesis utterance error:', err);
         if (onEnd) onEnd();
       };
 
@@ -132,6 +178,7 @@
   class AutonomousDemoEngine {
     constructor() {
       this.state = getState();
+      this.speed = getSpeed();
       this.overlayEl = null;
       this.controlsEl = null;
       this.captionEl = null;
@@ -139,10 +186,10 @@
       this.isRunning = false;
       this.autoTimer = null;
       this.narrationTimer = null;
-      this.narrator = new IndianVoiceNarrator();
+      this.narrator = new NativeIndianVoiceNarrator();
     }
 
-    /* ─── Public Control API ─── */
+    /* ─── Public API Controls ─── */
     start() {
       const newState = {
         active: true,
@@ -186,6 +233,14 @@
       this.executeCurrentStep();
     }
 
+    cycleSpeed() {
+      const speeds = [1, 1.25, 1.5, 2];
+      const curIdx = speeds.indexOf(this.speed);
+      this.speed = speeds[(curIdx + 1) % speeds.length];
+      saveSpeed(this.speed);
+      this.updateControlsUI();
+    }
+
     skip() {
       if (!this.state) return;
       this.narrator.stop();
@@ -217,7 +272,7 @@
       }
 
       const curPath = getPath();
-      // Auto-sync step index to current URL path if redirected or navigated
+      // Auto-sync step index to current URL path
       if (currentStep.route !== curPath && !(currentStep.route !== '/' && curPath.startsWith(currentStep.route))) {
         const matchingIdx = STEPS.findIndex(s => s.route === curPath || (s.route !== '/' && curPath.startsWith(s.route)));
         if (matchingIdx !== -1) {
@@ -234,7 +289,7 @@
       this.ensureUI();
       setTimeout(() => {
         this.executeCurrentStep();
-      }, 700);
+      }, 700 / this.speed);
     }
 
     /* ─── UI Setup ─── */
@@ -257,6 +312,7 @@
               <div class="demo-progress-fill" style="width: ${((this.state.stepIdx + 1) / STEPS.length) * 100}%"></div>
             </div>
             <div class="demo-btn-row">
+              <button class="demo-btn" data-action="speed"><span class="material-symbols-outlined">speed</span> <span class="demo-speed-label">${this.speed}x</span></button>
               <button class="demo-btn" data-action="audio"><span class="material-symbols-outlined">volume_up</span> <span class="demo-audio-label">Audio On</span></button>
               <button class="demo-btn" data-action="pause"><span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span></button>
               <button class="demo-btn" data-action="skip"><span class="material-symbols-outlined">skip_next</span> Skip</button>
@@ -279,7 +335,9 @@
           const btn = e.target.closest('[data-action]');
           if (!btn) return;
           const action = btn.dataset.action;
-          if (action === 'pause') {
+          if (action === 'speed') {
+            this.cycleSpeed();
+          } else if (action === 'pause') {
             this.state.paused ? this.resume() : this.pause();
           } else if (action === 'audio') {
             const isMuted = this.narrator.toggleMute();
@@ -347,6 +405,9 @@
       const progress = this.controlsEl.querySelector('.demo-progress-fill');
       if (progress) progress.style.width = (((this.state.stepIdx + 1) / STEPS.length) * 100) + '%';
 
+      const spdLabel = this.controlsEl.querySelector('.demo-speed-label');
+      if (spdLabel) spdLabel.textContent = this.speed + 'x';
+
       const pauseBtn = this.controlsEl.querySelector('[data-action="pause"]');
       if (pauseBtn) {
         if (this.state.paused) {
@@ -357,13 +418,14 @@
       }
     }
 
-    /* ─── Cursor & Interactions ─── */
+    /* ─── Cursor & Interactions (Speed-Adjusted) ─── */
     moveCursorTo(x, y, duration = 600) {
       if (!this.cursorEl) return Promise.resolve();
+      const adjDur = Math.max(150, duration / this.speed);
       this.cursorEl.classList.add('visible');
-      this.cursorEl.style.transition = `transform ${duration}ms cubic-bezier(0.25, 1, 0.5, 1)`;
+      this.cursorEl.style.transition = `transform ${adjDur}ms cubic-bezier(0.25, 1, 0.5, 1)`;
       this.cursorEl.style.transform = `translate(${x}px, ${y}px)`;
-      return new Promise(r => setTimeout(r, duration));
+      return new Promise(r => setTimeout(r, adjDur));
     }
 
     moveCursorToElement(selectorOrEl, duration = 600, offsetX = 0, offsetY = 0) {
@@ -389,8 +451,8 @@
             if (typeof targetEl.click === 'function') targetEl.click();
             targetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
           }
-          setTimeout(resolve, 250);
-        }, 150);
+          setTimeout(resolve, 200 / this.speed);
+        }, 120 / this.speed);
       });
     }
 
@@ -411,6 +473,8 @@
       el.focus();
       el.value = '';
 
+      const adjSpeed = Math.max(10, charSpeed / this.speed);
+
       return new Promise(resolve => {
         let idx = 0;
         const timer = setInterval(() => {
@@ -425,21 +489,22 @@
           } else {
             clearInterval(timer);
             el.dispatchEvent(new Event('change', { bubbles: true }));
-            setTimeout(resolve, 300);
+            setTimeout(resolve, 200 / this.speed);
           }
-        }, charSpeed);
+        }, adjSpeed);
       });
     }
 
     dragCursor(startX, startY, endX, endY, duration = 1200, targetEl = null) {
-      return this.moveCursorTo(startX, startY, 400).then(() => {
+      const adjDur = Math.max(300, duration / this.speed);
+      return this.moveCursorTo(startX, startY, 300).then(() => {
         this.cursorEl.classList.add('clicking');
         if (targetEl) {
           targetEl.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, clientY: startY, bubbles: true }));
         }
 
         const steps = 24;
-        const stepMs = duration / steps;
+        const stepMs = adjDur / steps;
         let step = 0;
 
         return new Promise(resolve => {
@@ -460,7 +525,7 @@
               if (targetEl) {
                 targetEl.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, clientY: endY, bubbles: true }));
               }
-              setTimeout(resolve, 250);
+              setTimeout(resolve, 200 / this.speed);
             }
           }, stepMs);
         });
@@ -468,6 +533,7 @@
     }
 
     scrollWindowTo(targetY, duration = 1400) {
+      const adjDur = Math.max(300, duration / this.speed);
       const startY = window.scrollY;
       const distance = targetY - startY;
       const startTime = performance.now();
@@ -475,62 +541,77 @@
       return new Promise(resolve => {
         const stepScroll = (now) => {
           const elapsed = now - startTime;
-          const progress = Math.min(elapsed / duration, 1);
+          const progress = Math.min(elapsed / adjDur, 1);
           const ease = 1 - Math.pow(1 - progress, 3);
           window.scrollTo(0, startY + distance * ease);
 
           if (progress < 1) {
             requestAnimationFrame(stepScroll);
           } else {
-            setTimeout(resolve, 200);
+            setTimeout(resolve, 200 / this.speed);
           }
         };
         requestAnimationFrame(stepScroll);
       });
     }
 
-    /* ─── Word-for-Word Audio & Caption Synchronizer ─── */
-    speak(text) {
+    /* ─── Robust Chunked Speech & Word Sync ─── */
+    speakChunks(chunks) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
       if (!container) return Promise.resolve();
 
       this.captionEl.classList.add('visible');
 
-      // Prepare text words into HTML spans for word-by-word highlighting
-      const words = text.split(/\s+/);
-      container.innerHTML = words.map((w, i) => `<span class="caption-word" data-word-idx="${i}">${w} </span>`).join('');
-      const wordEls = container.querySelectorAll('.caption-word');
+      let chunkIdx = 0;
 
       return new Promise(resolve => {
-        let isDone = false;
-        const finish = () => {
-          if (isDone) return;
-          isDone = true;
-          setTimeout(resolve, 1000);
+        const speakNextChunk = () => {
+          if (!this.isRunning || (this.state && this.state.paused)) {
+            resolve();
+            return;
+          }
+          if (chunkIdx >= chunks.length) {
+            setTimeout(resolve, 800 / this.speed);
+            return;
+          }
+
+          const rawText = chunks[chunkIdx];
+          chunkIdx++;
+
+          // Display text words in caption container
+          const words = rawText.split(/\s+/);
+          container.innerHTML = words.map((w, i) => `<span class="caption-word" data-word-idx="${i}">${w} </span>`).join('');
+          const wordEls = container.querySelectorAll('.caption-word');
+
+          let chunkEnded = false;
+          const finishChunk = () => {
+            if (chunkEnded) return;
+            chunkEnded = true;
+            setTimeout(speakNextChunk, 400 / this.speed);
+          };
+
+          // Audio speech synthesis chunk execution
+          this.narrator.speakChunk(
+            rawText,
+            this.speed,
+            (charIdx, charLen) => {
+              const textUpToChar = rawText.substring(0, charIdx);
+              const wordIndex = textUpToChar.trim().split(/\s+/).length - 1;
+              wordEls.forEach((wEl, idx) => {
+                if (idx === wordIndex) wEl.classList.add('active');
+                else wEl.classList.remove('active');
+              });
+            },
+            () => finishChunk()
+          );
+
+          // Fallback timer if audio is muted or completes early
+          const fallbackMs = Math.max(2500, (words.length * 280) / this.speed);
+          this.narrationTimer = setTimeout(finishChunk, fallbackMs);
         };
 
-        // Trigger Audio Narration with Indian English Male Voice
-        this.narrator.speak(
-          text,
-          (charIdx, charLen) => {
-            // Word boundary callback — highlight current spoken word
-            const textUpToChar = text.substring(0, charIdx);
-            const wordIndex = textUpToChar.trim().split(/\s+/).length - 1;
-            wordEls.forEach((wEl, idx) => {
-              if (idx === wordIndex) {
-                wEl.classList.add('active');
-              } else {
-                wEl.classList.remove('active');
-              }
-            });
-          },
-          () => finish()
-        );
-
-        // Fallback timer if audio finishes or is muted
-        const fallbackMs = Math.max(3000, words.length * 280);
-        this.narrationTimer = setTimeout(finish, fallbackMs);
+        speakNextChunk();
       });
     }
 
@@ -552,7 +633,6 @@
         return;
       }
 
-      // CRITICAL FIX: Save stepIdx to localStorage BEFORE navigating!
       this.state.stepIdx = nextIdx;
       saveState(this.state);
 
@@ -572,7 +652,7 @@
       this.advanceToStepIndex(this.state.stepIdx + 1);
     }
 
-    /* ─── Autonomous Workflow Execution ─── */
+    /* ─── Autonomous Workflow Execution (All 12 Steps) ─── */
     async executeCurrentStep() {
       if (!this.state || !this.isRunning || this.state.paused) return;
       const step = STEPS[this.state.stepIdx];
@@ -627,17 +707,22 @@
 
     /* ─── STEP 0: HOME INTRO (< 30 Seconds) ─── */
     async runHomeIntro() {
-      const narrationPromise = this.speak(
-        "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform. Traditional maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime across manufacturing plants. YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance."
-      );
+      const chunks = [
+        "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform.",
+        "Traditional maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime across manufacturing plants.",
+        "YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance.",
+        "Let us authenticate as a reliability engineer to enter the live operating platform."
+      ];
 
-      await new Promise(r => setTimeout(r, 1200));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 1000 / this.speed));
       await this.scrollWindowTo(700, 2200);
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1000 / this.speed));
       await this.scrollWindowTo(1500, 2400);
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1000 / this.speed));
       await this.scrollWindowTo(2400, 2400);
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 800 / this.speed));
       await this.scrollWindowTo(0, 1600);
 
       await narrationPromise;
@@ -645,18 +730,21 @@
       const loginBtn = await this.moveCursorToElement('a[href="/login"], .ym-home-auth a[href="/login"]', 700);
       await this.clickCursor(loginBtn || document.querySelector('a[href="/login"]'));
 
-      this.advanceToStepIndex(1); // Advance to login-auth (step 1)
+      this.advanceToStepIndex(1);
     }
 
     /* ─── STEP 1: ENTERPRISE SINGLE SIGN-ON LOGIN ─── */
     async runLoginAuth() {
-      const narrationPromise = this.speak(
-        "Authenticating reliability engineer into the YantraMitra Industrial Ops Platform using authorized enterprise single sign-on credentials."
-      );
+      const chunks = [
+        "Authenticating reliability engineer into the YantraMitra Industrial Operations Platform.",
+        "Entering enterprise single sign-on credentials for admin at yantramitra dot com.",
+        "Initializing session and loading the Global Command Center."
+      ];
 
-      await new Promise(r => setTimeout(r, 800));
+      const narrationPromise = this.speakChunks(chunks);
 
-      // Attempt automatic backend authentication
+      await new Promise(r => setTimeout(r, 600 / this.speed));
+
       try {
         const resp = await fetch('/api/auth/demo-login', {
           method: 'POST',
@@ -665,12 +753,11 @@
         });
         if (resp.ok) {
           await narrationPromise;
-          this.advanceToStepIndex(2); // Advance to dashboard (step 2)
+          this.advanceToStepIndex(2);
           return;
         }
       } catch {}
 
-      // Fallback: Natural Typing into Login Form
       const emailInput = document.getElementById('email') || document.querySelector('input[type="email"], input[name="email"], input');
       if (emailInput) {
         await this.moveCursorToElement(emailInput, 600);
@@ -692,26 +779,29 @@
       }
 
       await narrationPromise;
-      this.advanceToStepIndex(2); // Advance to dashboard (step 2)
+      this.advanceToStepIndex(2);
     }
 
-    /* ─── STEP 2: DASHBOARD & CRITICAL ALERT ARRIVAL ─── */
+    /* ─── STEP 2: COMMAND CENTER & CRITICAL ALERT ─── */
     async runStep1Dashboard() {
-      const narrationPromise = this.speak(
-        "The engineer begins work on the Global Command Center dashboard. Live telemetry streams across 29 connected industrial assets in Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur. Suddenly, a critical telemetry alert arrives: CNC-101 spindle vibration has crossed safety thresholds at 8.4 millimeters per second."
-      );
+      const chunks = [
+        "The engineer begins work on the Global Command Center dashboard.",
+        "Live telemetry streams across 29 connected industrial assets in Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur.",
+        "A critical alert arrives! CNC-101 spindle vibration has crossed safety limits at 8.4 millimeters per second.",
+        "The engineer immediately clicks to inspect the anomalous asset."
+      ];
 
-      // Animate KPI cards
+      const narrationPromise = this.speakChunks(chunks);
+
       document.querySelectorAll('[data-kpi-route], .kpi-card').forEach((card, idx) => {
         setTimeout(() => {
           card.classList.add('glow-indigo');
           setTimeout(() => card.classList.remove('glow-indigo'), 1000);
-        }, idx * 300);
+        }, idx * 250);
       });
 
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 1800 / this.speed));
 
-      // Inject & Display Critical Alert Toast
       let alertCard = document.querySelector('[data-alert-id="cnc-101"], .critical-alert-card');
       if (!alertCard) {
         alertCard = document.createElement('div');
@@ -730,31 +820,34 @@
       }
 
       const targetBtn = alertCard.querySelector('.alert-btn') || alertCard;
-      await this.moveCursorToElement(targetBtn, 800);
+      await this.moveCursorToElement(targetBtn, 700);
       await this.clickCursor(targetBtn);
 
       await narrationPromise;
       alertCard.remove();
-      this.advanceToStepIndex(3); // Advance to machine-detail (step 3)
+      this.advanceToStepIndex(3);
     }
 
     /* ─── STEP 3: ASSET TELEMETRY & 3D DIGITAL TWIN ─── */
     async runStep2MachineDetail() {
-      const narrationPromise = this.speak(
-        "Opening telemetry for CNC-101. The asset exhibits an elevated temperature of 78 degrees Celsius and severe vibration spikes. Interacting with the 3D Digital Twin allows the engineer to inspect the spindle assembly in real time."
-      );
+      const chunks = [
+        "Opening telemetry dashboard for CNC-101.",
+        "The asset exhibits an elevated temperature of 78 degrees Celsius and severe vibration spikes.",
+        "Rotating the 3D Digital Twin allows the engineer to inspect the spindle assembly in real time.",
+        "Clicking on the spindle assembly reveals high frequency vibration harmonics in the primary bearing."
+      ];
 
-      await new Promise(r => setTimeout(r, 1200));
+      const narrationPromise = this.speakChunks(chunks);
 
-      // Look for 3D digital twin canvas or container
+      await new Promise(r => setTimeout(r, 1000 / this.speed));
+
       const canvasEl = document.querySelector('canvas, #ym-twin-canvas, .digital-twin-container, main');
 
       if (canvasEl) {
         const rect = canvasEl.getBoundingClientRect();
-        // Drag to rotate machine in 3D
-        await this.dragCursor(rect.left + rect.width * 0.4, rect.top + rect.height * 0.5, rect.left + rect.width * 0.7, rect.top + rect.height * 0.5, 1400, canvasEl);
-        await new Promise(r => setTimeout(r, 400));
-        await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1200, canvasEl);
+        await this.dragCursor(rect.left + rect.width * 0.4, rect.top + rect.height * 0.5, rect.left + rect.width * 0.7, rect.top + rect.height * 0.5, 1200, canvasEl);
+        await new Promise(r => setTimeout(r, 300 / this.speed));
+        await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1000, canvasEl);
       }
 
       const componentEl = document.querySelector('[data-component="spindle"], .spindle-component, .glass-card:nth-child(2), main');
@@ -764,12 +857,11 @@
       }
 
       await narrationPromise;
-      this.advanceToStepIndex(4); // Advance to ai-assistant (step 4)
+      this.advanceToStepIndex(4);
     }
 
     /* ─── STEP 4: YANTRANPLAN MULTI-AGENT AI ANALYSIS ─── */
     async runStep3AIAssistant() {
-      // Click sidebar link to navigate to AI Console
       const aiNavLink = document.querySelector('a[href="/ai-console"]');
       if (aiNavLink && getPath() !== '/ai-console') {
         await this.moveCursorToElement(aiNavLink, 600);
@@ -778,17 +870,22 @@
         return;
       }
 
-      const narrationPromise = this.speak(
-        "The engineer opens the YantraNklan AI Assistant to diagnose the root cause of the vibration anomaly. Typing query to execute diagnostic agents."
-      );
+      const chunks = [
+        "The engineer opens the YantraNklan AI Assistant to diagnose the root cause of the vibration anomaly.",
+        "Asking: Why is CNC-101 vibrating excessively?",
+        "Diagnostic agents search Knowledge Graphs, query maintenance history, and parse SKF technical manuals.",
+        "AI confirms severe outer raceway micro-spalling on SKF-6208 Spindle Ball Bearing with 94.2 percent confidence."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       const chatInput = document.querySelector('#ym-chat-input, .ai-console-input input, textarea, input[type="text"]');
       if (chatInput) {
         await this.moveCursorToElement(chatInput, 600);
         await this.clickCursor(chatInput);
-        await this.typeInput(chatInput, 'Why is CNC-101 vibrating excessively?', 45);
+        await this.typeInput(chatInput, 'Why is CNC-101 vibrating excessively?', 40);
       }
 
       const sendBtn = document.querySelector('#ym-chat-send, button[type="submit"], .ai-console-send, button');
@@ -797,7 +894,6 @@
         await this.clickCursor(sendBtn);
       }
 
-      // Inject & Display AI Reasoning Box
       let thinkingBox = document.querySelector('.ym-demo-ai-thinking');
       if (!thinkingBox) {
         thinkingBox = document.createElement('div');
@@ -817,7 +913,7 @@
 
       const steps = thinkingBox.querySelectorAll('.step-item');
       for (let i = 0; i < steps.length; i++) {
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 500 / this.speed));
         steps[i].classList.add('done');
       }
 
@@ -834,7 +930,7 @@
         streamEl.innerHTML = '';
         for (let i = 0; i < responseText.length; i += 3) {
           streamEl.innerHTML = responseText.slice(0, i) + '<span class="caret">█</span>';
-          await new Promise(r => setTimeout(r, 20));
+          await new Promise(r => setTimeout(r, 15 / this.speed));
         }
         streamEl.innerHTML = responseText;
       }
@@ -842,13 +938,12 @@
       await narrationPromise;
       setTimeout(() => {
         thinkingBox.remove();
-        this.advanceToStepIndex(5); // Advance to knowledge-graph (step 5)
-      }, 1000);
+        this.advanceToStepIndex(5);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 5: KNOWLEDGE GRAPH LINEAGE ─── */
     async runStep4KnowledgeGraph() {
-      // Click sidebar link to navigate to Plant Map & Knowledge Graph
       const mapNavLink = document.querySelector('a[href="/map"]');
       if (mapNavLink && getPath() !== '/map') {
         await this.moveCursorToElement(mapNavLink, 600);
@@ -857,11 +952,15 @@
         return;
       }
 
-      const narrationPromise = this.speak(
-        "Opening the Knowledge Graph to trace the exact lineage and historical cause of this component failure."
-      );
+      const chunks = [
+        "Opening the Knowledge Graph to trace the exact lineage of this component failure.",
+        "The graph connects CNC-101 to the spindle assembly, SKF-6208 bearing, and technician logs.",
+        "It confirms a missed lubrication cycle 3 weeks ago caused friction buildup and premature bearing fatigue."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let graphContainer = document.querySelector('.ym-demo-kg-visualizer');
       if (!graphContainer) {
@@ -886,21 +985,20 @@
 
       const nodes = graphContainer.querySelectorAll('.kg-node');
       for (let i = 0; i < nodes.length; i++) {
-        await this.moveCursorToElement(nodes[i], 500);
+        await this.moveCursorToElement(nodes[i], 450);
         nodes[i].classList.add('highlighted');
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 350 / this.speed));
       }
 
       await narrationPromise;
       setTimeout(() => {
         graphContainer.remove();
-        this.advanceToStepIndex(6); // Advance to maintenance-planner (step 6)
-      }, 600);
+        this.advanceToStepIndex(6);
+      }, 500 / this.speed);
     }
 
     /* ─── STEP 6: MAINTENANCE WORK ORDER CREATION ─── */
     async runStep5MaintenancePlanner() {
-      // Click sidebar link to navigate to Work Orders
       const woNavLink = document.querySelector('a[href="/work-orders"]');
       if (woNavLink && getPath() !== '/work-orders') {
         await this.moveCursorToElement(woNavLink, 600);
@@ -909,11 +1007,15 @@
         return;
       }
 
-      const narrationPromise = this.speak(
-        "Navigating to the Maintenance Planner to create an emergency work order."
-      );
+      const chunks = [
+        "Navigating to the Maintenance Planner to create an emergency work order.",
+        "Setting asset to CNC-101, priority to Critical, and assigning senior technician Rajesh Kumar.",
+        "Specifying emergency bearing replacement scope and submitting Work Order 2026 894."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let modalEl = document.querySelector('.ym-demo-wo-modal');
       if (!modalEl) {
@@ -988,17 +1090,22 @@
       setTimeout(() => {
         modalEl.remove();
         toast.remove();
-        this.advanceToStepIndex(7); // Advance to work-order-details (step 7)
-      }, 1000);
+        this.advanceToStepIndex(7);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 7: WORK ORDER EXECUTION & LOTO CHECKLIST ─── */
     async runStep6WorkOrderDetails() {
-      const narrationPromise = this.speak(
-        "Executing work order WO-2026-894: updating status to In-Progress, completing LOTO safety protocols, replacing the bearing, and logging clearance."
-      );
+      const chunks = [
+        "Executing Work Order 2026 894.",
+        "Updating status to In-Progress and completing Lockout Tagout safety protocols.",
+        "Replacing SKF-6208 bearing, torquing housing to 45 Newton meters, and logging clearance notes.",
+        "Marking work order resolved."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let drawer = document.querySelector('.ym-demo-wo-drawer');
       if (!drawer) {
@@ -1032,7 +1139,7 @@
           await this.clickCursor(chk);
           chk.checked = true;
           chk.closest('.check-item').classList.add('done');
-          await new Promise(r => setTimeout(r, 300));
+          await new Promise(r => setTimeout(r, 250 / this.speed));
         }
       }
 
@@ -1054,17 +1161,21 @@
       await narrationPromise;
       setTimeout(() => {
         drawer.remove();
-        this.advanceToStepIndex(8); // Advance to reports (step 8)
-      }, 1000);
+        this.advanceToStepIndex(8);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 8: EXECUTIVE MAINTENANCE REPORT & PDF ─── */
     async runStep7Reports() {
-      const narrationPromise = this.speak(
-        "Generating an executive maintenance report detailing root cause, downtime prevented, and financial impact."
-      );
+      const chunks = [
+        "Generating an executive maintenance report detailing root cause, downtime prevented, and financial impact.",
+        "Total repair cost is 18 thousand 5 hundred rupees, avoiding 14 hours of plant breakdown.",
+        "Net downtime loss saved is 4 lakh 80 thousand rupees. Exporting report as PDF."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let pdfModal = document.querySelector('.ym-demo-pdf-modal');
       if (!pdfModal) {
@@ -1110,13 +1221,12 @@
       setTimeout(() => {
         pdfModal.remove();
         toast.remove();
-        this.advanceToStepIndex(9); // Advance to analytics (step 9)
-      }, 1000);
+        this.advanceToStepIndex(9);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 9: POST-MAINTENANCE PERFORMANCE ANALYTICS ─── */
     async runStep8Analytics() {
-      // Click sidebar link to navigate to Reliability Analytics
       const relNavLink = document.querySelector('a[href="/reliability"]');
       if (relNavLink && getPath() !== '/reliability') {
         await this.moveCursorToElement(relNavLink, 600);
@@ -1125,11 +1235,15 @@
         return;
       }
 
-      const narrationPromise = this.speak(
-        "Reviewing plant-wide reliability analytics following maintenance completion."
-      );
+      const chunks = [
+        "Reviewing plant-wide reliability analytics following maintenance completion.",
+        "Mean Time Between Failures increased to 1,480 hours.",
+        "Mean Time To Repair dropped to 1 point 8 hours, bringing Overall Equipment Effectiveness to 98 point 6 percent."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let cardsEl = document.querySelector('.ym-demo-analytics-overlay');
       if (!cardsEl) {
@@ -1147,17 +1261,21 @@
       await narrationPromise;
       setTimeout(() => {
         cardsEl.remove();
-        this.advanceToStepIndex(10); // Advance to predictive (step 10)
-      }, 1000);
+        this.advanceToStepIndex(10);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 10: ML PREDICTIVE RELIABILITY ─── */
     async runStep9Predictive() {
-      const narrationPromise = this.speak(
-        "Inspecting ML predictive reliability models. Failure probability drops to nominal levels while asset remaining useful life is extended."
-      );
+      const chunks = [
+        "Inspecting machine learning predictive reliability models.",
+        "Failure probability drops to nominal 1 point 2 percent.",
+        "Asset Remaining Useful Life is extended to 180 days with 98 point 4 percent model confidence."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let predEl = document.querySelector('.ym-demo-pred-overlay');
       if (!predEl) {
@@ -1178,13 +1296,12 @@
       await narrationPromise;
       setTimeout(() => {
         predEl.remove();
-        this.advanceToStepIndex(11); // Advance to digital-twin-return (step 11)
-      }, 1000);
+        this.advanceToStepIndex(11);
+      }, 800 / this.speed);
     }
 
     /* ─── STEP 11: DIGITAL TWIN ASSET HEALTH RESTORATION ─── */
     async runStep10DigitalTwinReturn() {
-      // Click sidebar link to navigate to Digital Twin
       const dtNavLink = document.querySelector('a[href="/digital-twin"]');
       if (dtNavLink && getPath() !== '/digital-twin') {
         await this.moveCursorToElement(dtNavLink, 600);
@@ -1193,11 +1310,15 @@
         return;
       }
 
-      const narrationPromise = this.speak(
-        "Returning to the 3D Digital Twin. CNC-101 vibration has dropped to nominal 0.8 mm/s. Asset health is restored to 99 percent."
-      );
+      const chunks = [
+        "Returning to the 3D Digital Twin.",
+        "CNC-101 vibration has dropped to nominal 0 point 8 millimeters per second.",
+        "Asset status is restored to 100 percent HEALTHY."
+      ];
 
-      await new Promise(r => setTimeout(r, 1000));
+      const narrationPromise = this.speakChunks(chunks);
+
+      await new Promise(r => setTimeout(r, 800 / this.speed));
 
       let twinBadge = document.querySelector('.ym-demo-twin-healthy');
       if (!twinBadge) {
@@ -1221,13 +1342,18 @@
       await narrationPromise;
       setTimeout(() => {
         twinBadge.remove();
-        this.advanceToStepIndex(12); // Advance to end-summary (step 12)
-      }, 1000);
+        this.advanceToStepIndex(12);
+      }, 800 / this.speed);
     }
 
-    /* ─── STEP 12: SHIFT SUMMARY & CLOSING ─── */
+    /* ─── STEP 12: SHIFT COMPLETION SUMMARY ─── */
     showEndSummary() {
-      this.speak("Shift complete. All critical maintenance actions executed autonomously with full industrial traceability. Thank you for watching YantraMitra.");
+      const chunks = [
+        "Shift complete. All critical maintenance actions executed autonomously with full industrial traceability.",
+        "Summary: 1 task completed, 1 critical alert resolved, 1 executive report exported, and 4 lakh 80 thousand rupees downtime loss saved.",
+        "Thank you for watching YantraMitra. Ask your machines anything."
+      ];
+      this.speakChunks(chunks);
 
       const existing = document.querySelector('.ym-demo-summary');
       if (existing) existing.remove();
