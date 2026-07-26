@@ -126,11 +126,15 @@
       }
     }
 
-    speakSentence(text, rateMultiplier = 1, onEnd = null) {
+    speakSentence(text, rateMultiplier = 1, onStart = null, onEnd = null) {
       if (!this.synth || this.isMuted) {
+        if (onStart) onStart();
         if (onEnd) setTimeout(onEnd, 100);
         return;
       }
+
+      // Cancel any stale buffered audio in browser speech queue
+      this.synth.cancel();
 
       const phoneticText = phoneticNormalize(text);
       const utterance = new SpeechSynthesisUtterance(phoneticText);
@@ -150,12 +154,16 @@
         if (onEnd) onEnd();
       };
 
+      utterance.onstart = () => {
+        if (onStart) onStart();
+      };
+
       utterance.onend = complete;
       utterance.onerror = complete;
 
       // Absolute Safety Net: Ensure complete() fires even if browser speech engine hangs
       const wordCount = phoneticText.split(/\s+/).length;
-      const maxTimeMs = Math.max(2200, (wordCount * 360) / rateMultiplier);
+      const maxTimeMs = Math.max(2200, (wordCount * 380) / rateMultiplier);
       setTimeout(complete, maxTimeMs);
 
       this.synth.speak(utterance);
@@ -583,12 +591,17 @@
           const sentence = chunks[chunkIdx];
           chunkIdx++;
 
-          // Display full readable sentence in caption box
-          container.innerHTML = `<span class="caption-sentence active">${sentence}</span>`;
-
-          this.narrator.speakSentence(sentence, this.speed, () => {
-            setTimeout(speakNextSentence, 250 / this.speed);
-          });
+          // Display caption at the EXACT MOMENT audio output starts!
+          this.narrator.speakSentence(
+            sentence,
+            this.speed,
+            () => {
+              container.innerHTML = `<span class="caption-sentence active">${sentence}</span>`;
+            },
+            () => {
+              setTimeout(speakNextSentence, 250 / this.speed);
+            }
+          );
         };
 
         speakNextSentence();
