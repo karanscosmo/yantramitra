@@ -133,9 +133,6 @@
         return;
       }
 
-      // Cancel any stale buffered audio in browser speech queue
-      this.synth.cancel();
-
       const phoneticText = phoneticNormalize(text);
       const utterance = new SpeechSynthesisUtterance(phoneticText);
 
@@ -145,7 +142,7 @@
       }
 
       utterance.pitch = 1.0; 
-      utterance.rate = Math.min(1.8, 0.94 * rateMultiplier);
+      utterance.rate = Math.min(1.8, 0.92 * rateMultiplier);
 
       let finished = false;
       const complete = () => {
@@ -161,9 +158,9 @@
       utterance.onend = complete;
       utterance.onerror = complete;
 
-      // Absolute Safety Net: Ensure complete() fires even if browser speech engine hangs
+      // Generous Safety Net Buffer (550ms per word + 1.5s padding) to NEVER cut off ending words
       const wordCount = phoneticText.split(/\s+/).length;
-      const maxTimeMs = Math.max(2200, (wordCount * 380) / rateMultiplier);
+      const maxTimeMs = Math.max(3500, (wordCount * 550) / rateMultiplier + 1500);
       setTimeout(complete, maxTimeMs);
 
       this.synth.speak(utterance);
