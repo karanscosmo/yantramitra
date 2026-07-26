@@ -22,27 +22,110 @@
 
   function isSessionFresh(state) {
     if (!state || !state.startedAt) return false;
-    return (Date.now() - state.startedAt) < 20 * 60 * 1000;
+    return (Date.now() - state.startedAt) < 25 * 60 * 1000;
   }
 
-  const currentPath = window.location.pathname;
+  const getPath = () => window.location.pathname;
 
-  /* ─── 10-Step Continuous Story Pipeline ─── */
+  /* ─── 12-Step Complete 4.5-5 Minute Industrial Pipeline ─── */
   const STEPS = [
-    { id: 'home-intro', route: '/', title: 'System Introduction' },
-    { id: 'login-auth', route: '/login', title: 'Engineer Authentication' },
-    { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Critical Alert' },
-    { id: 'step-2-machine-detail', route: '/assets', title: 'Digital Twin & Telemetry Inspection' },
-    { id: 'step-3-ai-assistant', route: '/ai-console', title: 'Multi-Agent Root Cause Analysis' },
-    { id: 'step-4-knowledge-graph', route: '/map', title: 'Knowledge Graph Lineage' },
-    { id: 'step-5-maintenance-planner', route: '/work-orders', title: 'Maintenance Work Order Creation' },
-    { id: 'step-6-work-order-details', route: '/work-orders', title: 'Work Order Execution & LOTO' },
-    { id: 'step-7-reports', route: '/ai-console', title: 'Executive Maintenance Report & PDF' },
+    { id: 'home-intro', route: '/', title: 'System Introduction & Platform Architecture' },
+    { id: 'login-auth', route: '/login', title: 'Enterprise Single Sign-On Authentication' },
+    { id: 'step-1-dashboard', route: '/dashboard', title: 'Command Center & Critical Anomaly Arrival' },
+    { id: 'step-2-machine-detail', route: '/assets', title: 'Asset Telemetry & 3D Digital Twin Inspection' },
+    { id: 'step-3-ai-assistant', route: '/ai-console', title: 'YantraNklan Multi-Agent Root Cause Analysis' },
+    { id: 'step-4-knowledge-graph', route: '/map', title: 'Knowledge Graph Lineage & Causal Tracing' },
+    { id: 'step-5-maintenance-planner', route: '/work-orders', title: 'Maintenance Work Order Form Creation' },
+    { id: 'step-6-work-order-details', route: '/work-orders', title: 'Work Order Execution & LOTO Checklist' },
+    { id: 'step-7-reports', route: '/ai-console', title: 'Executive Maintenance Report & PDF Export' },
     { id: 'step-8-analytics', route: '/reliability', title: 'Post-Maintenance Performance Analytics' },
-    { id: 'step-9-predictive', route: '/reliability', title: 'ML Predictive Reliability Forecast' },
-    { id: 'step-10-digital-twin-return', route: '/digital-twin', title: 'Digital Twin Resolution & Health' },
-    { id: 'end-summary', route: '/dashboard', title: 'Shift Summary & Closing' }
+    { id: 'step-9-predictive', route: '/reliability', title: 'ML Predictive Reliability & RUL Forecast' },
+    { id: 'step-10-digital-twin-return', route: '/digital-twin', title: 'Digital Twin Asset Health Restoration' },
+    { id: 'end-summary', route: '/dashboard', title: 'Shift Completion Summary & Closing' }
   ];
+
+  /* ─── Indian English Male Voice Narrator ─── */
+  class IndianVoiceNarrator {
+    constructor() {
+      this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+      this.voice = null;
+      this.isMuted = false;
+      this.initVoices();
+    }
+
+    initVoices() {
+      if (!this.synth) return;
+      const selectVoice = () => {
+        const voices = this.synth.getVoices();
+        if (!voices || voices.length === 0) return;
+
+        // Find Indian English Male voice or Indian voice
+        const inVoice = voices.find(v => 
+          (v.lang === 'en-IN' || v.lang === 'hi-IN' || v.name.includes('India') || v.name.includes('IN')) &&
+          (v.name.includes('Male') || v.name.includes('Ravi') || v.name.includes('Rishi') || v.name.includes('Google') || v.name.includes('en-IN'))
+        ) || voices.find(v => v.lang === 'en-IN' || v.lang === 'hi-IN') || voices.find(v => v.lang.startsWith('en'));
+
+        if (inVoice) {
+          this.voice = inVoice;
+        }
+      };
+
+      selectVoice();
+      if (typeof this.synth.onvoiceschanged !== 'undefined') {
+        this.synth.onvoiceschanged = selectVoice;
+      }
+    }
+
+    speak(text, onWordBoundary, onEnd) {
+      if (!this.synth || this.isMuted) {
+        if (onEnd) setTimeout(onEnd, 100);
+        return;
+      }
+
+      this.synth.cancel(); // Stop any active speech
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (this.voice) {
+        utterance.voice = this.voice;
+        utterance.lang = this.voice.lang || 'en-IN';
+      } else {
+        utterance.lang = 'en-IN';
+      }
+
+      // Natural, authoritative Indian English male tone settings
+      utterance.pitch = 0.95; 
+      utterance.rate = 0.92;  
+
+      if (onWordBoundary) {
+        utterance.onboundary = (event) => {
+          if (event.name === 'word') {
+            onWordBoundary(event.charIndex, event.charLength);
+          }
+        };
+      }
+
+      utterance.onend = () => {
+        if (onEnd) onEnd();
+      };
+
+      utterance.onerror = (err) => {
+        console.warn('Speech synthesis error:', err);
+        if (onEnd) onEnd();
+      };
+
+      this.synth.speak(utterance);
+    }
+
+    stop() {
+      if (this.synth) this.synth.cancel();
+    }
+
+    toggleMute() {
+      this.isMuted = !this.isMuted;
+      if (this.isMuted && this.synth) this.synth.cancel();
+      return this.isMuted;
+    }
+  }
 
   let engine = null;
 
@@ -56,6 +139,7 @@
       this.isRunning = false;
       this.autoTimer = null;
       this.narrationTimer = null;
+      this.narrator = new IndianVoiceNarrator();
     }
 
     /* ─── Public Control API ─── */
@@ -69,7 +153,7 @@
       };
       saveState(newState);
       this.state = newState;
-      if (currentPath !== '/') {
+      if (getPath() !== '/') {
         window.location.href = '/';
       } else {
         this.init();
@@ -79,6 +163,7 @@
     stop() {
       clearState();
       this.state = null;
+      this.narrator.stop();
       this.cleanupUI();
       this.isRunning = false;
     }
@@ -87,6 +172,7 @@
       if (!this.state) return;
       this.state.paused = true;
       saveState(this.state);
+      this.narrator.stop();
       if (this.autoTimer) clearTimeout(this.autoTimer);
       if (this.narrationTimer) clearTimeout(this.narrationTimer);
       this.updateControlsUI();
@@ -102,6 +188,7 @@
 
     skip() {
       if (!this.state) return;
+      this.narrator.stop();
       this.advanceStep();
     }
 
@@ -115,7 +202,7 @@
       document.querySelectorAll('.ym-demo-summary, .ym-demo-overlay, .ym-demo-cursor').forEach(el => el.remove());
     }
 
-    /* ─── Page Load Initialization ─── */
+    /* ─── Page Load Synchronization ─── */
     init() {
       if (!this.state || !this.state.active) return;
       if (!isSessionFresh(this.state)) {
@@ -123,26 +210,34 @@
         return;
       }
 
-      const step = STEPS[this.state.stepIdx];
-      if (!step) {
+      let currentStep = STEPS[this.state.stepIdx];
+      if (!currentStep) {
         this.stop();
         return;
       }
 
-      // Check route alignment
-      if (step.route !== currentPath && !currentPath.startsWith(step.route)) {
-        window.location.href = step.route;
-        return;
+      const curPath = getPath();
+      // Auto-sync step index to current URL path if redirected or navigated
+      if (currentStep.route !== curPath && !(currentStep.route !== '/' && curPath.startsWith(currentStep.route))) {
+        const matchingIdx = STEPS.findIndex(s => s.route === curPath || (s.route !== '/' && curPath.startsWith(s.route)));
+        if (matchingIdx !== -1) {
+          this.state.stepIdx = matchingIdx;
+          saveState(this.state);
+          currentStep = STEPS[matchingIdx];
+        } else {
+          window.location.href = currentStep.route;
+          return;
+        }
       }
 
       this.isRunning = true;
       this.ensureUI();
       setTimeout(() => {
         this.executeCurrentStep();
-      }, 600);
+      }, 700);
     }
 
-    /* ─── Overlay & UI Controls Setup ─── */
+    /* ─── UI Setup ─── */
     ensureUI() {
       this.injectCSS();
       if (!document.querySelector('.ym-demo-overlay')) {
@@ -162,6 +257,7 @@
               <div class="demo-progress-fill" style="width: ${((this.state.stepIdx + 1) / STEPS.length) * 100}%"></div>
             </div>
             <div class="demo-btn-row">
+              <button class="demo-btn" data-action="audio"><span class="material-symbols-outlined">volume_up</span> <span class="demo-audio-label">Audio On</span></button>
               <button class="demo-btn" data-action="pause"><span class="material-symbols-outlined">pause</span> <span class="demo-btn-label">Pause</span></button>
               <button class="demo-btn" data-action="skip"><span class="material-symbols-outlined">skip_next</span> Skip</button>
               <button class="demo-btn" data-action="restart"><span class="material-symbols-outlined">replay</span> Restart</button>
@@ -172,7 +268,7 @@
           <div class="ym-demo-caption">
             <div class="caption-header">
               <span class="caption-dot"></span>
-              <span class="caption-tag">REAL-TIME NARRATION</span>
+              <span class="caption-tag">REAL-TIME INDIAN ENGLISH NARRATION</span>
             </div>
             <div class="caption-text"></div>
           </div>
@@ -185,6 +281,17 @@
           const action = btn.dataset.action;
           if (action === 'pause') {
             this.state.paused ? this.resume() : this.pause();
+          } else if (action === 'audio') {
+            const isMuted = this.narrator.toggleMute();
+            const label = overlay.querySelector('.demo-audio-label');
+            const icon = overlay.querySelector('[data-action="audio"] .material-symbols-outlined');
+            if (isMuted) {
+              if (label) label.textContent = 'Muted';
+              if (icon) icon.textContent = 'volume_off';
+            } else {
+              if (label) label.textContent = 'Audio On';
+              if (icon) icon.textContent = 'volume_up';
+            }
           } else if (action === 'skip') {
             this.skip();
           } else if (action === 'restart') {
@@ -250,7 +357,7 @@
       }
     }
 
-    /* ─── Mouse Cursor & Interactions ─── */
+    /* ─── Cursor & Interactions ─── */
     moveCursorTo(x, y, duration = 600) {
       if (!this.cursorEl) return Promise.resolve();
       this.cursorEl.classList.add('visible');
@@ -298,7 +405,7 @@
       setTimeout(() => ripple.remove(), 600);
     }
 
-    typeInput(selectorOrEl, text, charSpeed = 45) {
+    typeInput(selectorOrEl, text, charSpeed = 40) {
       const el = typeof selectorOrEl === 'string' ? document.querySelector(selectorOrEl) : selectorOrEl;
       if (!el) return Promise.resolve();
       el.focus();
@@ -324,14 +431,14 @@
       });
     }
 
-    dragCursor(startX, startY, endX, endY, duration = 1000, targetEl = null) {
+    dragCursor(startX, startY, endX, endY, duration = 1200, targetEl = null) {
       return this.moveCursorTo(startX, startY, 400).then(() => {
         this.cursorEl.classList.add('clicking');
         if (targetEl) {
           targetEl.dispatchEvent(new MouseEvent('mousedown', { clientX: startX, clientY: startY, bubbles: true }));
         }
 
-        const steps = 20;
+        const steps = 24;
         const stepMs = duration / steps;
         let step = 0;
 
@@ -353,14 +460,14 @@
               if (targetEl) {
                 targetEl.dispatchEvent(new MouseEvent('mouseup', { clientX: endX, clientY: endY, bubbles: true }));
               }
-              setTimeout(resolve, 200);
+              setTimeout(resolve, 250);
             }
           }, stepMs);
         });
       });
     }
 
-    scrollWindowTo(targetY, duration = 1200) {
+    scrollWindowTo(targetY, duration = 1400) {
       const startY = window.scrollY;
       const distance = targetY - startY;
       const startTime = performance.now();
@@ -382,52 +489,61 @@
       });
     }
 
-    /* ─── Streaming Narration Caption System ─── */
+    /* ─── Word-for-Word Audio & Caption Synchronizer ─── */
     speak(text) {
       if (!this.captionEl) return Promise.resolve();
       const container = this.captionEl.querySelector('.caption-text');
       if (!container) return Promise.resolve();
 
       this.captionEl.classList.add('visible');
-      container.innerHTML = '';
 
-      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-      let sIdx = 0;
+      // Prepare text words into HTML spans for word-by-word highlighting
+      const words = text.split(/\s+/);
+      container.innerHTML = words.map((w, i) => `<span class="caption-word" data-word-idx="${i}">${w} </span>`).join('');
+      const wordEls = container.querySelectorAll('.caption-word');
 
       return new Promise(resolve => {
-        const showNextSentence = () => {
-          if (!this.isRunning || (this.state && this.state.paused)) return;
-          if (sIdx >= sentences.length) {
-            setTimeout(resolve, 1200);
-            return;
-          }
-          const sText = sentences[sIdx].trim();
-          sIdx++;
-
-          const span = document.createElement('div');
-          span.className = 'caption-sentence';
-          span.textContent = sText;
-          container.appendChild(span);
-
-          const delay = Math.max(1800, sText.length * 45);
-          this.narrationTimer = setTimeout(showNextSentence, delay);
+        let isDone = false;
+        const finish = () => {
+          if (isDone) return;
+          isDone = true;
+          setTimeout(resolve, 1000);
         };
 
-        if (this.narrationTimer) clearTimeout(this.narrationTimer);
-        showNextSentence();
+        // Trigger Audio Narration with Indian English Male Voice
+        this.narrator.speak(
+          text,
+          (charIdx, charLen) => {
+            // Word boundary callback — highlight current spoken word
+            const textUpToChar = text.substring(0, charIdx);
+            const wordIndex = textUpToChar.trim().split(/\s+/).length - 1;
+            wordEls.forEach((wEl, idx) => {
+              if (idx === wordIndex) {
+                wEl.classList.add('active');
+              } else {
+                wEl.classList.remove('active');
+              }
+            });
+          },
+          () => finish()
+        );
+
+        // Fallback timer if audio finishes or is muted
+        const fallbackMs = Math.max(3000, words.length * 280);
+        this.narrationTimer = setTimeout(finish, fallbackMs);
       });
     }
 
     hideCaption() {
       if (this.captionEl) this.captionEl.classList.remove('visible');
       if (this.narrationTimer) clearTimeout(this.narrationTimer);
+      this.narrator.stop();
     }
 
-    advanceStep() {
+    advanceToStepIndex(nextIdx) {
       if (!this.state) return;
       this.hideCaption();
 
-      const nextIdx = this.state.stepIdx + 1;
       if (nextIdx >= STEPS.length) {
         this.state.status = 'completed';
         saveState(this.state);
@@ -436,17 +552,24 @@
         return;
       }
 
+      // CRITICAL FIX: Save stepIdx to localStorage BEFORE navigating!
       this.state.stepIdx = nextIdx;
       saveState(this.state);
 
       const nextStep = STEPS[nextIdx];
       if (nextStep) {
-        if (nextStep.route !== currentPath && !currentPath.startsWith(nextStep.route)) {
+        const curPath = getPath();
+        if (nextStep.route !== curPath && !(nextStep.route !== '/' && curPath.startsWith(nextStep.route))) {
           window.location.href = nextStep.route;
         } else {
           this.executeCurrentStep();
         }
       }
+    }
+
+    advanceStep() {
+      if (!this.state) return;
+      this.advanceToStepIndex(this.state.stepIdx + 1);
     }
 
     /* ─── Autonomous Workflow Execution ─── */
@@ -502,42 +625,38 @@
       }
     }
 
-    /* ─── HOME INTRO (Max 25 Seconds) ─── */
+    /* ─── STEP 0: HOME INTRO (< 30 Seconds) ─── */
     async runHomeIntro() {
       const narrationPromise = this.speak(
-        "Welcome to YantraMitra. Traditional industrial maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime. YantraMitra unifies Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver predictive maintenance across Indian manufacturing plants."
+        "Welcome to YantraMitra, the AI-powered Industrial Digital Twin platform. Traditional maintenance relies on reactive repairs and fixed schedules, causing millions in unplanned downtime across manufacturing plants. YantraMitra unifies 3D Digital Twins, Hybrid RAG, Knowledge Graphs, and Multi-Agent AI to deliver autonomous predictive maintenance."
       );
 
-      // Smooth scrolling through home page
       await new Promise(r => setTimeout(r, 1200));
-      await this.scrollWindowTo(700, 2000);
+      await this.scrollWindowTo(700, 2200);
+      await new Promise(r => setTimeout(r, 1200));
+      await this.scrollWindowTo(1500, 2400);
+      await new Promise(r => setTimeout(r, 1200));
+      await this.scrollWindowTo(2400, 2400);
       await new Promise(r => setTimeout(r, 1000));
-      await this.scrollWindowTo(1500, 2200);
-      await new Promise(r => setTimeout(r, 1000));
-      await this.scrollWindowTo(2400, 2200);
-      await new Promise(r => setTimeout(r, 1000));
-      await this.scrollWindowTo(0, 1500);
+      await this.scrollWindowTo(0, 1600);
 
       await narrationPromise;
 
-      // Move mouse to Login button and click
       const loginBtn = await this.moveCursorToElement('a[href="/login"], .ym-home-auth a[href="/login"]', 700);
       await this.clickCursor(loginBtn || document.querySelector('a[href="/login"]'));
 
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 400);
+      this.advanceToStepIndex(1); // Advance to login-auth (step 1)
     }
 
-    /* ─── LOGIN ─── */
+    /* ─── STEP 1: ENTERPRISE SINGLE SIGN-ON LOGIN ─── */
     async runLoginAuth() {
       const narrationPromise = this.speak(
-        "Authenticating reliability engineer into the YantraMitra Industrial Ops Platform..."
+        "Authenticating reliability engineer into the YantraMitra Industrial Ops Platform using authorized enterprise single sign-on credentials."
       );
 
       await new Promise(r => setTimeout(r, 800));
 
-      // Attempt automatic demo authentication via API
+      // Attempt automatic backend authentication
       try {
         const resp = await fetch('/api/auth/demo-login', {
           method: 'POST',
@@ -546,13 +665,13 @@
         });
         if (resp.ok) {
           await narrationPromise;
-          this.advanceStep();
+          this.advanceToStepIndex(2); // Advance to dashboard (step 2)
           return;
         }
       } catch {}
 
       // Fallback: Natural Typing into Login Form
-      const emailInput = document.getElementById('email') || document.querySelector('input[type="email"]');
+      const emailInput = document.getElementById('email') || document.querySelector('input[type="email"], input[name="email"], input');
       if (emailInput) {
         await this.moveCursorToElement(emailInput, 600);
         await this.clickCursor(emailInput);
@@ -573,18 +692,16 @@
       }
 
       await narrationPromise;
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 600);
+      this.advanceToStepIndex(2); // Advance to dashboard (step 2)
     }
 
-    /* ─── STEP 1: DASHBOARD & CRITICAL ALERT ─── */
+    /* ─── STEP 2: DASHBOARD & CRITICAL ALERT ARRIVAL ─── */
     async runStep1Dashboard() {
       const narrationPromise = this.speak(
-        "The engineer starts their shift at the Pune Automotive Facility. The Command Center streams real-time telemetry and KPIs across 29 connected industrial assets."
+        "The engineer begins work on the Global Command Center dashboard. Live telemetry streams across 29 connected industrial assets in Pune, Ahmedabad, Chennai, Bengaluru, and Nagpur. Suddenly, a critical telemetry alert arrives: CNC-101 spindle vibration has crossed safety thresholds at 8.4 millimeters per second."
       );
 
-      // Animate KPI counters
+      // Animate KPI cards
       document.querySelectorAll('[data-kpi-route], .kpi-card').forEach((card, idx) => {
         setTimeout(() => {
           card.classList.add('glow-indigo');
@@ -594,7 +711,7 @@
 
       await new Promise(r => setTimeout(r, 2000));
 
-      // Inject & Display Critical Alert Banner/Toast
+      // Inject & Display Critical Alert Toast
       let alertCard = document.querySelector('[data-alert-id="cnc-101"], .critical-alert-card');
       if (!alertCard) {
         alertCard = document.createElement('div');
@@ -606,31 +723,25 @@
             <div class="alert-title">CNC-101 Spindle Vibration Exceeds Threshold</div>
             <div class="alert-desc">Measured: 8.4 mm/s | Limit: 2.5 mm/s | Temp: 78°C (Elevated)</div>
           </div>
-          <button class="alert-btn">Inspect Machine →</button>
+          <button class="alert-btn">Inspect Asset Telemetry →</button>
         `;
         document.body.appendChild(alertCard);
         requestAnimationFrame(() => alertCard.classList.add('visible'));
       }
 
-      await this.speak(
-        "A critical anomaly is triggered! CNC-101 spindle vibration has crossed safety limits at 8.4 mm/s. The engineer immediately clicks to inspect the machine."
-      );
-
-      // Move cursor directly to the Critical Alert card and click it
       const targetBtn = alertCard.querySelector('.alert-btn') || alertCard;
       await this.moveCursorToElement(targetBtn, 800);
       await this.clickCursor(targetBtn);
 
       await narrationPromise;
-      setTimeout(() => {
-        window.location.href = '/assets';
-      }, 500);
+      alertCard.remove();
+      this.advanceToStepIndex(3); // Advance to machine-detail (step 3)
     }
 
-    /* ─── STEP 2: MACHINE DETAILS & DIGITAL TWIN ─── */
+    /* ─── STEP 3: ASSET TELEMETRY & 3D DIGITAL TWIN ─── */
     async runStep2MachineDetail() {
       const narrationPromise = this.speak(
-        "Opening CNC-101 telemetry dashboard. The machine is experiencing elevated temperature (78°C) and severe 8.4 mm/s vibration."
+        "Opening telemetry for CNC-101. The asset exhibits an elevated temperature of 78 degrees Celsius and severe vibration spikes. Interacting with the 3D Digital Twin allows the engineer to inspect the spindle assembly in real time."
       );
 
       await new Promise(r => setTimeout(r, 1200));
@@ -641,36 +752,38 @@
       if (canvasEl) {
         const rect = canvasEl.getBoundingClientRect();
         // Drag to rotate machine in 3D
-        await this.dragCursor(rect.left + rect.width * 0.4, rect.top + rect.height * 0.5, rect.left + rect.width * 0.7, rect.top + rect.height * 0.5, 1200, canvasEl);
+        await this.dragCursor(rect.left + rect.width * 0.4, rect.top + rect.height * 0.5, rect.left + rect.width * 0.7, rect.top + rect.height * 0.5, 1400, canvasEl);
         await new Promise(r => setTimeout(r, 400));
-        // Drag up/down to inspect angle
-        await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1000, canvasEl);
+        await this.dragCursor(rect.left + rect.width * 0.5, rect.top + rect.height * 0.7, rect.left + rect.width * 0.5, rect.top + rect.height * 0.3, 1200, canvasEl);
       }
 
-      // Click on Spindle/Bearing abnormal component
       const componentEl = document.querySelector('[data-component="spindle"], .spindle-component, .glass-card:nth-child(2), main');
       if (componentEl) {
         await this.moveCursorToElement(componentEl, 600);
         await this.clickCursor(componentEl);
       }
 
-      await this.speak(
-        "Inspecting the 3D Digital Twin highlights abnormal high-frequency harmonics originating from the primary spindle bearing assembly."
-      );
-
       await narrationPromise;
-      this.advanceStep();
+      this.advanceToStepIndex(4); // Advance to ai-assistant (step 4)
     }
 
-    /* ─── STEP 3: AI ASSISTANT & STREAMING THINKING ─── */
+    /* ─── STEP 4: YANTRANPLAN MULTI-AGENT AI ANALYSIS ─── */
     async runStep3AIAssistant() {
+      // Click sidebar link to navigate to AI Console
+      const aiNavLink = document.querySelector('a[href="/ai-console"]');
+      if (aiNavLink && getPath() !== '/ai-console') {
+        await this.moveCursorToElement(aiNavLink, 600);
+        await this.clickCursor(aiNavLink);
+        this.advanceToStepIndex(4);
+        return;
+      }
+
       const narrationPromise = this.speak(
-        "The engineer queries YantraNklan AI to diagnose the root cause of the vibration."
+        "The engineer opens the YantraNklan AI Assistant to diagnose the root cause of the vibration anomaly. Typing query to execute diagnostic agents."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Find chat input
       const chatInput = document.querySelector('#ym-chat-input, .ai-console-input input, textarea, input[type="text"]');
       if (chatInput) {
         await this.moveCursorToElement(chatInput, 600);
@@ -678,14 +791,13 @@
         await this.typeInput(chatInput, 'Why is CNC-101 vibrating excessively?', 45);
       }
 
-      // Find send button
       const sendBtn = document.querySelector('#ym-chat-send, button[type="submit"], .ai-console-send, button');
       if (sendBtn) {
         await this.moveCursorToElement(sendBtn, 400);
         await this.clickCursor(sendBtn);
       }
 
-      // Inject & Display AI Reasoning & Streaming Response
+      // Inject & Display AI Reasoning Box
       let thinkingBox = document.querySelector('.ym-demo-ai-thinking');
       if (!thinkingBox) {
         thinkingBox = document.createElement('div');
@@ -727,26 +839,30 @@
         streamEl.innerHTML = responseText;
       }
 
-      await this.speak(
-        "YantraNklan diagnostic agents correlate live telemetry with historical failure modes and technical manuals to identify outer-raceway micro-pitting in the spindle bearing."
-      );
-
       await narrationPromise;
       setTimeout(() => {
         thinkingBox.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(5); // Advance to knowledge-graph (step 5)
       }, 1000);
     }
 
-    /* ─── STEP 4: KNOWLEDGE GRAPH LINEAGE ─── */
+    /* ─── STEP 5: KNOWLEDGE GRAPH LINEAGE ─── */
     async runStep4KnowledgeGraph() {
+      // Click sidebar link to navigate to Plant Map & Knowledge Graph
+      const mapNavLink = document.querySelector('a[href="/map"]');
+      if (mapNavLink && getPath() !== '/map') {
+        await this.moveCursorToElement(mapNavLink, 600);
+        await this.clickCursor(mapNavLink);
+        this.advanceToStepIndex(5);
+        return;
+      }
+
       const narrationPromise = this.speak(
-        "Opening the Knowledge Graph to trace the causality and history behind this bearing failure."
+        "Opening the Knowledge Graph to trace the exact lineage and historical cause of this component failure."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display Interactive Lineage Graph
       let graphContainer = document.querySelector('.ym-demo-kg-visualizer');
       if (!graphContainer) {
         graphContainer = document.createElement('div');
@@ -775,26 +891,30 @@
         await new Promise(r => setTimeout(r, 400));
       }
 
-      await this.speak(
-        "The graph confirms a missed lubrication cycle 3 weeks ago caused friction buildup and premature bearing fatigue."
-      );
-
       await narrationPromise;
       setTimeout(() => {
         graphContainer.remove();
-        this.advanceStep();
-      }, 500);
+        this.advanceToStepIndex(6); // Advance to maintenance-planner (step 6)
+      }, 600);
     }
 
-    /* ─── STEP 5: MAINTENANCE PLANNER & WORK ORDER ─── */
+    /* ─── STEP 6: MAINTENANCE WORK ORDER CREATION ─── */
     async runStep5MaintenancePlanner() {
+      // Click sidebar link to navigate to Work Orders
+      const woNavLink = document.querySelector('a[href="/work-orders"]');
+      if (woNavLink && getPath() !== '/work-orders') {
+        await this.moveCursorToElement(woNavLink, 600);
+        await this.clickCursor(woNavLink);
+        this.advanceToStepIndex(6);
+        return;
+      }
+
       const narrationPromise = this.speak(
         "Navigating to the Maintenance Planner to create an emergency work order."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display Work Order Modal
       let modalEl = document.querySelector('.ym-demo-wo-modal');
       if (!modalEl) {
         modalEl = document.createElement('div');
@@ -834,10 +954,6 @@
         document.body.appendChild(modalEl);
       }
 
-      await this.speak(
-        "Filling work order parameters: Selecting asset CNC-101, setting priority to Critical, and assigning lead technician Rajesh Kumar."
-      );
-
       const mInput = modalEl.querySelector('#wo-machine');
       await this.moveCursorToElement(mInput, 500);
       await this.clickCursor(mInput);
@@ -862,7 +978,6 @@
       await this.moveCursorToElement(subBtn, 500);
       await this.clickCursor(subBtn);
 
-      // Toast Success
       const toast = document.createElement('div');
       toast.className = 'ym-demo-toast';
       toast.innerHTML = '✓ Work Order #WO-2026-894 Created Successfully!';
@@ -873,19 +988,18 @@
       setTimeout(() => {
         modalEl.remove();
         toast.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(7); // Advance to work-order-details (step 7)
       }, 1000);
     }
 
-    /* ─── STEP 6: WORK ORDER EXECUTION & CHECKLIST ─── */
+    /* ─── STEP 7: WORK ORDER EXECUTION & LOTO CHECKLIST ─── */
     async runStep6WorkOrderDetails() {
       const narrationPromise = this.speak(
-        "Executing work order #WO-2026-894: updating status to In-Progress, completing LOTO safety checks, replacing bearing, and logging clearance."
+        "Executing work order WO-2026-894: updating status to In-Progress, completing LOTO safety protocols, replacing the bearing, and logging clearance."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display Work Order Detail Drawer
       let drawer = document.querySelector('.ym-demo-wo-drawer');
       if (!drawer) {
         drawer = document.createElement('div');
@@ -911,7 +1025,6 @@
         document.body.appendChild(drawer);
       }
 
-      // Check items one by one
       for (let i = 1; i <= 4; i++) {
         const chk = drawer.querySelector(`#chk-${i}`);
         if (chk) {
@@ -941,19 +1054,18 @@
       await narrationPromise;
       setTimeout(() => {
         drawer.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(8); // Advance to reports (step 8)
       }, 1000);
     }
 
-    /* ─── STEP 7: EXECUTIVE REPORTS & PDF ─── */
+    /* ─── STEP 8: EXECUTIVE MAINTENANCE REPORT & PDF ─── */
     async runStep7Reports() {
       const narrationPromise = this.speak(
-        "Generating executive maintenance report detailing root cause, downtime prevented, and repair economics."
+        "Generating an executive maintenance report detailing root cause, downtime prevented, and financial impact."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display PDF Preview Modal
       let pdfModal = document.querySelector('.ym-demo-pdf-modal');
       if (!pdfModal) {
         pdfModal = document.createElement('div');
@@ -998,19 +1110,27 @@
       setTimeout(() => {
         pdfModal.remove();
         toast.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(9); // Advance to analytics (step 9)
       }, 1000);
     }
 
-    /* ─── STEP 8: POST-MAINTENANCE ANALYTICS ─── */
+    /* ─── STEP 9: POST-MAINTENANCE PERFORMANCE ANALYTICS ─── */
     async runStep8Analytics() {
+      // Click sidebar link to navigate to Reliability Analytics
+      const relNavLink = document.querySelector('a[href="/reliability"]');
+      if (relNavLink && getPath() !== '/reliability') {
+        await this.moveCursorToElement(relNavLink, 600);
+        await this.clickCursor(relNavLink);
+        this.advanceToStepIndex(9);
+        return;
+      }
+
       const narrationPromise = this.speak(
-        "Verifying post-maintenance analytics: MTBF increased to 1,480 hours and plant machine availability reached 98.6%."
+        "Reviewing plant-wide reliability analytics following maintenance completion."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display Animated Analytics Cards
       let cardsEl = document.querySelector('.ym-demo-analytics-overlay');
       if (!cardsEl) {
         cardsEl = document.createElement('div');
@@ -1027,19 +1147,18 @@
       await narrationPromise;
       setTimeout(() => {
         cardsEl.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(10); // Advance to predictive (step 10)
       }, 1000);
     }
 
-    /* ─── STEP 9: ML PREDICTIVE RELIABILITY ─── */
+    /* ─── STEP 10: ML PREDICTIVE RELIABILITY ─── */
     async runStep9Predictive() {
       const narrationPromise = this.speak(
-        "ML predictive engine confirms remaining useful life (RUL) extended to 180 days with 98.4% confidence."
+        "Inspecting ML predictive reliability models. Failure probability drops to nominal levels while asset remaining useful life is extended."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display ML Reliability Cards
       let predEl = document.querySelector('.ym-demo-pred-overlay');
       if (!predEl) {
         predEl = document.createElement('div');
@@ -1059,19 +1178,27 @@
       await narrationPromise;
       setTimeout(() => {
         predEl.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(11); // Advance to digital-twin-return (step 11)
       }, 1000);
     }
 
-    /* ─── STEP 10: DIGITAL TWIN RETURN (HEALTHY STATE) ─── */
+    /* ─── STEP 11: DIGITAL TWIN ASSET HEALTH RESTORATION ─── */
     async runStep10DigitalTwinReturn() {
+      // Click sidebar link to navigate to Digital Twin
+      const dtNavLink = document.querySelector('a[href="/digital-twin"]');
+      if (dtNavLink && getPath() !== '/digital-twin') {
+        await this.moveCursorToElement(dtNavLink, 600);
+        await this.clickCursor(dtNavLink);
+        this.advanceToStepIndex(11);
+        return;
+      }
+
       const narrationPromise = this.speak(
-        "Returning to the Digital Twin. CNC-101 vibration has dropped to nominal 0.8 mm/s. Machine status is now 100% HEALTHY."
+        "Returning to the 3D Digital Twin. CNC-101 vibration has dropped to nominal 0.8 mm/s. Asset health is restored to 99 percent."
       );
 
       await new Promise(r => setTimeout(r, 1000));
 
-      // Inject & Display Healthy Twin Badge
       let twinBadge = document.querySelector('.ym-demo-twin-healthy');
       if (!twinBadge) {
         twinBadge = document.createElement('div');
@@ -1094,12 +1221,14 @@
       await narrationPromise;
       setTimeout(() => {
         twinBadge.remove();
-        this.advanceStep();
+        this.advanceToStepIndex(12); // Advance to end-summary (step 12)
       }, 1000);
     }
 
-    /* ─── END SUMMARY ─── */
+    /* ─── STEP 12: SHIFT SUMMARY & CLOSING ─── */
     showEndSummary() {
+      this.speak("Shift complete. All critical maintenance actions executed autonomously with full industrial traceability. Thank you for watching YantraMitra.");
+
       const existing = document.querySelector('.ym-demo-summary');
       if (existing) existing.remove();
 
@@ -1164,6 +1293,7 @@
       this.cursorEl = null;
       if (this.autoTimer) clearTimeout(this.autoTimer);
       if (this.narrationTimer) clearTimeout(this.narrationTimer);
+      this.narrator.stop();
     }
   }
 
